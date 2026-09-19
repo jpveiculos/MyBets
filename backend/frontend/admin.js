@@ -113,7 +113,13 @@ async function load(){
   if(previousPendingDeposits!==null && pending.length>previousPendingDeposits){
     const n=pending.length-previousPendingDeposits;
     $("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} depósito${n>1?"s":""} aguardando conferência.`;
-    if(notifyReady && "Notification" in window && Notification.permission==="granted") new Notification("MyBets • Novo depósito",{body:`${n} novo depósito aguardando conferência.`});
+    if(notifyReady && "Notification" in window && Notification.permission==="granted"){
+      const message={title:"MyBets • Novo depósito",body:`${n} novo depósito aguardando conferência.`,tag:"new-deposit",url:"/admin.html"};
+      try{
+        const reg=await navigator.serviceWorker.ready;
+        await reg.showNotification(message.title,{body:message.body,tag:message.tag,data:{url:message.url},renotify:true});
+      }catch(error){console.warn("Notificação local:",error)}
+    }
     if(navigator.vibrate) navigator.vibrate([180,80,180]);
   }
   previousPendingDeposits=pending.length;notifyReady=true;bind();
