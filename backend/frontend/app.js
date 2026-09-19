@@ -31,3 +31,22 @@ $("authForm")?.addEventListener("submit",async e=>{
   }catch(err){message.textContent=err.message||"Erro ao conectar ao servidor."}
   finally{button.disabled=false}
 });
+
+
+async function loadHomeSession(){
+  const homeAuth=$("homeAuth");
+  if(!homeAuth)return;
+  try{
+    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
+    if(!r.ok)return;
+    const d=await r.json();
+    homeAuth.innerHTML='<a class="ghost-btn" href="/dashboard.html">Área de jogador</a><button class="ghost-btn" id="homeLogout">Sair</button>';
+    $("openRegister")?.replaceWith(Object.assign(document.createElement("a"),{className:"primary-btn",href:"/roleta.html",textContent:"Ir para a roleta"}));
+    $("openLogin2")?.replaceWith(Object.assign(document.createElement("a"),{className:"secondary-btn",href:"/dashboard.html",textContent:"Minha conta"}));
+    $("homeLogout").onclick=async()=>{
+      await fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"});
+      location.reload();
+    };
+  }catch{}
+}
+loadHomeSession();
