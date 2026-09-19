@@ -70,9 +70,8 @@ function openView(view){
  closeMobileMenu();
 }
 function closeMobileMenu(){
- const sidebar=$(".admin-sidebar"),overlay=$("adminMobileOverlay");
- sidebar?.classList.remove("open");
- overlay?.classList.remove("open");
+ const app=document.querySelector(".admin-app");
+ if(app)app.dataset.mobileMenu="closed";
 }
 
 function bindNavigation(){
@@ -205,22 +204,31 @@ if("Notification"in window&&Notification.permission==="granted")$("notifyStatus"
  }
 })();
 (()=>{
- const toggle=$("adminMenuToggle"),sidebar=document.querySelector(".admin-sidebar"),overlay=$("adminMobileOverlay");
- if(!toggle||!sidebar||!overlay)return;
+ const app=document.querySelector(".admin-app"),toggle=$("adminMenuToggle"),sidebar=document.querySelector(".admin-sidebar"),overlay=$("adminMobileOverlay");
+ if(!app||!toggle||!sidebar||!overlay)return;
+ const setMenuOpen=open=>{
+  app.dataset.mobileMenu=open?"open":"closed";
+  toggle.setAttribute("aria-expanded",String(open));
+ };
+ const isOpen=()=>app.dataset.mobileMenu==="open";
+ setMenuOpen(false);
  toggle.addEventListener("click",e=>{
   e.preventDefault();
   e.stopPropagation();
-  const opening=!sidebar.classList.contains("open");
-  sidebar.classList.toggle("open",opening);
-  overlay.classList.toggle("open",opening);
+  setMenuOpen(!isOpen());
  });
- overlay.addEventListener("pointerdown",e=>{e.preventDefault();closeMobileMenu()});
- sidebar.addEventListener("pointerup",e=>{
-  const link=e.target.closest(".admin-nav-link");
-  if(link)closeMobileMenu();
+ overlay.addEventListener("click",e=>{
+  e.preventDefault();
+  setMenuOpen(false);
  });
- document.querySelector(".admin-main")?.addEventListener("pointerdown",e=>{
-  if(sidebar.classList.contains("open")&&!sidebar.contains(e.target))closeMobileMenu();
+ sidebar.addEventListener("click",e=>{
+  if(e.target.closest(".admin-nav-link"))setMenuOpen(false);
  });
- document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMobileMenu()});
+ document.querySelector(".admin-main")?.addEventListener("click",e=>{
+  if(isOpen()&&!sidebar.contains(e.target))setMenuOpen(false);
+ });
+ document.addEventListener("keydown",e=>{
+  if(e.key==="Escape")setMenuOpen(false);
+ });
+ window.closeMobileMenu=()=>setMenuOpen(false);
 })();
