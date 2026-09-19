@@ -27,14 +27,14 @@ export async function removeAdminSubscription({adminId,endpoint}){
   await pool.query("DELETE FROM admin_push_subscriptions WHERE admin_id=$1 AND endpoint=$2",[adminId,endpoint]);
 }
 
-export async function sendAdminPush({title,body,url="/admin.html",tag="mybets"}){
+export async function sendAdminPush({title,body,url="/admin.html",tag="mybets",unreadCount=null}){
   if(!configured()) return {sent:0,configured:false};
   const r=await pool.query("SELECT id,endpoint,p256dh,auth FROM admin_push_subscriptions");
   let sent=0;
   for(const row of r.rows){
     const subscription={endpoint:row.endpoint,keys:{p256dh:row.p256dh,auth:row.auth}};
     try{
-      await webpush.sendNotification(subscription,JSON.stringify({title,body,url,tag}));
+      await webpush.sendNotification(subscription,JSON.stringify({title,body,url,tag,...(Number.isFinite(Number(unreadCount))?{unreadCount:Number(unreadCount)}:{})}));
       sent++;
     }catch(error){
       if(error.statusCode===404||error.statusCode===410){
