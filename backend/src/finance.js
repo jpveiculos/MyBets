@@ -23,6 +23,8 @@ export async function getAccount(userId) {
 export async function requestDeposit({ userId, amount, playerNote = null }) {
   const value = money(amount);
   if (value <= 0) throw new Error("O valor do depósito deve ser maior que zero.");
+  const enabled = await pool.query("SELECT setting_value FROM site_settings WHERE setting_key='pix_enabled'");
+  if (String(enabled.rows[0]?.setting_value || "true") !== "true") throw new Error("Depósitos via Pix estão desativados.");
 
   const result = await pool.query(
     `INSERT INTO deposits (user_id, amount, player_note)
@@ -107,4 +109,15 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
   } finally {
     client.release();
   }
+}
+
+
+export async function getTransactions(userId) {
+  const result = await pool.query(
+    `SELECT id,type,amount,balance_after,reference_id,note,created_at
+       FROM transactions WHERE user_id=$1
+       ORDER BY created_at DESC,id DESC LIMIT 200`,
+    [userId]
+  );
+  return result.rows;
 }
