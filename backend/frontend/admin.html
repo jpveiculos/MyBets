@@ -15,71 +15,97 @@
 <div class="admin-app">
   <aside class="admin-sidebar">
     <nav>
-      <a class="active" href="#painel">⌂ <span>Painel</span></a>
-      <a href="#usuarios">♙ <span>Usuários</span></a>
-      <a href="#depositos">↓ <span>Depósitos</span></a>
-      <a href="#saques">↑ <span>Saques</span></a>
-      <a href="#transacoes">▤ <span>Transações</span></a>
-      <a href="#configuracoes">⚙ <span>Configurações</span></a>
+      <a class="active admin-nav-link" href="#painel" data-view="dashboard">⌂ <span>Painel</span></a>
+      <a class="admin-nav-link" href="#usuarios" data-view="users">♙ <span>Usuários</span></a>
+      <a class="admin-nav-link" href="#depositos" data-view="deposits">↓ <span>Depósitos</span></a>
+      <a class="admin-nav-link" href="#saques" data-view="withdrawals">↑ <span>Saques</span></a>
+      <a class="admin-nav-link" href="#transacoes" data-view="transactions">▤ <span>Transações</span></a>
+      <a class="admin-nav-link" href="#configuracoes" data-view="settings">⚙ <span>Configurações</span></a>
       <a href="/roleta.html">◉ <span>Roleta</span></a>
-      <button class="admin-nav-notify" id="enableNotifications" type="button"><span>♟</span><span>Notificações</span><i id="notifyDot"></i><strong id="notifyCount" class="notify-count">0</strong></button><small class="admin-notify-status" id="notifyStatus">Ativar neste dispositivo</small>
+      <button class="admin-nav-notify" id="enableNotifications" type="button"><span>♟</span><span>Notificações</span><i id="notifyDot"></i><strong id="notifyCount" class="notify-count">0</strong></button>
+      <small class="admin-notify-status" id="notifyStatus">Ativar neste dispositivo</small>
     </nav>
   </aside>
 
   <div class="admin-mobile-overlay" id="adminMobileOverlay"></div>
+
   <main class="admin-main">
     <header class="admin-topbar">
-      <button class="admin-menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu">☰</button><div class="admin-top-brand"><span class="brand-wordmark" aria-label="MyBets"><span class="brand-word-my">My</span><span class="brand-word-bets">Bets</span></span></div>
+      <button class="admin-menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu">☰</button>
+      <div class="admin-top-brand"><span class="brand-wordmark" aria-label="MyBets"><span class="brand-word-my">My</span><span class="brand-word-bets">Bets</span></span></div>
       <div class="admin-top-actions">
-        
         <span class="admin-user-chip">Admin</span>
         <button class="ghost-btn" id="adminLogout">Sair</button>
       </div>
     </header>
 
-    <section class="admin-content" id="painel">
+    <section class="admin-content">
       <div id="adminMessage" class="form-message"></div>
 
-      <div class="admin-metrics">
-        <a class="metric-card metric-users" href="#usuarios"><span class="metric-icon">♙</span><b>Usuários</b><strong id="usersCount">0</strong></a>
-        <a class="metric-card metric-deposits" href="#depositos"><span class="metric-icon">↓</span><b>Depósitos</b><strong id="depositsCount">0</strong></a>
-        <a class="metric-card metric-withdrawals" href="#saques"><span class="metric-icon">↑</span><b>Saques</b><strong id="withdrawalsCount">0</strong></a>
-        <a class="metric-card metric-transactions" href="#transacoes"><span class="metric-icon">▤</span><b>Transações</b><strong id="transactionsCount">0</strong></a>
-      </div>
+      <section class="admin-view" id="view-dashboard" data-view-panel="dashboard">
+        <div class="admin-metrics">
+          <button class="metric-card metric-users metric-nav" type="button" data-open-view="users"><span class="metric-icon">♙</span><b>Usuários</b><strong id="usersCount">0</strong></button>
+          <button class="metric-card metric-deposits metric-nav" type="button" data-open-view="deposits"><span class="metric-icon">↓</span><b>Depósitos</b><strong id="depositsCount">0</strong></button>
+          <button class="metric-card metric-withdrawals metric-nav" type="button" data-open-view="withdrawals"><span class="metric-icon">↑</span><b>Saques</b><strong id="withdrawalsCount">0</strong></button>
+          <button class="metric-card metric-transactions metric-nav" type="button" data-open-view="transactions"><span class="metric-icon">▤</span><b>Transações</b><strong id="transactionsCount">0</strong></button>
+        </div>
 
-      <section class="admin-panel-block" id="usuarios">
-        <div class="admin-block-head"><h2>Usuários</h2></div>
-        <div id="users"></div>
+        <section class="admin-panel-block admin-events-panel">
+          <div class="admin-block-head">
+            <div>
+              <span class="eyebrow">CENTRAL DE ATIVIDADES</span>
+              <h2>Novos eventos</h2>
+            </div>
+            <span class="admin-events-count" id="eventsCount">0 pendentes</span>
+          </div>
+          <div id="pendingEvents"></div>
+        </section>
       </section>
 
-      <div class="admin-two-col">
-        <section class="admin-panel-block" id="depositos"><h2>Depósitos pendentes</h2><div id="deposits"></div></section>
-        <section class="admin-panel-block" id="saques"><h2>Saques pendentes</h2><div id="withdrawals"></div></section>
-      </div>
-
-      <section class="admin-panel-block" id="transacoes">
-        <div class="admin-block-head"><h2>Transações</h2></div>
-        <div id="transactions"></div>
+      <section class="admin-view hidden" id="view-users" data-view-panel="users">
+        <div class="admin-view-head"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Usuários</h1></div></div>
+        <section class="admin-panel-block"><div id="users"></div></section>
       </section>
 
-      <section class="admin-panel-block" id="configuracoes">
-        <div class="admin-block-head"><h2>Configurações principais</h2></div>
-        <div id="settings"></div>
+      <section class="admin-view hidden" id="view-deposits" data-view-panel="deposits">
+        <div class="admin-view-head"><div><span class="eyebrow">FINANCEIRO</span><h1>Depósitos</h1></div></div>
+        <section class="admin-panel-block"><div id="deposits"></div></section>
       </section>
 
+      <section class="admin-view hidden" id="view-withdrawals" data-view-panel="withdrawals">
+        <div class="admin-view-head"><div><span class="eyebrow">FINANCEIRO</span><h1>Saques</h1></div></div>
+        <section class="admin-panel-block"><div id="withdrawals"></div></section>
+      </section>
+
+      <section class="admin-view hidden" id="view-transactions" data-view-panel="transactions">
+        <div class="admin-view-head"><div><span class="eyebrow">HISTÓRICO</span><h1>Transações</h1></div></div>
+        <section class="admin-panel-block"><div id="transactions"></div></section>
+      </section>
+
+      <section class="admin-view hidden" id="view-settings" data-view-panel="settings">
+        <div class="admin-view-head"><div><span class="eyebrow">SISTEMA</span><h1>Configurações</h1></div></div>
+        <section class="admin-panel-block"><div id="settings"></div></section>
+      </section>
     </section>
-
   </main>
 </div>
 
-<div class="modal hidden" id="loginPanel"><section class="modal-card"><span class="eyebrow">ÁREA ADMINISTRATIVA</span><h2>Entrar no Admin</h2><form id="adminLogin"><label>Usuário<input id="adminUser" value="admin" autocomplete="username" required></label><label>Senha<input id="adminPassword" type="password" autocomplete="current-password" required></label><button class="primary-btn full" type="submit">Entrar</button><p class="form-message" id="loginMessage"></p></form></section></div>
+<div class="modal hidden" id="loginPanel" aria-hidden="true"><section class="modal-card"><span class="eyebrow">ÁREA ADMINISTRATIVA</span><h2>Entrar no Admin</h2><form id="adminLogin"><label>Usuário<input id="adminUser" value="admin" autocomplete="username" required></label><label>Senha<input id="adminPassword" type="password" autocomplete="current-password" required></label><button class="primary-btn full" type="submit">Entrar</button><p class="form-message" id="loginMessage"></p></form></section></div>
 
 <div class="modal hidden" id="depositModal" aria-hidden="true">
-<div class="modal-card"><button class="ghost-btn modal-close" id="depositClose" type="button">×</button><span class="eyebrow">CONFERÊNCIA DE DEPÓSITO</span><h2 id="depositTitle">Confirmar depósito</h2><p class="muted" id="depositInfo"></p>
-<label>Valor informado pelo jogador<input id="depositDeclared" type="text" readonly></label>
-<label>Valor recebido no extrato<input id="depositApproved" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off"></label>
-<p class="muted">O valor acima será efetivamente creditado no saldo.</p>
-<div class="row-actions modal-actions"><button class="ghost-btn" id="depositCancel" type="button">Cancelar</button><button class="primary-btn" id="depositConfirm" type="button">CONFIRMAR E CREDITAR</button></div><p class="form-message" id="depositMessage"></p></div></div>
+  <div class="modal-card">
+    <button class="ghost-btn modal-close" id="depositClose" type="button">×</button>
+    <span class="eyebrow">CONFERÊNCIA DE DEPÓSITO</span>
+    <h2 id="depositTitle">Confirmar depósito</h2>
+    <p class="muted" id="depositInfo"></p>
+    <label>Valor informado pelo jogador<input id="depositDeclared" type="text" readonly></label>
+    <label>Valor recebido no extrato<input id="depositApproved" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off"></label>
+    <p class="muted">O valor acima será efetivamente creditado no saldo.</p>
+    <div class="row-actions modal-actions"><button class="ghost-btn" id="depositCancel" type="button">Cancelar</button><button class="primary-btn" id="depositConfirm" type="button">CONFIRMAR E CREDITAR</button></div>
+    <p class="form-message" id="depositMessage"></p>
+  </div>
+</div>
 
-<script src="/admin.js?v=20260919-2500"></script>
-</body></html>
+<script src="/admin.js?v=20260919-2600"></script>
+</body>
+</html>
