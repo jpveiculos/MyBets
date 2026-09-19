@@ -114,6 +114,17 @@ CREATE INDEX IF NOT EXISTS idx_transactions_user_created ON transactions(user_id
 CREATE INDEX IF NOT EXISTS idx_deposits_status_created ON deposits(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status_created ON withdrawals(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spins_user_created ON spins(user_id, created_at DESC);
+CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
+  id SERIAL PRIMARY KEY,
+  admin_id INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
+  endpoint TEXT UNIQUE NOT NULL,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_admin_push_admin ON admin_push_subscriptions(admin_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 INSERT INTO site_settings(setting_key, setting_value) VALUES
