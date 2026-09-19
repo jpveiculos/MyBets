@@ -218,7 +218,7 @@ $("adminLogout").onclick=async()=>{
   const button=$("adminLogout");
   button.disabled=true;
   try{
-    await api("/api/auth/logout",{method:"POST",headers:{"X-Admin-Session":"1"}});
+    await api("/api/auth/admin-logout",{method:"POST"});
   }catch(error){
     $("adminMessage").textContent=error.message||"Não foi possível sair.";
     button.disabled=false;
