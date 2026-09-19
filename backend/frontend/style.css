@@ -323,3 +323,101 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   }
   .admin-view-head h1{font-size:26px}
 }
+
+
+/* ===== JOGADOR: MODAL PIX COMPACTO PARA CELULAR ===== */
+#financeModal{
+  align-items:flex-start;
+  justify-items:center;
+  padding:calc(8px + env(safe-area-inset-top)) 10px calc(8px + env(safe-area-inset-bottom));
+  overflow:hidden;
+}
+#financeModal .finance-modal{
+  width:min(410px,100%);
+  max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 16px);
+  margin:0;
+  padding:14px;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#financeModal .deposit-modal-head{
+  padding:0 28px 10px;
+}
+#financeModal .deposit-modal-head h2{
+  font-size:24px;
+  margin:0;
+}
+#financeModal .deposit-modal-head p{
+  margin:5px 0 0;
+  font-size:12px;
+}
+#financeModal .deposit-player-id{
+  padding:9px 11px;
+  margin-bottom:9px;
+}
+#financeModal .deposit-player-id span{font-size:10px}
+#financeModal .deposit-player-id strong{font-size:14px}
+#financeModal .qr-card{
+  gap:5px;
+  padding:8px;
+  margin-bottom:11px;
+}
+#financeModal .qr-card img{
+  width:min(170px,48vw);
+  padding:4px;
+  border-radius:8px;
+}
+#financeModal .qr-card strong{font-size:14px}
+#financeModal .qr-card small{font-size:11px}
+#financeModal .pix-code-label{
+  margin-top:1px;
+  font-size:10px;
+}
+#financeModal .pix-code-row input{
+  padding:9px;
+  font-size:10px;
+}
+#financeModal .pix-code-row .small-btn{
+  min-height:40px;
+  padding:8px 12px;
+}
+#financeModal .pix-amount-wrap{
+  margin:0 0 11px;
+}
+#financeModal .pix-amount-wrap label{
+  font-size:14px;
+}
+#financeModal .pix-amount-wrap input{
+  margin-top:6px;
+  padding:11px;
+  font-size:17px;
+}
+#financeModal #pixDone{
+  min-height:44px;
+  padding:11px 14px;
+  font-size:14px;
+}
+#financeModal .form-message{
+  margin:7px 0 0;
+  font-size:12px;
+}
+@media(max-width:480px){
+  #financeModal{
+    padding:calc(5px + env(safe-area-inset-top)) 8px calc(5px + env(safe-area-inset-bottom));
+  }
+  #financeModal .finance-modal{
+    width:calc(100vw - 16px);
+    max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 10px);
+    padding:12px;
+    border-radius:17px;
+  }
+  #financeModal .deposit-modal-head{
+    padding:0 26px 8px;
+  }
+  #financeModal .deposit-modal-head h2{font-size:23px}
+  #financeModal .deposit-player-id{margin-bottom:7px}
+  #financeModal .qr-card img{width:min(155px,45vw)}
+  #financeModal .qr-card{margin-bottom:9px}
+  #financeModal .pix-amount-wrap{margin-bottom:9px}
+  #financeModal #pixDone{font-size:13px}
+}
