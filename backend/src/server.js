@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
-import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting } from "./admin.js";
+import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -135,6 +135,9 @@ app.use((err,_req,res,_next)=>{
   const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário|valor/.test(String(err.message))?400:500;
   res.status(status).json({message:err.message||"Erro interno do servidor."});
 });
+app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (_req,res) => {
+  res.json({ok:true,transactions:await listTransactions()});
+}));
 
 let server;
 async function start(){
