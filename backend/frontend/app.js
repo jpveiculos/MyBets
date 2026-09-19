@@ -1,15 +1,40 @@
 let authMode="login";
 
-async function checkPlayerSession(){
-  const nav=$("playerFooterNav");
-  if(!nav)return;
-  try{
-    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
-    nav.classList.toggle("hidden",!r.ok);
-  }catch{nav.classList.add("hidden")}
+const $=id=>document.getElementById(id);
+
+function setHomeState(loggedIn){
+  const auth=$("homeAuth");
+  const footer=$("playerFooterNav");
+  if(!auth)return;
+
+  if(loggedIn){
+    auth.innerHTML='<button class="ghost-btn" id="homeLogout">Sair</button>';
+    footer?.classList.remove("hidden");
+    $("homeLogout")?.addEventListener("click",logoutFromHome);
+  }else{
+    auth.innerHTML='<button class="ghost-btn" id="openLogin">Entrar</button>';
+    footer?.classList.add("hidden");
+    $("openLogin")?.addEventListener("click",()=>showAuth("login"));
+  }
 }
 
-const $=id=>document.getElementById(id);
+async function logoutFromHome(){
+  try{
+    const r=await fetch("/api/auth/logout",{method:"POST",credentials:"same-origin"});
+    if(!r.ok)throw new Error();
+  }catch{}
+  setHomeState(false);
+}
+
+async function checkPlayerSession(){
+  try{
+    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
+    setHomeState(r.ok);
+  }catch{
+    setHomeState(false);
+  }
+}
+
 function showAuth(mode="login"){
   authMode=mode;$("authModal").classList.remove("hidden");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===mode));
@@ -20,7 +45,6 @@ function showAuth(mode="login"){
 }
 function closeAuth(){$("authModal").classList.add("hidden")}
 
-$("openLogin")?.addEventListener("click",()=>showAuth("login"));
 $("openLogin2")?.addEventListener("click",()=>showAuth("login"));
 $("openRegister")?.addEventListener("click",()=>showAuth("register"));
 $("closeAuth")?.addEventListener("click",closeAuth);
