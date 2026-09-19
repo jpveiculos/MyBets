@@ -56,12 +56,12 @@ export async function requireUser(req, res, next) {
          FROM sessions s
          JOIN users u ON u.id=s.user_id
         WHERE s.id=$1 AND s.expires_at>CURRENT_TIMESTAMP`,
-      [cookies.mybets_session]
+      [cookies.mybets_player_session]
     );
     if (!result.rows[0]) return res.status(401).json({ message:"Sessão do jogador inválida ou expirada." });
     req.user = { id: result.rows[0].user_id, username: result.rows[0].username };
     await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
-    setSessionCookie(res,result.rows[0].id);
+    setSessionCookie(res,result.rows[0].id,"player");
     next();
   } catch (error) { next(error); }
 }
@@ -74,12 +74,12 @@ export async function requireAdmin(req, res, next) {
          FROM sessions s
          JOIN admins a ON a.id=s.admin_id
         WHERE s.id=$1 AND s.expires_at>CURRENT_TIMESTAMP`,
-      [cookies.mybets_session]
+      [cookies.mybets_admin_session]
     );
     if (!result.rows[0]) return res.status(401).json({ message:"Sessão administrativa inválida ou expirada." });
     req.admin = { id: result.rows[0].admin_id, username: result.rows[0].username };
     await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
-    setSessionCookie(res,result.rows[0].id);
+    setSessionCookie(res,result.rows[0].id,"admin");
     next();
   } catch (error) { next(error); }
 }
