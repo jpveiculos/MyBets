@@ -12,7 +12,7 @@ self.addEventListener("fetch",event=>{
   event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
 });
 self.addEventListener("push",event=>{
-  let data={title:"MyBets",body:"Você tem uma nova notificação.",url:"/admin.html",badge:"/icon-192.png"};
+  let data={title:"MyBets",body:"Você tem uma nova notificação.",url:"/admin.html",badge:"/icon-192.svg"};
   try{data={...data,...event.data.json()}}catch{try{data.body=event.data.text()}catch{}}
   event.waitUntil(self.registration.showNotification(data.title,{
     body:data.body,
