@@ -23,6 +23,7 @@
       <a href="#configuracoes">⚙ <span>Configurações</span></a>
       <a href="#pix">◆ <span>Pix</span></a>
       <a href="/roleta.html">◉ <span>Roleta</span></a>
+      <button class="admin-nav-notify" id="enableNotifications" type="button"><span>♟</span><span>Notificações</span><i id="notifyDot"></i></button>
     </nav>
   </aside>
 
@@ -31,27 +32,13 @@
     <header class="admin-topbar">
       <button class="admin-menu-toggle" id="adminMenuToggle" type="button" aria-label="Abrir menu">☰</button><div class="admin-top-brand"><span class="brand-wordmark" aria-label="MyBets"><span class="brand-word-my">My</span><span class="brand-word-bets">Bets</span></span></div>
       <div class="admin-top-actions">
-        <button class="notify-icon" id="enableNotifications" type="button" title="Ativar notificações">♟<i></i></button>
+        
         <span class="admin-user-chip">Admin</span>
         <button class="ghost-btn" id="adminLogout">Sair</button>
       </div>
     </header>
 
     <section class="admin-content" id="painel">
-      <div class="admin-welcome">
-        <div>
-          <span class="eyebrow">BEM-VINDO, ADMIN</span>
-          <h1>Painel de Controle</h1>
-          <p>Gerencie sua plataforma de forma simples e segura.</p>
-        </div>
-        <div class="admin-crown">♛</div>
-      </div>
-
-      <div class="admin-notify-bar">
-        <div class="notify-copy"><span class="notify-symbol">●</span><div><b>Notificações Administrativas</b><small id="notifyStatus">Receba alertas de novos depósitos, saques e eventos importantes.</small></div></div>
-        <button class="gold-btn" type="button" onclick="document.getElementById('enableNotifications').click()">Ativar Notificações</button>
-      </div>
-
       <div id="adminMessage" class="form-message"></div>
 
       <div class="admin-metrics">
