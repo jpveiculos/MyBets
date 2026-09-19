@@ -189,8 +189,8 @@ async function spin(){
   }
 }
 
-$("betMinus").onclick=()=>changeBet(-.50);
-$("betPlus").onclick=()=>changeBet(.50);
+$("betMinus").onclick=()=>changeBet(-1);
+$("betPlus").onclick=()=>changeBet(1);
 $("spinButton").onclick=spin;
 $("betAmount").addEventListener("change",normalizeBet);
 
