@@ -52,3 +52,5 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .site-footer-nav a{display:flex;align-items:center;justify-content:center;gap:9px;color:#cbd0da;text-decoration:none;font-size:14px;font-weight:800}
 .site-footer-nav a span{font-size:20px}.site-footer-nav a.active{color:#ffd83d}
 @media(max-width:700px){body{padding-bottom:76px}}
+
+.site-footer-nav.hidden{display:none}
