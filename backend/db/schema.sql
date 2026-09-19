@@ -135,7 +135,7 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_city',''),
 ('pix_description','MyBets'),
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
-('bonus_wager_requirement','0')
+('bonus_wager_requirement','0'),\n('roulette_min_bet','0.50'),\n('roulette_max_bet','100.00'),\n('roulette_prizes','[2,3,4,5,2,3,4,5,10]')
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Garante os valores Pix padrão também em bancos já existentes.
