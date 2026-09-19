@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { pool } from "./db.js";
 
-const SESSION_DAYS = 7;
+const SESSION_DAYS = 30;
 
 function hashPassword(password) {
   const salt = crypto.randomBytes(16).toString("hex");
@@ -22,7 +22,7 @@ function newSessionId() {
 
 function setSessionCookie(res, sessionId) {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  res.setHeader("Set-Cookie", `mybets_session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${secure}`);
+  res.setHeader("Set-Cookie", `mybets_session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=2592000${secure}`);
 }
 
 function clearSessionCookie(res) {
@@ -59,6 +59,8 @@ export async function requireUser(req, res, next) {
     );
     if (!result.rows[0]) return res.status(401).json({ message:"Sessão do jogador inválida ou expirada." });
     req.user = { id: result.rows[0].user_id, username: result.rows[0].username };
+    await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
+    setSessionCookie(res,result.rows[0].id);
     next();
   } catch (error) { next(error); }
 }
@@ -75,6 +77,8 @@ export async function requireAdmin(req, res, next) {
     );
     if (!result.rows[0]) return res.status(401).json({ message:"Sessão administrativa inválida ou expirada." });
     req.admin = { id: result.rows[0].admin_id, username: result.rows[0].username };
+    await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
+    setSessionCookie(res,result.rows[0].id);
     next();
   } catch (error) { next(error); }
 }
