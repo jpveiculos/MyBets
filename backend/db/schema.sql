@@ -64,11 +64,20 @@ CREATE TABLE IF NOT EXISTS withdrawals (
   rejection_reason TEXT,
   approved_by INTEGER REFERENCES admins(id),
   approved_at TIMESTAMP,
+  paid_by INTEGER REFERENCES admins(id),
+  paid_at TIMESTAMP,
   rejected_by INTEGER REFERENCES admins(id),
   rejected_at TIMESTAMP,
+  refunded_by INTEGER REFERENCES admins(id),
+  refunded_at TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS paid_by INTEGER REFERENCES admins(id);
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS paid_at TIMESTAMP;
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS refunded_by INTEGER REFERENCES admins(id);
+ALTER TABLE withdrawals ADD COLUMN IF NOT EXISTS refunded_at TIMESTAMP;
 
 CREATE TABLE IF NOT EXISTS audit_logs (
   id SERIAL PRIMARY KEY,
