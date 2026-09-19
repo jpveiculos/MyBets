@@ -1,5 +1,14 @@
 let authMode="login";
 
+async function checkPlayerSession(){
+  const nav=$("playerFooterNav");
+  if(!nav)return;
+  try{
+    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
+    nav.classList.toggle("hidden",!r.ok);
+  }catch{nav.classList.add("hidden")}
+}
+
 const $=id=>document.getElementById(id);
 function showAuth(mode="login"){
   authMode=mode;$("authModal").classList.remove("hidden");
@@ -31,3 +40,5 @@ $("authForm")?.addEventListener("submit",async e=>{
   }catch(err){message.textContent=err.message||"Erro ao conectar ao servidor."}
   finally{button.disabled=false}
 });
+
+checkPlayerSession();
