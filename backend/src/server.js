@@ -60,6 +60,26 @@ app.post("/api/auth/admin-logout", asyncRoute(async (req,res) => {
   res.json({ok:true});
 }));
 
+const GAME_ROUTES={
+  "my-tiger":{config:myTigerConfig,spin:spinMyTiger},
+  "my-dragon":{config:myDragonConfig,spin:spinMyDragon},
+  "lucky7":{config:lucky7Config,spin:spinLucky7}
+};
+
+app.get("/api/games/:gameId/config", requireUser, asyncRoute(async (req,res) => {
+  const game=GAME_ROUTES[req.params.gameId];
+  if(!game) return res.status(404).json({message:"Jogo não encontrado."});
+  res.json({ok:true,game:game.config()});
+}));
+
+app.post("/api/games/:gameId/spin", requireUser, asyncRoute(async (req,res) => {
+  const game=GAME_ROUTES[req.params.gameId];
+  if(!game) return res.status(404).json({message:"Jogo não encontrado."});
+  const spin=await game.spin({userId:req.user.id,betAmount:req.body?.betAmount});
+  const account=await getAccount(req.user.id);
+  res.json({ok:true,spin,user:{id:account.id,username:account.username,balance:Number(account.total_balance),availableBalance:Number(account.available_balance),reservedBalance:Number(account.reserved_balance),bonusBalance:Number(account.bonus_balance),cashBalance:Number(account.cash_balance),bonusWagerProgress:Number(account.bonus_wager_progress||0)}});
+}));
+
 app.get("/api/roulette/config", requireUser, asyncRoute(async (_req,res) => {
   res.json({ok:true,roulette:await rouletteConfig()});
 }));
