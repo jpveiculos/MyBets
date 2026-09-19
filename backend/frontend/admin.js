@@ -102,7 +102,7 @@ async function load(){
  try{
   const [u,d,w,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings")]);
   const pending=d.deposits.filter(x=>x.status==="pending");
-  $("loginPanel").classList.add("hidden");$("adminPanel").classList.remove("hidden");$("adminLogout").classList.remove("hidden");
+  $("adminLogout").classList.remove("hidden");
   $("usersCount").textContent=u.users.length;$("depositsCount").textContent=pending.length;$("withdrawalsCount").textContent=w.withdrawals.filter(x=>x.status==="pending").length;$("transactionsCount").textContent=0;
   $("users").innerHTML=u.users.map(x=>`<div class="admin-row"><span><b>#${x.id} ${esc(x.username)}</b><small>Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add">+ saldo</button></span></div>`).join("")||"<p class='muted'>Nenhum usuário.</p>";
   $("deposits").innerHTML=pending.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><span class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.username)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum depósito pendente.</p>";
@@ -116,7 +116,7 @@ async function load(){
   }
   previousPendingDeposits=pending.length;notifyReady=true;bind();
  }catch(e){
-  if(e.message.includes("Sessão administrativa")){$("loginPanel").classList.remove("hidden");$("adminPanel").classList.add("hidden");$("adminLogout").classList.add("hidden");}
+  if(e.message.includes("Sessão administrativa")){window.location.reload();}
   else $("adminMessage").textContent=e.message;
  }}
 
@@ -136,7 +136,7 @@ async function action(url,method,body){
 
 $("enableNotifications").onclick=async()=>{ try{ await enableNotifications(); await updateAppBadge(); }catch(err){ $("notifyStatus").textContent=err.message||"Não foi possível ativar as notificações."; } };
 
-$("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});await updateAppBadge();load()}catch(err){$("loginMessage").textContent=err.message}};
+
 $("adminLogout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.reload()};
 $("depositClose").onclick=closeDepositEditor;
 $("depositCancel").onclick=closeDepositEditor;
