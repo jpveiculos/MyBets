@@ -3,6 +3,7 @@ const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"B
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro.");return d}
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let previousPendingDeposits=null;
+let adminAuthenticated=false;
 let pushSubscription=null;
 let notifyReady=false;
 let refreshTimer=null;
@@ -53,7 +54,8 @@ function pauseAutoRefresh(){
 function resumeAutoRefresh(){
   isEditingDeposit=false;
   if(refreshTimer)clearInterval(refreshTimer);
-  refreshTimer=setInterval(()=>{if(!isEditingDeposit)load()},10000);
+  if(!adminAuthenticated)return;
+  refreshTimer=setInterval(()=>{if(adminAuthenticated&&!isEditingDeposit)load()},10000);
 }
 
 function openDepositEditor(id,username,amount){
@@ -106,8 +108,22 @@ async function confirmDeposit(){
 
 
 function showAdminLogin(){
+  adminAuthenticated=false;
+  pauseAutoRefresh();
   $("loginPanel").classList.remove("hidden");
   $("adminUser").focus();
+}
+
+async function verifyAdminSession(){
+  try{
+    await api("/api/admin/session");
+    adminAuthenticated=true;
+    $("loginPanel").classList.add("hidden");
+    return true;
+  }catch{
+    showAdminLogin();
+    return false;
+  }
 }
 
 async function adminLogin(event){
@@ -122,6 +138,7 @@ async function adminLogin(event){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})
     });
+    adminAuthenticated=true;
     $("loginPanel").classList.add("hidden");
     $("adminPassword").value="";
     previousPendingDeposits=null;
@@ -149,6 +166,7 @@ async function loadTransactions(){
 }
 
 async function load(){
+ if(!adminAuthenticated)return false;
  try{
   const [u,d,w,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings")]);
   const pending=d.deposits.filter(x=>x.status==="pending");
@@ -175,7 +193,9 @@ async function load(){
  }catch(e){
   if(e.message.includes("Sessão administrativa")){showAdminLogin();}
   else $("adminMessage").textContent=e.message;
- }}
+ }
+ return adminAuthenticated;
+}
 
 function bind(){
  document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>openDepositEditor(b.dataset.id,b.dataset.username,b.dataset.amount));
@@ -195,7 +215,18 @@ $("enableNotifications").onclick=async()=>{ try{ await enableNotifications(); aw
 
 
 $("adminLogout").onclick=async()=>{
-  try{await api("/api/auth/logout",{method:"POST"});}finally{location.reload();}
+  const button=$("adminLogout");
+  button.disabled=true;
+  try{
+    await api("/api/auth/logout",{method:"POST"});
+  }catch(error){
+    $("adminMessage").textContent=error.message||"Não foi possível sair.";
+    button.disabled=false;
+    return;
+  }
+  adminAuthenticated=false;
+  if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}
+  window.location.replace("/");
 };
 $("depositClose").onclick=closeDepositEditor;
 $("depositCancel").onclick=closeDepositEditor;
@@ -204,11 +235,15 @@ $("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")c
 $("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 
 registerServiceWorker();
-updateAppBadge();
-setInterval(updateAppBadge,5000);
 if("Notification" in window && Notification.permission==="granted") $("notifyStatus").textContent="Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.";
-load();
-resumeAutoRefresh();
+(async()=>{
+  if(await verifyAdminSession()){
+    await load();
+    await updateAppBadge();
+    setInterval(()=>{if(adminAuthenticated)updateAppBadge()},5000);
+    resumeAutoRefresh();
+  }
+})();
 (() => {
   const toggle=document.getElementById("adminMenuToggle");
   const sidebar=document.querySelector(".admin-sidebar");
