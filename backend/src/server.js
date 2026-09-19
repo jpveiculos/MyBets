@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
-import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, updateSetting } from "./admin.js";
+import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -23,6 +23,10 @@ const asyncRoute = fn => (req,res,next) => Promise.resolve(fn(req,res,next)).cat
 app.get("/api/health", asyncRoute(async (_req,res) => {
   await pool.query("SELECT 1");
   res.json({ok:true,service:"mybets-roulette",database:"connected",timestamp:new Date().toISOString()});
+}));
+
+app.get("/api/settings/public", asyncRoute(async (_req,res) => {
+  res.json({ok:true,settings:await getPublicSettings()});
 }));
 
 app.post("/api/auth/register", asyncRoute(async (req,res) => {
@@ -105,7 +109,7 @@ app.get("/",(_req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 
 app.use((err,_req,res,_next)=>{
   console.error("Erro:",err);
-  const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva/.test(String(err.message))?400:500;
+  const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário/.test(String(err.message))?400:500;
   res.status(status).json({message:err.message||"Erro interno do servidor."});
 });
 
