@@ -54,3 +54,5 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 @media(max-width:700px){body{padding-bottom:76px}}
 
 .site-footer-nav.hidden{display:none}
+
+.home-auth.session-pending{visibility:hidden}
