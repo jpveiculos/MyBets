@@ -29,11 +29,11 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .admin-menu-toggle{display:none;width:42px;height:42px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#0d1118;color:#fff;font-size:21px}
 .admin-mobile-overlay{display:none}
 @media(max-width:900px){
- .admin-app{display:block;min-height:100vh}.admin-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:82vw;height:100vh;padding:20px 12px;background:#080c12;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto}.admin-sidebar.open{transform:translateX(0)}
+ .admin-app{display:block;min-height:100vh}.admin-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:82vw;height:100vh;padding:20px 12px;background:#080c12;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto}.admin-app[data-mobile-menu="open"] .admin-sidebar{transform:translateX(0)}
  .admin-sidebar nav{display:grid;gap:4px;margin-top:14px}.admin-main{margin-left:0;width:100%}.admin-topbar{height:64px;padding:0 14px}.admin-menu-toggle{display:block;flex:0 0 auto}.admin-top-brand{margin-left:9px}.admin-top-brand .brand-wordmark{font-size:32px}.admin-top-actions{gap:6px}.admin-user-chip{display:none}
  .admin-content{width:100%;padding:8px 10px 22px;box-sizing:border-box}.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.metric-card{height:104px;padding:11px 13px}.metric-card .metric-icon{width:36px;height:36px;font-size:18px}.metric-card b{font-size:14px}.metric-card strong{font-size:27px}
  .admin-two-col{grid-template-columns:1fr}.admin-block-head{align-items:flex-start;flex-direction:column}.admin-nav-notify{padding:12px 14px;font-size:15px}.admin-notify-status{margin-left:50px}
- .admin-mobile-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:29}.admin-mobile-overlay.open{opacity:1;pointer-events:auto}
+ .admin-mobile-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:29}.admin-app[data-mobile-menu="open"] .admin-mobile-overlay{opacity:1;pointer-events:auto}
 }/* MyBets — identidade oficial */
 .brand-wordmark{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;letter-spacing:-.09em;line-height:.84;transform:skewX(-5deg);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;text-decoration:none}
 .brand-word-my{color:#f0b92f;font-weight:900}
