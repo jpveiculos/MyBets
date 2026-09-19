@@ -175,7 +175,7 @@ async function spin(){
       requestAnimationFrame(frame);
     });
 
-    $("balance").textContent=money(d.user.balance);
+    $("balance").textContent=money(d.user.availableBalance);
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
   }catch(e){
     $("message").textContent=e.message;
