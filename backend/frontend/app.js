@@ -1,10 +1,3 @@
-async function keepLoggedPlayer(){
-  try{
-    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
-    if(r.ok) location.replace("/dashboard.html");
-  }catch{}
-}
-
 let authMode="login";
 
 const $=id=>document.getElementById(id);
@@ -38,6 +31,3 @@ $("authForm")?.addEventListener("submit",async e=>{
   }catch(err){message.textContent=err.message||"Erro ao conectar ao servidor."}
   finally{button.disabled=false}
 });
-
-
-keepLoggedPlayer();
