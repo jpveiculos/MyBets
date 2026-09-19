@@ -66,23 +66,12 @@ function openView(view){
  document.querySelectorAll(".metric-nav").forEach(button=>button.classList.toggle("active",button.dataset.openView===view));
  const target=view==="dashboard"?"painel":view;
  if(location.hash!=="#"+target)history.replaceState(null,"","#"+target);
- const sidebar=$(".admin-sidebar"),overlay=$("adminMobileOverlay");
- sidebar?.classList.remove("open");overlay?.classList.remove("open");
+ closeMobileMenu();
 }
 function closeMobileMenu(){
  const sidebar=$(".admin-sidebar"),overlay=$("adminMobileOverlay");
  sidebar?.classList.remove("open");
  overlay?.classList.remove("open");
-}
-
-function openView(view){
- currentView=view;
- document.querySelectorAll("[data-view-panel]").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.viewPanel!==view));
- document.querySelectorAll(".admin-nav-link").forEach(link=>link.classList.toggle("active",link.dataset.view===view));
- document.querySelectorAll(".metric-nav").forEach(button=>button.classList.toggle("active",button.dataset.openView===view));
- const target=view==="dashboard"?"painel":view;
- if(location.hash!=="#"+target)history.replaceState(null,"","#"+target);
- closeMobileMenu();
 }
 
 function bindNavigation(){
