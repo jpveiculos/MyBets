@@ -111,6 +111,7 @@ function showAdminLogin(){
   adminAuthenticated=false;
   pauseAutoRefresh();
   $("loginPanel").classList.remove("hidden");
+  $("loginPanel").setAttribute("aria-hidden","false");
   $("adminUser").focus();
 }
 
@@ -119,6 +120,7 @@ async function verifyAdminSession(){
     await api("/api/admin/session");
     adminAuthenticated=true;
     $("loginPanel").classList.add("hidden");
+    $("loginPanel").setAttribute("aria-hidden","true");
     return true;
   }catch{
     showAdminLogin();
@@ -140,6 +142,7 @@ async function adminLogin(event){
     });
     adminAuthenticated=true;
     $("loginPanel").classList.add("hidden");
+    $("loginPanel").setAttribute("aria-hidden","true");
     $("adminPassword").value="";
     previousPendingDeposits=null;
     await load();
