@@ -7,7 +7,7 @@ import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
-import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
+import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";\nimport { rouletteConfig, spinRoulette } from "./roulette.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -54,7 +54,7 @@ app.post("/api/auth/logout", asyncRoute(async (req,res) => {
   res.json({ok:true});
 }));
 
-app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
+app.get("/api/roulette/config", requireUser, asyncRoute(async (_req,res) => {\n  res.json({ok:true,roulette:await rouletteConfig()});\n}));\n\napp.post("/api/roulette/spin", requireUser, asyncRoute(async (req,res) => {\n  const spin=await spinRoulette({userId:req.user.id,betAmount:req.body?.betAmount});\n  const account=await getAccount(req.user.id);\n  res.json({ok:true,spin,user:{id:account.id,username:account.username,balance:Number(account.total_balance),availableBalance:Number(account.available_balance),reservedBalance:Number(account.reserved_balance),bonusBalance:Number(account.bonus_balance),cashBalance:Number(account.cash_balance)}});\n}));\n\napp.get("/api/account", requireUser, asyncRoute(async (req,res) => {
   const account=await getAccount(req.user.id);
   res.json({ok:true,account});
 }));
