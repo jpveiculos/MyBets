@@ -104,6 +104,38 @@ async function confirmDeposit(){
   }
 }
 
+
+function showAdminLogin(){
+  $("loginPanel").classList.remove("hidden");
+  $("adminUser").focus();
+}
+
+async function adminLogin(event){
+  event.preventDefault();
+  const button=document.querySelector("#adminLogin button[type=submit]");
+  const message=$("loginMessage");
+  button.disabled=true;
+  message.textContent="";
+  try{
+    await api("/api/auth/admin-login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})
+    });
+    $("loginPanel").classList.add("hidden");
+    $("adminPassword").value="";
+    previousPendingDeposits=null;
+    await load();
+    await updateAppBadge();
+  }catch(error){
+    message.textContent=error.message||"Não foi possível entrar no administrador.";
+  }finally{
+    button.disabled=false;
+  }
+}
+
+$("adminLogin")?.addEventListener("submit",adminLogin);
+
 async function loadTransactions(){
  try{
   const result=await api("/api/admin/transactions");
@@ -141,7 +173,7 @@ async function load(){
   previousPendingDeposits=pending.length;notifyReady=true;bind();
   await loadTransactions();
  }catch(e){
-  if(e.message.includes("Sessão administrativa")){window.location.reload();}
+  if(e.message.includes("Sessão administrativa")){showAdminLogin();}
   else $("adminMessage").textContent=e.message;
  }}
 
@@ -162,7 +194,9 @@ async function action(url,method,body){
 $("enableNotifications").onclick=async()=>{ try{ await enableNotifications(); await updateAppBadge(); }catch(err){ $("notifyStatus").textContent=err.message||"Não foi possível ativar as notificações."; } };
 
 
-$("adminLogout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.reload()};
+$("adminLogout").onclick=async()=>{
+  try{await api("/api/auth/logout",{method:"POST"});}finally{location.reload();}
+};
 $("depositClose").onclick=closeDepositEditor;
 $("depositCancel").onclick=closeDepositEditor;
 $("depositConfirm").onclick=confirmDeposit;
