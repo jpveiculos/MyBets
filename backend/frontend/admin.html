@@ -1,28 +1,104 @@
 <!doctype html>
-<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="MyBets Admin"><link rel="manifest" href="/admin-manifest.json"><link rel="apple-touch-icon" href="/icon-192.svg"><title>Admin • MyBets Roulette</title><link rel="stylesheet" href="/style.css"></head>
-<body><div class="site-shell"><header class="topbar"><a class="brand" href="/"><img class="brand-logo" src="/brand.svg" alt="MyBets"></a><button class="ghost-btn hidden" id="adminLogout">Sair</button></header>
-<main class="landing"><section class="panel" id="loginPanel"><span class="eyebrow">ÁREA ADMINISTRATIVA</span><h1>Admin</h1><form id="adminLogin"><label>Usuário<input id="adminUser" value="admin" autocomplete="username" required></label><label>Senha<input id="adminPassword" type="password" autocomplete="current-password" required></label><button class="primary-btn full">Entrar</button><p class="form-message" id="loginMessage"></p></form></section>
-<section class="panel hidden" id="adminPanel"><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Painel</h1><div class="admin-notify-bar"><div><b>Notificações administrativas</b><small id="notifyStatus">Ative para receber avisos de novos depósitos e saques.</small></div><button class="small-btn" id="enableNotifications" type="button">ATIVAR NOTIFICAÇÕES</button></div><div id="adminMessage" class="form-message"></div><div class="admin-grid"><div class="admin-section"><h2>Usuários</h2><div id="users"></div></div><div class="admin-section"><h2>Depósitos pendentes</h2><div id="deposits"></div></div><div class="admin-section"><h2>Saques pendentes</h2><div id="withdrawals"></div></div><div class="admin-section"><h2>Configurações</h2><div id="settings"></div></div></div></section></main></div>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#08090d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MyBets Admin">
+<link rel="manifest" href="/admin-manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.svg">
+<title>Admin • MyBets</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="admin-page">
+<div class="admin-app">
+  <aside class="admin-sidebar">
+    <a class="admin-side-brand" href="/"><img src="/brand.svg" alt="MyBets"></a>
+    <nav>
+      <a class="active" href="#painel">⌂ <span>Painel</span></a>
+      <a href="#usuarios">♙ <span>Usuários</span></a>
+      <a href="#depositos">↓ <span>Depósitos</span></a>
+      <a href="#saques">↑ <span>Saques</span></a>
+      <a href="#transacoes">▤ <span>Transações</span></a>
+      <a href="#configuracoes">⚙ <span>Configurações</span></a>
+      <a href="#pix">◆ <span>Pix</span></a>
+      <a href="/roleta.html">◉ <span>Roleta</span></a>
+    </nav>
+  </aside>
 
-<div class="modal hidden" id="depositModal" aria-hidden="true">
-  <div class="modal-card">
-    <button class="ghost-btn modal-close" id="depositClose" type="button">×</button>
-    <span class="eyebrow">CONFERÊNCIA DE DEPÓSITO</span>
-    <h2 id="depositTitle">Confirmar depósito</h2>
-    <p class="muted" id="depositInfo"></p>
-    <label>Valor informado pelo jogador
-      <input id="depositDeclared" type="text" readonly>
-    </label>
-    <label>Valor recebido no extrato
-      <input id="depositApproved" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off">
-    </label>
-    <p class="muted">O valor acima é o que será efetivamente creditado no saldo. Se o extrato mostrar outro valor, altere antes de confirmar.</p>
-    <div class="row-actions modal-actions">
-      <button class="ghost-btn" id="depositCancel" type="button">Cancelar</button>
-      <button class="primary-btn" id="depositConfirm" type="button">CONFIRMAR E CREDITAR</button>
-    </div>
-    <p class="form-message" id="depositMessage"></p>
-  </div>
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div class="admin-top-brand"><img src="/brand.svg" alt="MyBets"></div>
+      <div class="admin-top-actions">
+        <button class="notify-icon" id="enableNotifications" type="button" title="Ativar notificações">♟<i></i></button>
+        <span class="admin-user-chip">Admin</span>
+        <button class="ghost-btn" id="adminLogout">Sair</button>
+      </div>
+    </header>
+
+    <section class="admin-content" id="painel">
+      <div class="admin-welcome">
+        <div>
+          <span class="eyebrow">BEM-VINDO, ADMIN</span>
+          <h1>Painel de Controle</h1>
+          <p>Gerencie sua plataforma de forma simples e segura.</p>
+        </div>
+        <div class="admin-crown">♛</div>
+      </div>
+
+      <div class="admin-notify-bar">
+        <div class="notify-copy"><span class="notify-symbol">●</span><div><b>Notificações Administrativas</b><small id="notifyStatus">Receba alertas de novos depósitos, saques e eventos importantes.</small></div></div>
+        <button class="gold-btn" type="button" onclick="document.getElementById('enableNotifications').click()">Ativar Notificações</button>
+      </div>
+
+      <div id="adminMessage" class="form-message"></div>
+
+      <div class="admin-metrics">
+        <a class="metric-card metric-users" href="#usuarios"><span class="metric-icon">♙</span><b>Usuários</b><strong id="usersCount">0</strong><small>Ver todos →</small></a>
+        <a class="metric-card metric-deposits" href="#depositos"><span class="metric-icon">↓</span><b>Depósitos</b><strong id="depositsCount">0</strong><small>Ver todos →</small></a>
+        <a class="metric-card metric-withdrawals" href="#saques"><span class="metric-icon">↑</span><b>Saques</b><strong id="withdrawalsCount">0</strong><small>Ver todos →</small></a>
+        <a class="metric-card metric-transactions" href="#transacoes"><span class="metric-icon">▤</span><b>Transações</b><strong id="transactionsCount">0</strong><small>Ver todos →</small></a>
+      </div>
+
+      <section class="admin-panel-block" id="usuarios">
+        <div class="admin-block-head"><h2>Usuários</h2><button class="gold-outline-btn" type="button" id="addUserHint">＋ Adicionar usuário</button></div>
+        <div id="users"></div>
+      </section>
+
+      <div class="admin-two-col">
+        <section class="admin-panel-block" id="depositos"><h2>Depósitos pendentes</h2><div id="deposits"></div></section>
+        <section class="admin-panel-block" id="saques"><h2>Saques pendentes</h2><div id="withdrawals"></div></section>
+      </div>
+
+      <section class="admin-panel-block" id="transacoes">
+        <div class="admin-block-head"><h2>Transações</h2><span class="muted">Histórico financeiro do sistema</span></div>
+        <p class="muted">As transações aparecem automaticamente no histórico de cada jogador após depósitos, saques e ajustes de saldo.</p>
+      </section>
+
+      <section class="admin-panel-block" id="configuracoes">
+        <div class="admin-block-head"><h2>Configurações principais</h2><span class="muted">Ajuste as configurações do sistema.</span></div>
+        <div id="settings"></div>
+      </section>
+
+      <section class="admin-panel-block" id="pix">
+        <div class="admin-block-head"><h2>Pix</h2><span class="muted">Chave, identificação e instruções exibidas ao jogador.</span></div>
+        <div class="pix-admin-note">As configurações Pix podem ser alteradas acima, sem editar o código do site.</div>
+      </section>
+    </section>
+
+    <footer class="admin-footer"><img src="/brand.svg" alt="MyBets"><span>Administração • MyBets • Todos os direitos reservados.</span><b>● Sistema Online</b></footer>
+  </main>
 </div>
 
-<script src="/admin.js"></script></body></html>
+<div class="modal hidden" id="loginPanel"><section class="modal-card"><span class="eyebrow">ÁREA ADMINISTRATIVA</span><h2>Entrar no Admin</h2><form id="adminLogin"><label>Usuário<input id="adminUser" value="admin" autocomplete="username" required></label><label>Senha<input id="adminPassword" type="password" autocomplete="current-password" required></label><button class="primary-btn full">Entrar</button><p class="form-message" id="loginMessage"></p></form></section></div>
+
+<div class="modal hidden" id="depositModal" aria-hidden="true">
+<div class="modal-card"><button class="ghost-btn modal-close" id="depositClose" type="button">×</button><span class="eyebrow">CONFERÊNCIA DE DEPÓSITO</span><h2 id="depositTitle">Confirmar depósito</h2><p class="muted" id="depositInfo"></p>
+<label>Valor informado pelo jogador<input id="depositDeclared" type="text" readonly></label>
+<label>Valor recebido no extrato<input id="depositApproved" type="number" min="0.01" step="0.01" inputmode="decimal" autocomplete="off"></label>
+<p class="muted">O valor acima será efetivamente creditado no saldo.</p>
+<div class="row-actions modal-actions"><button class="ghost-btn" id="depositCancel" type="button">Cancelar</button><button class="primary-btn" id="depositConfirm" type="button">CONFIRMAR E CREDITAR</button></div><p class="form-message" id="depositMessage"></p></div></div>
+
+<script src="/admin.js"></script>
+</body></html>
