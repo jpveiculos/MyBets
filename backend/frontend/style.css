@@ -20,57 +20,33 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 /* ===== PAINEL ADMIN MYBETS ===== */
 .admin-page{background:#05070b;color:#f5f6f8;overflow-x:hidden}
 .admin-app{min-height:100vh;display:flex}
-.admin-sidebar{position:fixed;inset:0 auto 0 0;width:228px;background:#080c12;border-right:1px solid rgba(255,255,255,.09);padding:28px 12px;z-index:30}
-.admin-sidebar nav{display:grid;gap:6px;margin-top:12px}
-.admin-sidebar nav a,.admin-nav-notify{display:flex;align-items:center;gap:16px;min-height:48px;padding:12px 16px;border-radius:12px;color:#bfc5d1;font-size:16px;font-weight:650;text-decoration:none;box-sizing:border-box}
-.admin-sidebar nav a:first-letter{font-size:21px}
+.admin-sidebar{position:fixed;inset:0 auto 0 0;width:228px;background:#080c12;border-right:1px solid rgba(255,255,255,.09);padding:24px 12px;z-index:30}
+.admin-sidebar nav{display:grid;gap:4px;margin-top:8px}
+.admin-sidebar nav a,.admin-nav-notify{display:flex;align-items:center;gap:14px;min-height:44px;padding:10px 14px;border-radius:11px;color:#bfc5d1;font-size:15px;font-weight:650;text-decoration:none;box-sizing:border-box}
 .admin-sidebar nav a:hover,.admin-sidebar nav a.active,.admin-nav-notify:hover{background:linear-gradient(90deg,rgba(216,174,88,.24),rgba(216,174,88,.06));color:#fff;border-left:3px solid #f0c34e}
-.admin-nav-notify{width:100%;margin-top:8px;border:0;background:transparent;font-family:inherit;text-align:left;cursor:pointer;position:relative}
-.admin-nav-notify>span:first-child{font-size:21px;width:22px;text-align:center}
-.admin-nav-notify i{width:8px;height:8px;border-radius:50%;background:#d8ae58;margin-left:auto;display:none}
-.admin-nav-notify.active i{display:block}
-.admin-notify-status{display:block;margin:4px 12px 8px 54px;color:#7f8795;font-size:11px;line-height:1.35}
+.admin-nav-notify{width:100%;margin-top:5px;border:0;background:transparent;font-family:inherit;text-align:left;cursor:pointer;position:relative}
+.admin-nav-notify>span:first-child{font-size:19px;width:22px;text-align:center}.admin-nav-notify i{width:7px;height:7px;border-radius:50%;background:#d8ae58;margin-left:auto;display:none}.admin-nav-notify.active i{display:block}
+.admin-notify-status{display:block;margin:2px 10px 5px 50px;color:#727a88;font-size:10px}
 .admin-main{margin-left:228px;min-width:0;width:calc(100% - 228px)}
-.admin-topbar{height:86px;display:flex;align-items:center;padding:0 34px;border-bottom:1px solid rgba(255,255,255,.08);background:#05070b;position:sticky;top:0;z-index:25}
-.admin-top-brand{display:block}
-.admin-top-brand .brand-wordmark{font-size:42px}
-.admin-top-actions{display:flex;align-items:center;gap:12px;margin-left:auto}
-.admin-user-chip{padding:12px 18px;border:1px solid rgba(255,255,255,.12);border-radius:13px;color:#dfe2e8}
-.admin-content{max-width:1180px;margin:0 auto;padding:28px 34px 50px}
-.admin-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:18px 0}
-.metric-card{min-height:178px;border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:20px;background:linear-gradient(180deg,#0d131b,#090d13);display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-decoration:none;color:#fff}
-.metric-card .metric-icon{display:grid;place-items:center;width:48px;height:48px;border-radius:14px;background:rgba(255,255,255,.06);font-size:23px;margin-bottom:6px}
-.metric-card b{font-size:16px}.metric-card strong{font-size:38px;line-height:1}.metric-card small{margin-top:auto;color:#e6bb43;font-weight:700}
-.metric-users{border-color:rgba(0,210,145,.3)}.metric-users .metric-icon{background:rgba(0,210,145,.14);color:#27dc9d}
-.metric-deposits .metric-icon{background:rgba(45,130,255,.18);color:#55a1ff}.metric-withdrawals .metric-icon{background:rgba(155,77,255,.18);color:#b77cff}.metric-transactions .metric-icon{background:rgba(216,174,88,.18);color:#f0c657}
-.admin-panel-block{margin-top:16px;padding:22px;border:1px solid rgba(255,255,255,.1);border-radius:16px;background:linear-gradient(180deg,#0c1118,#090d13)}
-.admin-block-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.admin-panel-block h2{margin:0 0 18px;font-size:23px}
-.admin-two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}.admin-two-col .admin-panel-block{min-width:0}
-.pix-admin-note{padding:15px;border-radius:12px;background:#080c12;border:1px solid rgba(255,255,255,.07);color:#aeb5c2}
-.admin-footer{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:25px 34px;border-top:1px solid rgba(255,255,255,.08);color:#9ba0ad}.admin-footer b{color:#35c58a}
-.admin-menu-toggle{display:none;width:44px;height:44px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#0d1118;color:#fff;font-size:22px}
+.admin-topbar{height:68px;display:flex;align-items:center;padding:0 28px;border-bottom:1px solid rgba(255,255,255,.08);background:#05070b;position:sticky;top:0;z-index:25}
+.admin-top-brand .brand-wordmark{font-size:38px}
+.admin-top-actions{display:flex;align-items:center;gap:10px;margin-left:auto}.admin-user-chip{padding:9px 14px;border:1px solid rgba(255,255,255,.12);border-radius:11px;color:#dfe2e8;font-size:14px}
+.admin-content{max-width:1240px;margin:0 auto;padding:10px 22px 28px}
+.admin-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:0 0 12px}
+.metric-card{height:106px;min-height:0;border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:13px 15px;background:linear-gradient(180deg,#0d131b,#090d13);display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;text-decoration:none;color:#fff;box-sizing:border-box}
+.metric-card .metric-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.06);font-size:19px}
+.metric-card b{font-size:14px}.metric-card strong{font-size:27px;line-height:1}.metric-users{border-color:rgba(0,210,145,.3)}.metric-users .metric-icon{background:rgba(0,210,145,.14);color:#27dc9d}.metric-deposits .metric-icon{background:rgba(45,130,255,.18);color:#55a1ff}.metric-withdrawals .metric-icon{background:rgba(155,77,255,.18);color:#b77cff}.metric-transactions .metric-icon{background:rgba(216,174,88,.18);color:#f0c657}
+.admin-panel-block{margin-top:10px;padding:16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:linear-gradient(180deg,#0c1118,#090d13)}
+.admin-block-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.admin-panel-block h2{margin:0 0 12px;font-size:20px}.admin-two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}.admin-two-col .admin-panel-block{min-width:0}
+.admin-menu-toggle{display:none;width:42px;height:42px;border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#0d1118;color:#fff;font-size:21px}
 .admin-mobile-overlay{display:none}
 @media(max-width:900px){
-  .admin-app{display:block;min-height:100vh}
-  .admin-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:82vw;height:100vh;padding:24px 12px;background:#080c12;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto}
-  .admin-sidebar.open{transform:translateX(0)}
-  .admin-sidebar nav{display:grid;gap:5px;margin-top:18px}
-  .admin-main{margin-left:0;width:100%}
-  .admin-topbar{height:72px;padding:0 14px}
-  .admin-menu-toggle{display:block;flex:0 0 auto}
-  .admin-top-brand{margin-left:10px}.admin-top-brand .brand-wordmark{font-size:34px}
-  .admin-top-actions{gap:7px}.admin-user-chip{display:none}
-  .admin-content{width:100%;padding:18px 14px 35px;box-sizing:border-box}
-  .admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-  .metric-card{min-height:145px;padding:15px}.metric-card strong{font-size:30px}.metric-card .metric-icon{width:42px;height:42px}
-  .admin-two-col{grid-template-columns:1fr}
-  .admin-block-head{align-items:flex-start;flex-direction:column}
-  .admin-footer{padding:22px 16px;flex-direction:column;align-items:flex-start}
-  .admin-mobile-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:29}
-  .admin-mobile-overlay.open{opacity:1;pointer-events:auto}
-  .admin-nav-notify{padding:13px 14px;font-size:15px}.admin-notify-status{margin-left:50px}
-}
-/* MyBets — identidade oficial */
+ .admin-app{display:block;min-height:100vh}.admin-sidebar{position:fixed;left:0;top:0;bottom:0;width:250px;max-width:82vw;height:100vh;padding:20px 12px;background:#080c12;transform:translateX(-105%);transition:transform .22s ease;overflow-y:auto}.admin-sidebar.open{transform:translateX(0)}
+ .admin-sidebar nav{display:grid;gap:4px;margin-top:14px}.admin-main{margin-left:0;width:100%}.admin-topbar{height:64px;padding:0 14px}.admin-menu-toggle{display:block;flex:0 0 auto}.admin-top-brand{margin-left:9px}.admin-top-brand .brand-wordmark{font-size:32px}.admin-top-actions{gap:6px}.admin-user-chip{display:none}
+ .admin-content{width:100%;padding:8px 10px 22px;box-sizing:border-box}.admin-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:10px}.metric-card{height:104px;padding:11px 13px}.metric-card .metric-icon{width:36px;height:36px;font-size:18px}.metric-card b{font-size:14px}.metric-card strong{font-size:27px}
+ .admin-two-col{grid-template-columns:1fr}.admin-block-head{align-items:flex-start;flex-direction:column}.admin-nav-notify{padding:12px 14px;font-size:15px}.admin-notify-status{margin-left:50px}
+ .admin-mobile-overlay{display:block;position:fixed;inset:0;background:rgba(0,0,0,.62);opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:29}.admin-mobile-overlay.open{opacity:1;pointer-events:auto}
+}/* MyBets — identidade oficial */
 .brand-wordmark{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;letter-spacing:-.09em;line-height:.84;transform:skewX(-5deg);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;text-decoration:none}
 .brand-word-my{color:#f0b92f;font-weight:900}
 .brand-word-bets{color:#f7f7f7;font-weight:900}
