@@ -1,0 +1,29 @@
+name: Estrutura MyBets
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm install --omit=dev --no-audit --no-fund
+
+      - name: Verificar JavaScript
+        run: npm run check
+
+      - name: Verificar JSON
+        run: node -e "for (const f of ['package.json','backend/package.json','backend/db/schema.sql']) { if (f.endsWith('.json')) JSON.parse(require('fs').readFileSync(f,'utf8')); }"
