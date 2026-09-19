@@ -40,6 +40,7 @@ CREATE TABLE IF NOT EXISTS deposits (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   amount NUMERIC(12,2) NOT NULL,
+  approved_amount NUMERIC(12,2),
   status VARCHAR(20) NOT NULL DEFAULT 'pending',
   payment_method VARCHAR(30) NOT NULL DEFAULT 'pix',
   player_note TEXT,
@@ -51,6 +52,8 @@ CREATE TABLE IF NOT EXISTS deposits (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS approved_amount NUMERIC(12,2);
 
 CREATE TABLE IF NOT EXISTS withdrawals (
   id SERIAL PRIMARY KEY,
@@ -115,11 +118,11 @@ CREATE INDEX IF NOT EXISTS idx_sessions_expires ON sessions(expires_at);
 
 INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_enabled','true'),
-('pix_key',''),
+('pix_key','6cb0b574-4fd1-40ad-bfd3-5065b6c6e897'),
 ('pix_key_type','aleatoria'),
 ('pix_receiver_name',''),
 ('pix_city',''),
 ('pix_description','MyBets'),
-('pix_instructions','Após realizar o Pix, clique em JÁ FIZ O PIX. O crédito será liberado somente após a conferência do administrador.'),
+('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
 ('bonus_wager_requirement','0')
 ON CONFLICT (setting_key) DO NOTHING;
