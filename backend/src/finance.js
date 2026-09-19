@@ -38,7 +38,11 @@ export async function requestDeposit({ userId, amount, playerNote = null }) {
   const player=await pool.query("SELECT username FROM users WHERE id=$1",[userId]);
   const username=player.rows[0]?.username||`ID #${userId}`;
   const pending=await pool.query("SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending')::int + (SELECT COUNT(*) FROM withdrawals WHERE status='pending')::int AS count");
-  await sendAdminPush({title:"MyBets • Novo depósito",body:`Jogador ${username} • depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit",unreadCount:Number(pending.rows[0].count)}).catch(()=>{});
+  try {
+    await sendAdminPush({title:"MyBets • Novo depósito",body:`Jogador ${username} • depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit",unreadCount:Number(pending.rows[0].count)});
+  } catch (error) {
+    console.error("Falha ao enviar notificação de novo depósito:", error);
+  }
   return deposit;
 }
 
@@ -109,7 +113,11 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
 
     await client.query("COMMIT");
     const pending=await pool.query("SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending')::int + (SELECT COUNT(*) FROM withdrawals WHERE status='pending')::int AS count");
-    await sendAdminPush({title:"MyBets • Novo saque",body:`Novo saque #${withdrawal.rows[0].id} aguardando análise.`,tag:"new-withdrawal",unreadCount:Number(pending.rows[0].count)}).catch(()=>{});
+    try {
+      await sendAdminPush({title:"MyBets • Novo saque",body:`Novo saque #${withdrawal.rows[0].id} aguardando análise.`,tag:"new-withdrawal",unreadCount:Number(pending.rows[0].count)});
+    } catch (error) {
+      console.error("Falha ao enviar notificação de novo saque:", error);
+    }
     return withdrawal.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
