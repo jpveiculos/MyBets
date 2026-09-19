@@ -59,3 +59,40 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 
 .notify-count{display:none;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#d94b4b;color:#fff;font-size:11px;font-weight:900;margin-left:auto}
 .admin-nav-notify.active .notify-count{display:inline-flex}
+
+
+/* ===== ADMIN MODAIS =====
+   O login e a conferência de depósito pertencem ao fluxo administrativo.
+   Eles precisam ficar fora do fluxo normal da página, centralizados e acima do painel.
+*/
+.admin-page > .modal{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  width:100vw;
+  min-height:100vh;
+  margin:0;
+  padding:16px;
+  display:grid;
+  place-items:center;
+  box-sizing:border-box;
+  background:rgba(0,0,0,.78);
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  overflow-y:auto;
+}
+.admin-page > .modal.hidden{display:none}
+.admin-page > .modal .modal-card{
+  width:min(440px,100%);
+  box-sizing:border-box;
+  background:#11131a;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:20px;
+  padding:22px;
+  position:relative;
+  box-shadow:0 30px 100px rgba(0,0,0,.6);
+}
+.admin-page > #depositModal .modal-card{
+  width:min(520px,100%);
+}
