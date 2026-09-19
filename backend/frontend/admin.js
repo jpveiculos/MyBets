@@ -97,9 +97,11 @@ function renderTransactions(transactions){
  $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${dateTime(x.created_at)}</small></span></div>`).join("")||'<p class="muted">Nenhuma transação.</p>';
 }
 function renderRouletteSettings(settings){
+ const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet"),prizesField=$("roulettePrizes");
+ if(!minField||!maxField||!prizesField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
- $("rouletteMinBet").value=map.roulette_min_bet??"0.50";
- $("rouletteMaxBet").value=map.roulette_max_bet??"100.00";
+ minField.value=map.roulette_min_bet??"0.50";
+ maxField.value=map.roulette_max_bet??"100.00";
  try{
   const prizes=JSON.parse(map.roulette_prizes??"[2,3,4,5,2,3,4,5,10]");
   $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,4,5,2,3,4,5,10";
