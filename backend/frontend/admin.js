@@ -148,3 +148,13 @@ registerServiceWorker();
 if("Notification" in window && Notification.permission==="granted") $("notifyStatus").textContent="Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.";
 load();
 resumeAutoRefresh();
+(() => {
+  const toggle=document.getElementById("adminMenuToggle");
+  const sidebar=document.querySelector(".admin-sidebar");
+  const overlay=document.getElementById("adminMobileOverlay");
+  if(!toggle||!sidebar||!overlay)return;
+  const close=()=>{sidebar.classList.remove("open");overlay.classList.remove("open")};
+  toggle.addEventListener("click",()=>{sidebar.classList.toggle("open");overlay.classList.toggle("open")});
+  overlay.addEventListener("click",close);
+  sidebar.querySelectorAll("a").forEach(a=>a.addEventListener("click",close));
+})();
