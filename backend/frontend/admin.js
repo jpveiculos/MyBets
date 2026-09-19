@@ -35,8 +35,15 @@ async function enableNotifications(){
  return true;
 }
 async function updateAppBadge(){
- if(!navigator.setAppBadge)return;
- try{const d=await api("/api/admin/notifications/count");if(d.count>0)await navigator.setAppBadge(d.count);else if(navigator.clearAppBadge)await navigator.clearAppBadge()}catch{}
+ try{
+  const d=await api("/api/admin/notifications/count");
+  const count=Number(d.count)||0;
+  const badge=$("notifyCount"),button=$("enableNotifications");
+  if(badge){badge.textContent=count>99?"99+":String(count);badge.style.display=count>0?"inline-flex":"none";}
+  button?.classList.toggle("active",count>0);
+  if(navigator.setAppBadge&&count>0)await navigator.setAppBadge(count);
+  else if(navigator.clearAppBadge)await navigator.clearAppBadge();
+ }catch{}
 }
 function pauseAutoRefresh(){
   isEditingDeposit=true;
@@ -163,6 +170,8 @@ $("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")c
 $("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 
 registerServiceWorker();
+updateAppBadge();
+setInterval(updateAppBadge,5000);
 if("Notification" in window && Notification.permission==="granted") $("notifyStatus").textContent="Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.";
 load();
 resumeAutoRefresh();
