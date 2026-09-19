@@ -1,27 +1,32 @@
-const CACHE_NAME="mybets-v2";
+const CACHE_NAME="mybets-v3";
 const APP_SHELL=["/","/index.html","/admin.html","/admin-manifest.json","/style.css"];
 
 self.addEventListener("install",event=>{
   event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()));
 });
 self.addEventListener("activate",event=>{
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()));
 });
 self.addEventListener("fetch",event=>{
-  if(event.request.method!=="GET") return;
+  if(event.request.method!=="GET")return;
   event.respondWith(fetch(event.request).catch(()=>caches.match(event.request)));
 });
 self.addEventListener("push",event=>{
-  let data={title:"MyBets",body:"Você tem uma nova notificação.",url:"/admin.html",badge:"/icon-192.svg"};
-  try{data={...data,...event.data.json()}}catch{try{data.body=event.data.text()}catch{}}
-  event.waitUntil(self.registration.showNotification(data.title,{
+  const fallback={title:"MyBets",body:"Você tem uma nova notificação.",url:"/admin.html",tag:"mybets"};
+  let data=fallback;
+  try{data={...fallback,...event.data.json()}}catch{try{data.body=event.data.text()}catch{}}
+  const tasks=[];
+  const count=Number(data.unreadCount);
+  if(Number.isFinite(count)&&"setAppBadge" in self.navigator)tasks.push(self.navigator.setAppBadge(Math.max(0,count)));
+  tasks.push(self.registration.showNotification(data.title,{
     body:data.body,
-    icon:data.icon||"/icon-192.png",
-    badge:data.badge||"/icon-192.png",
+    icon:data.icon||"/icon-192.svg",
+    badge:data.badge||"/icon-192.svg",
     tag:data.tag||"mybets",
     data:{url:data.url||"/admin.html"},
     renotify:true
   }));
+  event.waitUntil(Promise.all(tasks));
 });
 self.addEventListener("notificationclick",event=>{
   event.notification.close();
