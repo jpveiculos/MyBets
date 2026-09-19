@@ -5,15 +5,21 @@ const $=id=>document.getElementById(id);
 function setHomeState(loggedIn){
   const auth=$("homeAuth");
   const footer=$("playerFooterNav");
+  const heroActions=$("heroActions");
+  const heroDescription=$("heroDescription");
   if(!auth)return;
 
   if(loggedIn){
     auth.innerHTML='<button class="ghost-btn" id="homeLogout">Sair</button>';
     footer?.classList.remove("hidden");
+    heroActions?.classList.add("hidden");
+    if(heroDescription)heroDescription.textContent="Acesse sua área do jogador, acompanhe seu saldo virtual e entre na roleta.";
     $("homeLogout")?.addEventListener("click",logoutFromHome);
   }else{
     auth.innerHTML='<button class="ghost-btn" id="openLogin">Entrar</button>';
     footer?.classList.add("hidden");
+    heroActions?.classList.remove("hidden");
+    if(heroDescription)heroDescription.textContent="Crie sua conta, acompanhe seu saldo virtual e acesse a área da roleta em um só lugar.";
     $("openLogin")?.addEventListener("click",()=>showAuth("login"));
   }
   auth.classList.remove("session-pending");
