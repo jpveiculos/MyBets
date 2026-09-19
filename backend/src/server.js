@@ -51,7 +51,12 @@ app.post("/api/auth/admin-login", asyncRoute(async (req,res) => {
 }));
 
 app.post("/api/auth/logout", asyncRoute(async (req,res) => {
-  await logout(req,res,req.headers["x-admin-session"]==="1"?"admin":"player");
+  await logout(req,res,"player");
+  res.json({ok:true});
+}));
+
+app.post("/api/auth/admin-logout", asyncRoute(async (req,res) => {
+  await logout(req,res,"admin");
   res.json({ok:true});
 }));
 
