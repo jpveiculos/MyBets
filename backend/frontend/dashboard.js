@@ -1,12 +1,14 @@
 let financeMode="deposit";
 let pixSettings=null;
+let playerUsername="";
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro na operação.");return d}
 async function load(){
   try{
     const [a,t]=await Promise.all([api("/api/account"),api("/api/transactions")]);
-    $("welcome").textContent="Olá, "+a.account.username;
+    playerUsername=a.account.username;
+    $("welcome").textContent="Olá, "+playerUsername;
     $("balance").textContent=money(a.account.available_balance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
     $("history").innerHTML=t.transactions.length?t.transactions.map(x=>`<div class="history-row"><span><strong>${x.type}</strong><small>${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><b>${money(x.amount)}</b></div>`).join(""):"<p class='muted'>Nenhuma movimentação ainda.</p>";
@@ -40,12 +42,13 @@ function buildPixPayload(){
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");$("financeTitle").textContent="Depósito via Pix";
-  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("qrCard").classList.add("hidden");$("pixDone").classList.add("hidden");
+  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
   try{
     const d=await api("/api/settings/public");pixSettings=d.settings;
     if(String(pixSettings.pix_enabled)!=="true"){ $("depositMessage").textContent="Depósitos via Pix estão temporariamente desativados.";return }
     if(!pixSettings.pix_key){ $("depositMessage").textContent="O Pix ainda não foi configurado pelo administrador.";return }
     $("pixReceiver").textContent="Recebedor: "+(pixSettings.pix_receiver_name||"MyBets");
+    updateQr();
   }catch(e){$("depositMessage").textContent=e.message}
 }
 function updateQr(){
@@ -58,13 +61,13 @@ async function openWithdraw(){
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
 }
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;
-$("depositAmount").oninput=updateQr;
+
 $("copyPix").onclick=async()=>{try{await navigator.clipboard.writeText($("pixCode").value);$("depositMessage").style.color="#35c58a";$("depositMessage").textContent="Código Pix copiado.";setTimeout(()=>$("depositMessage").textContent="",1800)}catch(e){$("pixCode").select()}};
 $("pixDone").onclick=async()=>{
   const amount=Number($("depositAmount").value);const m=$("depositMessage");
   if(!amount||amount<=0){m.textContent="Informe o valor do depósito.";return}
   try{
-    await api("/api/deposits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount})});
+    await api("/api/deposits",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount,playerNote:"Jogador: "+(playerUsername||"não identificado")})});
     m.style.color="#35c58a";m.textContent="Solicitação enviada. O administrador foi avisado e fará a conferência do Pix.";
     $("pixDone").disabled=true;setTimeout(()=>{$("financeModal").classList.add("hidden");$("pixDone").disabled=false;load()},1800);
   }catch(e){m.style.color="#ff5d6c";m.textContent=e.message}
