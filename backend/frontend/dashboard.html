@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Minha conta • MyBets Roulette</title><link rel="stylesheet" href="/style.css"></head>
+<body><div class="site-shell"><header class="topbar"><a class="brand" href="/"><span class="brand-my">MY</span>BETs</a><button class="ghost-btn" id="logout">Sair</button></header>
+<main class="landing">
+<section class="dash-head"><div><span class="eyebrow">MINHA CONTA</span><h1 id="welcome">Olá</h1></div><div class="balance-card"><small>Saldo disponível</small><strong id="balance">R$ 0,00</strong><span id="reserved">Reservado: R$ 0,00</span></div></section>
+<section class="feature-grid">
+<article class="feature-card action-card"><strong>🎯 Roleta</strong><span>Área exclusiva da roleta de 54 setores.</span><button class="primary-btn" id="rouletteBtn">Abrir roleta</button></article>
+<article class="feature-card action-card"><strong>💠 Depósito</strong><span>Solicite um depósito manual via Pix.</span><button class="secondary-btn" id="depositBtn">Depositar</button></article>
+<article class="feature-card action-card"><strong>↗ Saque</strong><span>Solicite um saque e acompanhe a reserva.</span><button class="secondary-btn" id="withdrawBtn">Sacar</button></article>
+</section>
+<section class="panel"><div class="panel-title"><h2>Histórico</h2><button class="ghost-btn" id="refresh">Atualizar</button></div><div id="history" class="history"></div></section>
+</main></div>
+<div class="modal-backdrop hidden" id="financeModal"><section class="modal"><button class="modal-close" id="closeFinance">×</button><h2 id="financeTitle">Depósito</h2><div id="pixBox" class="pix-box hidden"></div><form id="financeForm"><label>Valor<input id="financeAmount" type="number" min="0.01" step="0.01" required></label><label id="pixKeyLabel" class="hidden">Chave Pix<input id="pixKey"></label><label>Observação (opcional)<input id="financeNote"></label><button class="primary-btn full" type="submit">Enviar solicitação</button><p class="form-message" id="financeMessage"></p></form></section></div>
+<script src="/dashboard.js"></script></body></html>
