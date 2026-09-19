@@ -207,3 +207,119 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
     font-size:13px;
   }
 }
+
+
+/* ===== ADMIN: PAINEL LIMPO E VIEWS ===== */
+.admin-view.hidden{display:none!important}
+.admin-view-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  margin:8px 0 14px;
+}
+.admin-view-head h1{
+  margin:5px 0 0;
+  font-size:30px;
+  line-height:1.1;
+}
+.metric-nav{
+  appearance:none;
+  font:inherit;
+  text-align:left;
+  cursor:pointer;
+}
+.metric-nav.active{
+  outline:1px solid rgba(216,174,88,.45);
+}
+.admin-events-panel{
+  min-height:190px;
+}
+.admin-events-panel .admin-block-head{
+  margin-bottom:4px;
+}
+.admin-events-panel h2{
+  margin:4px 0 0;
+}
+.admin-events-count{
+  color:#8f97a5;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+}
+.admin-event{
+  display:flex;
+  align-items:center;
+  gap:13px;
+  padding:13px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.admin-event-icon{
+  flex:0 0 40px;
+  width:40px;
+  height:40px;
+  display:grid;
+  place-items:center;
+  border-radius:11px;
+  font-size:19px;
+  font-weight:900;
+}
+.admin-event-deposit .admin-event-icon{
+  color:#55a1ff;
+  background:rgba(45,130,255,.14);
+}
+.admin-event-withdrawal .admin-event-icon{
+  color:#b77cff;
+  background:rgba(155,77,255,.14);
+}
+.admin-event-body{
+  min-width:0;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.admin-event-body b{font-size:14px}
+.admin-event-body span{
+  color:#8f97a5;
+  font-size:12px;
+  line-height:1.4;
+}
+.admin-empty-events{
+  min-height:105px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  color:#8f97a5;
+  text-align:center;
+}
+.admin-empty-events strong{
+  color:#dfe2e8;
+  font-size:14px;
+}
+.admin-status{
+  display:inline-block;
+  width:max-content;
+  margin-top:2px;
+  font-size:11px!important;
+  font-weight:800;
+}
+.status-pending{color:#f0c657!important}
+.status-approved{color:#5be0a7!important}
+.status-rejected{color:#ff8994!important}
+@media(max-width:700px){
+  .admin-event{
+    align-items:flex-start;
+    flex-wrap:wrap;
+  }
+  .admin-event-body{
+    flex:1 1 calc(100% - 55px);
+  }
+  .admin-event .row-actions{
+    width:100%;
+    margin-left:53px;
+  }
+  .admin-view-head h1{font-size:26px}
+}
