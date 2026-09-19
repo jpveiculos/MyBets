@@ -160,7 +160,7 @@ async function load(){
   const [u,d,w,s,t]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api("/api/admin/transactions")]);
   const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[];
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
-  $("usersCount").textContent=users.length;$("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;$("transactionsCount").textContent=transactions.length;
+  $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
   renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
