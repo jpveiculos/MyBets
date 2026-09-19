@@ -24,7 +24,7 @@ function crc16(payload){
   }
   return crc.toString(16).toUpperCase().padStart(4,"0");
 }
-function buildPixPayload(amount){
+function buildPixPayload(){
   if(!pixSettings?.pix_key) return "";
   const key=String(pixSettings.pix_key).trim();
   const merchant=normalizePixText(pixSettings.pix_receiver_name||"MYBETS",25)||"MYBETS";
@@ -33,7 +33,6 @@ function buildPixPayload(amount){
   const mai=emv("00","BR.GOV.BCB.PIX")+emv("01",emv("01",key)+(desc?emv("02",desc):""));
   const additional=emv("26",mai);
   let payload=emv("00","01")+emv("01","12")+additional+emv("52","0000")+emv("53","986");
-  if(Number(amount)>0)payload+=emv("54",Number(amount).toFixed(2));
   payload+=emv("58","BR")+emv("59",merchant)+emv("60",city)+emv("62",emv("05","MYBETS"));
   payload+="6304";
   return payload+crc16(payload);
@@ -50,9 +49,8 @@ async function openDeposit(){
   }catch(e){$("depositMessage").textContent=e.message}
 }
 function updateQr(){
-  const amount=Number($("depositAmount").value);
-  if(!pixSettings?.pix_key||!Number.isFinite(amount)||amount<=0){$("qrCard").classList.add("hidden");$("pixDone").classList.add("hidden");return}
-  const payload=buildPixPayload(amount);
+  if(!pixSettings?.pix_key){$("qrCard").classList.add("hidden");$("pixDone").classList.add("hidden");return}
+  const payload=buildPixPayload();
   $("pixQr").src=qrUrl(payload);$("pixCode").value=payload;$("qrCard").classList.remove("hidden");$("pixDone").classList.remove("hidden");
 }
 async function openWithdraw(){
