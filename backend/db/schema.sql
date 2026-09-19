@@ -103,7 +103,9 @@ CREATE TABLE IF NOT EXISTS site_settings (
 CREATE TABLE IF NOT EXISTS spins (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  result INTEGER NOT NULL,
+  game_id VARCHAR(40) NOT NULL DEFAULT 'roulette',
+  result_code VARCHAR(80),
+  result INTEGER NOT NULL DEFAULT 0,
   multiplier NUMERIC(8,2) NOT NULL,
   bet_amount NUMERIC(12,2) NOT NULL,
   payout_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -113,6 +115,9 @@ CREATE TABLE IF NOT EXISTS spins (
 CREATE INDEX IF NOT EXISTS idx_transactions_user_created ON transactions(user_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_deposits_status_created ON deposits(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status_created ON withdrawals(status, created_at DESC);
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS game_id VARCHAR(40) NOT NULL DEFAULT 'roulette';
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS result_code VARCHAR(80);
+CREATE INDEX IF NOT EXISTS idx_spins_user_game_created ON spins(user_id, game_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spins_user_created ON spins(user_id, created_at DESC);
 CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
   id SERIAL PRIMARY KEY,
