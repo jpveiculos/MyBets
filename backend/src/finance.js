@@ -35,7 +35,9 @@ export async function requestDeposit({ userId, amount, playerNote = null }) {
   );
 
   const deposit=result.rows[0];
-  await sendAdminPush({title:"MyBets • Novo depósito",body:`Novo depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit"}).catch(()=>{});
+  const player=await pool.query("SELECT username FROM users WHERE id=$1",[userId]);
+  const username=player.rows[0]?.username||`ID #${userId}`;
+  await sendAdminPush({title:"MyBets • Novo depósito",body:`Jogador ${username} • depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit"}).catch(()=>{});
   return deposit;
 }
 
