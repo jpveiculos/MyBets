@@ -9,6 +9,9 @@ import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
+import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
+import { myDragonConfig, spinMyDragon } from "./games/myDragon.js";
+import { lucky7Config, spinLucky7 } from "./games/lucky7.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
