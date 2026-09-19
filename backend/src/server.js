@@ -82,7 +82,12 @@ app.get("/api/admin/withdrawals", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,withdrawals:await listWithdrawals()});
 }));
 app.post("/api/admin/deposits/:id/approve", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,result:await approveDeposit({id:req.params.id,adminId:req.admin.id,adminNote:req.body.adminNote})});
+  res.json({ok:true,result:await approveDeposit({
+    id:req.params.id,
+    adminId:req.admin.id,
+    approvedAmount:req.body.approvedAmount,
+    adminNote:req.body.adminNote
+  })});
 }));
 app.post("/api/admin/deposits/:id/reject", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await rejectDeposit({id:req.params.id,adminId:req.admin.id,adminNote:req.body.adminNote})});
@@ -109,7 +114,7 @@ app.get("/",(_req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 
 app.use((err,_req,res,_next)=>{
   console.error("Erro:",err);
-  const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário/.test(String(err.message))?400:500;
+  const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário|valor/.test(String(err.message))?400:500;
   res.status(status).json({message:err.message||"Erro interno do servidor."});
 });
 
