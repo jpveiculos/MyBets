@@ -231,3 +231,13 @@ export async function updateSetting(key,value) {
      RETURNING setting_key,setting_value,updated_at`,[String(key),String(value)]);
   return r.rows[0];
 }
+
+
+export async function listTransactions(limit=100) {
+  const result=await pool.query(
+    `SELECT t.id,t.user_id,u.username,t.type,t.amount,t.balance_after,t.reference_id,t.note,t.created_at
+       FROM transactions t JOIN users u ON u.id=t.user_id
+      ORDER BY t.created_at DESC LIMIT $1`,[Math.min(Math.max(Number(limit)||100,1),500)]
+  );
+  return result.rows;
+}
