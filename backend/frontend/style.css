@@ -96,3 +96,114 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .admin-page > #depositModal .modal-card{
   width:min(520px,100%);
 }
+
+
+/* ===== ADMIN CONTEÚDO E CONTROLES ===== */
+.admin-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  min-height:58px;
+  padding:11px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+.admin-row:first-child{border-top:0}
+.admin-row>span:first-child{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  line-height:1.25;
+}
+.admin-row b{
+  color:#f5f6f8;
+  font-size:14px;
+  font-weight:800;
+}
+.admin-row small{
+  color:#8f97a5;
+  font-size:12px;
+  line-height:1.35;
+}
+.row-actions{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:7px;
+  flex:0 0 auto;
+  flex-wrap:wrap;
+}
+.small-btn{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:9px;
+  min-height:36px;
+  padding:8px 12px;
+  background:#151a23;
+  color:#e9ecf2;
+  font:700 12px/1 Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  cursor:pointer;
+  transition:background .15s ease,border-color .15s ease,transform .15s ease;
+}
+.small-btn:hover{
+  background:#202632;
+  border-color:rgba(255,255,255,.22);
+  transform:translateY(-1px);
+}
+.small-btn:active{transform:translateY(0)}
+.small-btn.add{
+  border-color:rgba(53,197,138,.35);
+  background:rgba(53,197,138,.09);
+  color:#5be0a7;
+}
+.small-btn.approve-deposit,.small-btn.approve-withdrawal{
+  border-color:rgba(53,197,138,.35);
+  background:rgba(53,197,138,.09);
+  color:#5be0a7;
+}
+.small-btn.reject-deposit,.small-btn.reject-withdrawal{
+  border-color:rgba(255,93,108,.3);
+  background:rgba(255,93,108,.08);
+  color:#ff8994;
+}
+.small-btn.edit-setting{
+  border-color:rgba(216,174,88,.3);
+  background:rgba(216,174,88,.08);
+  color:#f0c657;
+}
+.muted{
+  color:#7f8795;
+  font-size:13px;
+}
+.form-message{color:#ff8994}
+.admin-panel-block #users,
+.admin-panel-block #deposits,
+.admin-panel-block #withdrawals,
+.admin-panel-block #transactions,
+.admin-panel-block #settings{
+  width:100%;
+}
+.admin-panel-block #transactions .admin-row{
+  min-height:46px;
+}
+.admin-panel-block #settings .admin-row{
+  min-height:54px;
+}
+@media(max-width:700px){
+  .admin-row{
+    align-items:flex-start;
+    flex-direction:column;
+    gap:10px;
+    padding:13px 0;
+  }
+  .row-actions{
+    width:100%;
+    justify-content:flex-start;
+  }
+  .small-btn{
+    min-height:40px;
+    padding:9px 13px;
+    font-size:13px;
+  }
+}
