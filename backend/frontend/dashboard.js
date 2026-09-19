@@ -82,6 +82,6 @@ $("withdrawForm").onsubmit=async e=>{
   }catch(e){m.textContent=e.message}
 };
 $("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden")};
-$("rouletteBtn").onclick=()=>alert("A área da roleta será conectada na próxima etapa.");
+$("rouletteBtn").onclick=()=>{location.href="/roleta.html"};
 $("logout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.href="/"};
 load();
