@@ -16,6 +16,7 @@ function setHomeState(loggedIn){
     footer?.classList.add("hidden");
     $("openLogin")?.addEventListener("click",()=>showAuth("login"));
   }
+  auth.classList.remove("session-pending");
 }
 
 async function logoutFromHome(){
