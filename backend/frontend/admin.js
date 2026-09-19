@@ -3,11 +3,37 @@ const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"B
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro.");return d}
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let previousPendingDeposits=null;
+let pushSubscription=null;
 let notifyReady=false;
 let refreshTimer=null;
 let editingDepositId=null;
 let isEditingDeposit=false;
 
+function urlBase64ToUint8Array(base64String){
+ const padding="=".repeat((4-base64String.length%4)%4);
+ const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+ const raw=atob(base64);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));
+}
+async function registerServiceWorker(){
+ if(!("serviceWorker" in navigator))return null;
+ try{return await navigator.serviceWorker.register("/sw.js",{scope:"/"})}catch(e){console.warn("Service Worker:",e);return null}
+}
+async function enableNotifications(){
+ if(!("Notification" in window))return;
+ const permission=Notification.permission==="default"?await Notification.requestPermission():Notification.permission;
+ if(permission!=="granted")return;
+ const reg=await registerServiceWorker();
+ if(!reg||!("PushManager" in window))return;
+ const key=(await api("/api/push/public-key")).publicKey;
+ if(!key)return;
+ const existing=await reg.pushManager.getSubscription();
+ pushSubscription=existing||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});
+ await api("/api/admin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(pushSubscription.toJSON())});
+}
+async function updateAppBadge(){
+ if(!navigator.setAppBadge)return;
+ try{const d=await api("/api/admin/notifications/count");if(d.count>0)await navigator.setAppBadge(d.count);else if(navigator.clearAppBadge)await navigator.clearAppBadge()}catch{}
+}
 function pauseAutoRefresh(){
   isEditingDeposit=true;
   if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}
@@ -102,7 +128,7 @@ async function action(url,method,body){
  catch(e){$("adminMessage").textContent=e.message}
 }
 
-$("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});if("Notification" in window && Notification.permission==="default"){try{await Notification.requestPermission()}catch(e){}}load()}catch(err){$("loginMessage").textContent=err.message}};
+$("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});await enableNotifications();await updateAppBadge();load()}catch(err){$("loginMessage").textContent=err.message}};
 $("adminLogout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.reload()};
 $("depositClose").onclick=closeDepositEditor;
 $("depositCancel").onclick=closeDepositEditor;
@@ -110,5 +136,6 @@ $("depositConfirm").onclick=confirmDeposit;
 $("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")closeDepositEditor()});
 $("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 
+registerServiceWorker();
 load();
 resumeAutoRefresh();
