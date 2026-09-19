@@ -19,9 +19,9 @@ async function registerServiceWorker(){
  try{return await navigator.serviceWorker.register("/sw.js",{scope:"/"})}catch(e){console.warn("Service Worker:",e);return null}
 }
 async function enableNotifications(){
- if(!("Notification" in window))return;
+ if(!("Notification" in window)){ $("notifyStatus").textContent="Este navegador não oferece notificações web."; return false; }
  const permission=Notification.permission==="default"?await Notification.requestPermission():Notification.permission;
- if(permission!=="granted")return;
+ if(permission!=="granted"){ $("notifyStatus").textContent=permission==="denied"?"Notificações bloqueadas. Ative-as nos Ajustes do iPhone.":"Permissão não concedida."; return false; }
  const reg=await registerServiceWorker();
  if(!reg||!("PushManager" in window))return;
  const key=(await api("/api/push/public-key")).publicKey;
@@ -29,6 +29,10 @@ async function enableNotifications(){
  const existing=await reg.pushManager.getSubscription();
  pushSubscription=existing||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(key)});
  await api("/api/admin/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(pushSubscription.toJSON())});
+ $("notifyStatus").textContent="Notificações ativadas neste dispositivo.";
+ $("enableNotifications").textContent="NOTIFICAÇÕES ATIVAS";
+ $("enableNotifications").disabled=true;
+ return true;
 }
 async function updateAppBadge(){
  if(!navigator.setAppBadge)return;
@@ -128,7 +132,9 @@ async function action(url,method,body){
  catch(e){$("adminMessage").textContent=e.message}
 }
 
-$("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});await enableNotifications();await updateAppBadge();load()}catch(err){$("loginMessage").textContent=err.message}};
+$("enableNotifications").onclick=async()=>{ try{ await enableNotifications(); await updateAppBadge(); }catch(err){ $("notifyStatus").textContent=err.message||"Não foi possível ativar as notificações."; } };
+
+$("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});await updateAppBadge();load()}catch(err){$("loginMessage").textContent=err.message}};
 $("adminLogout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.reload()};
 $("depositClose").onclick=closeDepositEditor;
 $("depositCancel").onclick=closeDepositEditor;
@@ -137,5 +143,6 @@ $("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")c
 $("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 
 registerServiceWorker();
+if("Notification" in window && Notification.permission==="granted") $("notifyStatus").textContent="Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.";
 load();
 resumeAutoRefresh();
