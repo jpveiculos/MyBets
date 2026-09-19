@@ -98,7 +98,7 @@ export async function spinRoulette({userId,betAmount}){
     const spin=await client.query(`INSERT INTO spins(user_id,result,multiplier,bet_amount,payout_amount) VALUES($1,$2,$3,$4,$5) RETURNING id,created_at`,[userId,sector,multiplier,bet,payout]);
     const net=Number((payout-bet).toFixed(2));
     await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)`,[
-      userId,multiplier>0?"roulette_win":"roulette_loss",net,Number((newBalance-reserved).toFixed(2)),spin.rows[0].id,multiplier>0?`Roleta 54 setores — ${multiplier}x`:"Roleta 54 setores — perda"
+      userId,multiplier>0?"roulette_win":"roulette_loss",net,Number((newBalance-reserved).toFixed(2)),spin.rows[0].id,multiplier>0?`Roleta da sorte — ${multiplier}x`:"Roleta da sorte — perda"
     ]);
     await client.query("COMMIT");
 
