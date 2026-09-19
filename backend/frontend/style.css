@@ -71,38 +71,9 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .admin-two-col{width:100%}
 }
 
-/* Canonical text-only MyBets wordmark */
-.brand-wordmark{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:Georgia,"Times New Roman",serif;font-style:italic;font-weight:900;letter-spacing:-.065em;line-height:.88;text-decoration:none;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
-.brand-word-my{color:#f0bd35;font-family:Georgia,"Times New Roman",serif;font-weight:900}.brand-word-bets{color:#f7f7f7;font-family:Georgia,"Times New Roman",serif;font-weight:900}
-.brand .brand-wordmark{font-size:42px}.admin-side-brand .brand-wordmark{font-size:40px}.admin-top-brand .brand-wordmark{font-size:34px}.admin-footer .brand-wordmark{font-size:32px}
-@media(max-width:900px){.brand .brand-wordmark{font-size:36px}.admin-top-brand .brand-wordmark{font-size:31px}.admin-footer .brand-wordmark{font-size:28px}}
-
-/* Final bold italic MyBets wordmark */
-.brand-wordmark{transform:skewX(-4deg)}
-.brand-word-my,.brand-word-bets{text-shadow:0 0 0 currentColor}
-
-/* MyBets final text-only bold modern wordmark */
-.brand-wordmark{
-  display:inline-flex;
-  align-items:baseline;
-  white-space:nowrap;
-  font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;
-  font-style:italic;
-  font-weight:900;
-  letter-spacing:-.09em;
-  line-height:.84;
-  transform:skewX(-5deg);
-  -webkit-font-smoothing:antialiased;
-  text-rendering:geometricPrecision;
-}
-.brand-word-my{color:#f0b92f;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-weight:900}
-.brand-word-bets{color:#f7f7f7;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-weight:900}
-.brand .brand-wordmark{font-size:39px}
-.admin-side-brand .brand-wordmark{font-size:37px}
-.admin-top-brand .brand-wordmark{font-size:32px}
-.admin-footer .brand-wordmark{font-size:29px}
-@media(max-width:900px){
-  .brand .brand-wordmark{font-size:34px}
-  .admin-top-brand .brand-wordmark{font-size:29px}
-  .admin-footer .brand-wordmark{font-size:26px}
-}
+/* MyBets — identidade oficial */
+.brand-wordmark{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;letter-spacing:-.09em;line-height:.84;transform:skewX(-5deg);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;text-decoration:none}
+.brand-word-my{color:#f0b92f;font-weight:900}
+.brand-word-bets{color:#f7f7f7;font-weight:900}
+.brand .brand-wordmark{font-size:39px}.admin-side-brand .brand-wordmark{font-size:37px}.admin-top-brand .brand-wordmark{font-size:32px}.admin-footer .brand-wordmark{font-size:29px}
+@media(max-width:900px){.brand .brand-wordmark{font-size:34px}.admin-top-brand .brand-wordmark{font-size:29px}.admin-footer .brand-wordmark{font-size:26px}}
