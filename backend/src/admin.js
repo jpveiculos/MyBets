@@ -1,0 +1,160 @@
+import { pool } from "./db.js";
+
+export async function listUsers() {
+  const result=await pool.query(
+    `SELECT id,username,cash_balance,bonus_balance,reserved_balance,
+            (cash_balance+bonus_balance) AS total_balance,
+            created_at,updated_at
+       FROM users ORDER BY id DESC`
+  );
+  return result.rows;
+}
+
+export async function listDeposits() {
+  const result=await pool.query(
+    `SELECT d.*,u.username FROM deposits d
+       JOIN users u ON u.id=d.user_id
+      ORDER BY d.created_at DESC`
+  );
+  return result.rows;
+}
+
+export async function listWithdrawals() {
+  const result=await pool.query(
+    `SELECT w.*,u.username FROM withdrawals w
+       JOIN users u ON u.id=w.user_id
+      ORDER BY w.created_at DESC`
+  );
+  return result.rows;
+}
+
+export async function approveDeposit({id,adminId,adminNote=null}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query(
+      `SELECT * FROM deposits WHERE id=$1 FOR UPDATE`,[id]);
+    const d=r.rows[0];
+    if(!d) throw new Error("Depósito não encontrado.");
+    if(d.status!=="pending") throw new Error("Este depósito já foi processado.");
+    const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[d.user_id]);
+    const user=u.rows[0];
+    const newCash=Number(user.cash_balance)+Number(d.amount);
+    await client.query(
+      `UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,
+      [newCash,d.user_id]);
+    await client.query(
+      `UPDATE deposits SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
+      [adminNote,adminId,id]);
+    await client.query(
+      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+       VALUES($1,'deposit_approved',$2,$3,$4,$5)`,
+      [d.user_id,d.amount,newCash+Number(user.bonus_balance),id,"Depósito aprovado pelo administrador"]);
+    await client.query("COMMIT");
+    return {id,status:"approved"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function rejectDeposit({id,adminId,adminNote=null}) {
+  const r=await pool.query(
+    `UPDATE deposits SET status='rejected',admin_note=$1,rejected_by=$2,rejected_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP
+      WHERE id=$3 AND status='pending' RETURNING id`,[adminNote,adminId,id]);
+  if(!r.rows[0]) throw new Error("Depósito não encontrado ou já processado.");
+  return {id,status:"rejected"};
+}
+
+export async function approveWithdrawal({id,adminId,adminNote=null}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query("SELECT * FROM withdrawals WHERE id=$1 FOR UPDATE",[id]);
+    const w=r.rows[0];
+    if(!w) throw new Error("Saque não encontrado.");
+    if(w.status!=="pending") throw new Error("Este saque já foi processado.");
+    const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[w.user_id]);
+    const user=u.rows[0];
+    if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
+    if(Number(user.cash_balance)<Number(w.amount)) throw new Error("Saldo em dinheiro insuficiente.");
+    const newCash=Number(user.cash_balance)-Number(w.amount);
+    const newReserved=Number(user.reserved_balance)-Number(w.amount);
+    await client.query(
+      `UPDATE users SET cash_balance=$1,reserved_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
+      [newCash,newReserved,w.user_id]);
+    await client.query(
+      `UPDATE withdrawals SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,paid_by=$2,paid_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
+      [adminNote,adminId,id]);
+    await client.query(
+      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+       VALUES($1,'withdrawal_approved',$2,$3,$4,$5)`,
+      [w.user_id,-Number(w.amount),newCash+Number(user.bonus_balance)-newReserved,id,"Saque aprovado e reserva consumida"]);
+    await client.query("COMMIT");
+    return {id,status:"approved"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNote=null}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query("SELECT * FROM withdrawals WHERE id=$1 FOR UPDATE",[id]);
+    const w=r.rows[0];
+    if(!w) throw new Error("Saque não encontrado.");
+    if(w.status!=="pending") throw new Error("Este saque já foi processado.");
+    const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[w.user_id]);
+    const user=u.rows[0];
+    if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
+    const newReserved=Number(user.reserved_balance)-Number(w.amount);
+    await client.query(
+      `UPDATE users SET reserved_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,
+      [newReserved,w.user_id]);
+    await client.query(
+      `UPDATE withdrawals SET status='rejected',admin_note=$1,rejection_reason=$2,rejected_by=$3,rejected_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$4`,
+      [adminNote,rejectionReason,adminId,id]);
+    await client.query(
+      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+       VALUES($1,'withdrawal_released',$2,$3,$4,$5)`,
+      [w.user_id,Number(w.amount),Number(user.cash_balance)+Number(user.bonus_balance)-newReserved,id,"Saque rejeitado; reserva liberada"]);
+    await client.query("COMMIT");
+    return {id,status:"rejected"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function adjustBalance({userId,amount,kind="cash",note=null,adminId}) {
+  const value=Number(amount);
+  if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
+  if(!["cash","bonus"].includes(kind)) throw new Error("Tipo de saldo inválido.");
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
+    const u=r.rows[0]; if(!u) throw new Error("Usuário não encontrado.");
+    const column=kind==="cash"?"cash_balance":"bonus_balance";
+    const next=Number(u[column])+value;
+    if(next<0) throw new Error("O saldo não pode ficar negativo.");
+    await client.query(`UPDATE users SET ${column}=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,[next,userId]);
+    await client.query(
+      `INSERT INTO transactions(user_id,type,amount,balance_after,note)
+       VALUES($1,$2,$3,$4,$5)`,
+      [userId,kind==="cash"?"admin_cash_adjustment":"admin_bonus_adjustment",value,next+Number(u[column==="cash_balance"?"bonus_balance":"cash_balance"]),note||"Ajuste manual do administrador"]);
+    await client.query(
+      `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+       VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
+      [adminId,userId,JSON.stringify({amount:value,kind,note})]);
+    await client.query("COMMIT");
+    return {userId,kind,amount:value,newBalance:next};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function getSettings() {
+  const r=await pool.query("SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key");
+  return r.rows;
+}
+
+export async function updateSetting(key,value) {
+  const r=await pool.query(
+    `INSERT INTO site_settings(setting_key,setting_value,updated_at)
+     VALUES($1,$2,CURRENT_TIMESTAMP)
+     ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=CURRENT_TIMESTAMP
+     RETURNING setting_key,setting_value,updated_at`,[String(key),String(value)]);
+  return r.rows[0];
+}
