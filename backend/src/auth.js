@@ -127,10 +127,11 @@ export async function loginAdmin({ username, password }) {
   return { admin:{id:admin.id,username:admin.username}, sessionId };
 }
 
-export async function logout(req,res) {
+export async function logout(req,res,kind="player") {
   const cookies=parseCookies(req);
-  if (cookies.mybets_session) await pool.query("DELETE FROM sessions WHERE id=$1",[cookies.mybets_session]);
-  clearSessionCookie(res);
+  const name=kind==="admin"?"mybets_admin_session":"mybets_player_session";
+  if (cookies[name]) await pool.query("DELETE FROM sessions WHERE id=$1",[cookies[name]]);
+  clearSessionCookie(res,kind);
 }
 
 export { setSessionCookie };
