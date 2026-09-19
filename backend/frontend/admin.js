@@ -21,7 +21,14 @@ async function registerServiceWorker(){
  if(!("serviceWorker" in navigator))return null;
  try{return await navigator.serviceWorker.register("/sw.js",{scope:"/"})}catch(e){console.warn("Service Worker:",e);return null}
 }
+function isAdminHomeScreenApp(){
+ return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone===true;
+}
 async function enableNotifications(){
+ if(!isAdminHomeScreenApp()){
+  $("notifyStatus").textContent="No iPhone, abra o MyBets pelo ícone instalado na Tela de Início. O Safari aberto normalmente não recebe Web Push nem badge.";
+  return false;
+ }
  if(!("Notification" in window)){ $("notifyStatus").textContent="Este navegador não oferece notificações web.";return false; }
  const permission=Notification.permission==="default"?await Notification.requestPermission():Notification.permission;
  if(permission!=="granted"){ $("notifyStatus").textContent=permission==="denied"?"Notificações bloqueadas. Ative-as nos Ajustes do iPhone.":"Permissão não concedida.";return false; }
@@ -182,7 +189,7 @@ $("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")c
 $("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 bindNavigation();
 registerServiceWorker();
-if("Notification"in window&&Notification.permission==="granted")$("notifyStatus").textContent="Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.";
+if("Notification"in window&&Notification.permission==="granted")$("notifyStatus").textContent=isAdminHomeScreenApp()?"Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.":"Abra o MyBets pelo ícone da Tela de Início para usar notificações.";
 (async()=>{
  if(await verifyAdminSession()){
   const hash=location.hash.replace("#","");
