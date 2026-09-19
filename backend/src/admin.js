@@ -32,22 +32,16 @@ export async function approveDeposit({id,adminId,adminNote=null}) {
   const client=await pool.connect();
   try {
     await client.query("BEGIN");
-    const r=await client.query(
-      `SELECT * FROM deposits WHERE id=$1 FOR UPDATE`,[id]);
+    const r=await client.query(`SELECT * FROM deposits WHERE id=$1 FOR UPDATE`,[id]);
     const d=r.rows[0];
     if(!d) throw new Error("Depósito não encontrado.");
     if(d.status!=="pending") throw new Error("Este depósito já foi processado.");
     const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[d.user_id]);
     const user=u.rows[0];
     const newCash=Number(user.cash_balance)+Number(d.amount);
-    await client.query(
-      `UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,
-      [newCash,d.user_id]);
-    await client.query(
-      `UPDATE deposits SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
-      [adminNote,adminId,id]);
-    await client.query(
-      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+    await client.query(`UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,[newCash,d.user_id]);
+    await client.query(`UPDATE deposits SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[adminNote,adminId,id]);
+    await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
        VALUES($1,'deposit_approved',$2,$3,$4,$5)`,
       [d.user_id,d.amount,newCash+Number(user.bonus_balance),id,"Depósito aprovado pelo administrador"]);
     await client.query("COMMIT");
@@ -77,14 +71,9 @@ export async function approveWithdrawal({id,adminId,adminNote=null}) {
     if(Number(user.cash_balance)<Number(w.amount)) throw new Error("Saldo em dinheiro insuficiente.");
     const newCash=Number(user.cash_balance)-Number(w.amount);
     const newReserved=Number(user.reserved_balance)-Number(w.amount);
-    await client.query(
-      `UPDATE users SET cash_balance=$1,reserved_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
-      [newCash,newReserved,w.user_id]);
-    await client.query(
-      `UPDATE withdrawals SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,paid_by=$2,paid_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,
-      [adminNote,adminId,id]);
-    await client.query(
-      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+    await client.query(`UPDATE users SET cash_balance=$1,reserved_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newReserved,w.user_id]);
+    await client.query(`UPDATE withdrawals SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[adminNote,adminId,id]);
+    await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
        VALUES($1,'withdrawal_approved',$2,$3,$4,$5)`,
       [w.user_id,-Number(w.amount),newCash+Number(user.bonus_balance)-newReserved,id,"Saque aprovado e reserva consumida"]);
     await client.query("COMMIT");
@@ -104,14 +93,9 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
     const user=u.rows[0];
     if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
     const newReserved=Number(user.reserved_balance)-Number(w.amount);
-    await client.query(
-      `UPDATE users SET reserved_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,
-      [newReserved,w.user_id]);
-    await client.query(
-      `UPDATE withdrawals SET status='rejected',admin_note=$1,rejection_reason=$2,rejected_by=$3,rejected_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$4`,
-      [adminNote,rejectionReason,adminId,id]);
-    await client.query(
-      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+    await client.query(`UPDATE users SET reserved_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,[newReserved,w.user_id]);
+    await client.query(`UPDATE withdrawals SET status='rejected',admin_note=$1,rejection_reason=$2,rejected_by=$3,rejected_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$4`,[adminNote,rejectionReason,adminId,id]);
+    await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
        VALUES($1,'withdrawal_released',$2,$3,$4,$5)`,
       [w.user_id,Number(w.amount),Number(user.cash_balance)+Number(user.bonus_balance)-newReserved,id,"Saque rejeitado; reserva liberada"]);
     await client.query("COMMIT");
@@ -148,6 +132,15 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
 export async function getSettings() {
   const r=await pool.query("SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key");
   return r.rows;
+}
+
+export async function getPublicSettings() {
+  const r=await pool.query(
+    `SELECT setting_key,setting_value
+       FROM site_settings
+      WHERE setting_key IN ('pix_enabled','pix_key','pix_key_type','pix_receiver_name','pix_city','pix_description','pix_instructions')`
+  );
+  return Object.fromEntries(r.rows.map(row=>[row.setting_key,row.setting_value]));
 }
 
 export async function updateSetting(key,value) {
