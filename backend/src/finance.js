@@ -34,7 +34,9 @@ export async function requestDeposit({ userId, amount, playerNote = null }) {
     [userId, value, playerNote]
   );
 
-  return result.rows[0];
+  const deposit=result.rows[0];
+  await sendAdminPush({title:"MyBets • Novo depósito",body:`Novo depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit"}).catch(()=>{});
+  return deposit;
 }
 
 export async function requestWithdrawal({ userId, amount, pixKey, playerNote = null }) {
@@ -103,6 +105,7 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     );
 
     await client.query("COMMIT");
+    await sendAdminPush({title:"MyBets • Novo saque",body:`Novo saque #${withdrawal.rows[0].id} aguardando análise.`,tag:"new-withdrawal"}).catch(()=>{});
     return withdrawal.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
