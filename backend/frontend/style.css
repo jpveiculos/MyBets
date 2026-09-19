@@ -46,3 +46,9 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .admin-nav-notify:hover{background:rgba(216,174,88,.12);color:#fff}
 .admin-nav-notify>span:first-child{font-size:21px;width:22px;text-align:center}.admin-nav-notify i{width:8px;height:8px;border-radius:50%;background:#d8ae58;margin-left:auto;display:none}.admin-nav-notify.active i{display:block}
 @media(max-width:900px){.admin-nav-notify{padding:13px 14px;font-size:15px}}
+
+
+.site-footer-nav{position:fixed;left:0;right:0;bottom:0;height:64px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));z-index:70;background:rgba(4,8,13,.97);border-top:1px solid rgba(255,255,255,.1);backdrop-filter:blur(10px)}
+.site-footer-nav a{display:flex;align-items:center;justify-content:center;gap:9px;color:#cbd0da;text-decoration:none;font-size:14px;font-weight:800}
+.site-footer-nav a span{font-size:20px}.site-footer-nav a.active{color:#ffd83d}
+@media(max-width:700px){body{padding-bottom:76px}}
