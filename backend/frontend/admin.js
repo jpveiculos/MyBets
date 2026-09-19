@@ -96,6 +96,17 @@ function renderWithdrawals(withdrawals){
 function renderTransactions(transactions){
  $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${dateTime(x.created_at)}</small></span></div>`).join("")||'<p class="muted">Nenhuma transação.</p>';
 }
+function renderRouletteSettings(settings){
+ const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
+ $("rouletteMinBet").value=map.roulette_min_bet??"0.50";
+ $("rouletteMaxBet").value=map.roulette_max_bet??"100.00";
+ try{
+  const prizes=JSON.parse(map.roulette_prizes??"[2,3,4,5,2,3,4,5,10]");
+  $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,4,5,2,3,4,5,10";
+ }catch{
+  $("roulettePrizes").value="2,3,4,5,2,3,4,5,10";
+ }
+}
 function renderSettings(settings){
  $("settings").innerHTML=settings.map(x=>`<div class="admin-row"><span><b>${esc(x.setting_key)}</b><small>${esc(x.setting_value)}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("")||'<p class="muted">Nenhuma configuração.</p>';
 }
@@ -161,7 +172,7 @@ async function load(){
   const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[];
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
   $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
-  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);
+  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings);
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
    if(notifyReady&&"Notification"in window&&Notification.permission==="granted"){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification("MyBets • Novo evento",{body:`${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`,tag:"new-admin-event",data:{url:"/admin.html"},renotify:true})}catch(error){console.warn("Notificação local:",error)}}
@@ -177,6 +188,23 @@ function bindActions(){
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".add").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
+ $("rouletteSave")?.addEventListener("click",async()=>{
+  const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
+  const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==9||prizes.some(v=>!Number.isFinite(v)||v<=0)){
+   $("rouletteMessage").textContent="Confira mínimo, máximo e os 9 multiplicadores.";
+   return;
+  }
+  const button=$("rouletteSave");button.disabled=true;$("rouletteMessage").textContent="Salvando...";
+  try{
+   await api("/api/admin/settings/roulette_min_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:min.toFixed(2)})});
+   await api("/api/admin/settings/roulette_max_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:max.toFixed(2)})});
+   await api("/api/admin/settings/roulette_prizes",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:JSON.stringify(prizes)})});
+   $("rouletteMessage").textContent="Configurações da roleta salvas.";
+   await load();
+  }catch(e){$("rouletteMessage").textContent=e.message||"Não foi possível salvar."}
+  finally{button.disabled=false}
+ });
  document.querySelectorAll(".edit-setting").forEach(b=>b.onclick=async()=>{const v=prompt("Novo valor para "+b.dataset.key,b.dataset.value);if(v!==null)await action("/api/admin/settings/"+encodeURIComponent(b.dataset.key),"PUT",{value:v})});
 }
 async function action(url,method,body){
@@ -198,7 +226,7 @@ if("Notification"in window&&Notification.permission==="granted")$("notifyStatus"
 (async()=>{
  if(await verifyAdminSession()){
   const hash=location.hash.replace("#","");
-  const initialView=["users","deposits","withdrawals","transactions","settings"].includes(hash)?hash:"dashboard";
+  const initialView=["users","deposits","withdrawals","transactions","settings","roulette"].includes(hash)?hash:"dashboard";
   openView(initialView);
   await load();await updateAppBadge();setInterval(()=>{if(adminAuthenticated)updateAppBadge()},5000);resumeAutoRefresh();
  }
