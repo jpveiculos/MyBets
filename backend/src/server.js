@@ -84,7 +84,11 @@ app.get("/api/transactions", requireUser, asyncRoute(async (req,res) => {
   res.json({ok:true,transactions:await getTransactions(req.user.id)});
 }));
 
-app.get("/api/admin/session", requireAdmin, asyncRoute(async (req,res) => {\n  res.json({ok:true,admin:req.admin});\n}));\n\napp.get("/api/admin/users", requireAdmin, asyncRoute(async (_req,res) => {
+app.get("/api/admin/session", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,admin:req.admin});
+}));
+
+app.get("/api/admin/users", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,users:await listUsers()});
 }));
 app.get("/api/admin/deposits", requireAdmin, asyncRoute(async (_req,res) => {
