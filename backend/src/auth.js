@@ -26,8 +26,9 @@ function setSessionCookie(res, sessionId, kind="player") {
   res.setHeader("Set-Cookie", `${name}=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=2592000${secure}`);
 }
 
-function clearSessionCookie(res) {
-  res.setHeader("Set-Cookie", "mybets_session=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0");
+function clearSessionCookie(res, kind="player") {
+  const name=kind==="admin"?"mybets_admin_session":"mybets_player_session";
+  res.setHeader("Set-Cookie", `${name}=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0`);
 }
 
 function parseCookies(req) {
