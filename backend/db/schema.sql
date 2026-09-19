@@ -137,3 +137,11 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
 ('bonus_wager_requirement','0')
 ON CONFLICT (setting_key) DO NOTHING;
+
+-- Garante os valores Pix padrão também em bancos já existentes.
+UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='pix_enabled' AND NULLIF(TRIM(setting_value),'') IS NULL;
+UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='pix_key' AND NULLIF(TRIM(setting_value),'') IS NULL;
+UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='pix_key_type' AND NULLIF(TRIM(setting_value),'') IS NULL;
