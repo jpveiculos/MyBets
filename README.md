@@ -3,7 +3,7 @@
 Projeto novo e limpo da MyBets, dedicado exclusivamente à roleta.
 
 ## Escopo
-- Roleta de 54 setores
+- Roleta da sorte
 - Conta do jogador e saldo virtual
 - Depósitos manuais via Pix/QR Code
 - Saques manuais com reserva de saldo
