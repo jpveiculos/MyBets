@@ -119,6 +119,9 @@ app.get("/api/admin/notifications/count", requireAdmin, asyncRoute(async (_req,r
   ]);
   res.json({ok:true,count:Number(d.rows[0].count)+Number(w.rows[0].count)});
 }));
+app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (_req,res) => {
+  res.json({ok:true,transactions:await listTransactions()});
+}));
 app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,settings:await getSettings()});
 }));
@@ -135,9 +138,6 @@ app.use((err,_req,res,_next)=>{
   const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário|valor/.test(String(err.message))?400:500;
   res.status(status).json({message:err.message||"Erro interno do servidor."});
 });
-app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (_req,res) => {
-  res.json({ok:true,transactions:await listTransactions()});
-}));
 
 let server;
 async function start(){
