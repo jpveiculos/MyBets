@@ -1,0 +1,4 @@
+import { publicGameConfig, spinGame } from "./engine.js";
+export const myTiger={id:"my-tiger",name:"My Tiger",rows:3,columns:5,minBet:1,maxBet:100,scale:1000000,rtpBps:7000,symbols:[{id:"tiger",label:"🐯",multiplier:50},{id:"crown",label:"👑",multiplier:25},{id:"diamond",label:"💎",multiplier:15},{id:"seven",label:"7️⃣",multiplier:20},{id:"bell",label:"🔔",multiplier:10},{id:"coin",label:"🪙",multiplier:8},{id:"orange",label:"🍊",multiplier:4},{id:"lemon",label:"🍋",multiplier:4}],outcomes:[{symbol:"orange",label:"🍊",multiplier:4,weight:100000},{symbol:"coin",label:"🪙",multiplier:8,weight:25000},{symbol:"diamond",label:"💎",multiplier:15,weight:5000},{symbol:"seven",label:"7️⃣",multiplier:20,weight:1000},{symbol:"crown",label:"👑",multiplier:25,weight:100},{symbol:"tiger",label:"🐯",multiplier:50,weight:50}]};
+export const myTigerConfig=()=>publicGameConfig(myTiger);
+export const spinMyTiger=args=>spinGame(myTiger,args);
