@@ -22,8 +22,7 @@ async function enableNotifications(){
  if(!("Notification" in window)){ $("notifyStatus").textContent="Este navegador não oferece notificações web."; return false; }
  const permission=Notification.permission==="default"?await Notification.requestPermission():Notification.permission;
  if(permission!=="granted"){ $("notifyStatus").textContent=permission==="denied"?"Notificações bloqueadas. Ative-as nos Ajustes do iPhone.":"Permissão não concedida."; return false; }
- const reg=await $("addUserHint")?.addEventListener("click",()=>alert("O cadastro de jogadores é feito pela página principal. Para adicionar saldo, use o botão + saldo no usuário."));
-registerServiceWorker();
+ const reg=await registerServiceWorker();
  if(!reg||!("PushManager" in window))return;
  const key=(await api("/api/push/public-key")).publicKey;
  if(!key)return;
@@ -100,13 +99,14 @@ async function confirmDeposit(){
 
 async function load(){
  try{
-  const [u,d,w,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings")]);
+  const [u,d,w,t,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/transactions"),api("/api/admin/settings")]);
   const pending=d.deposits.filter(x=>x.status==="pending");
   $("adminLogout").classList.remove("hidden");
-  $("usersCount").textContent=u.users.length;$("depositsCount").textContent=pending.length;$("withdrawalsCount").textContent=w.withdrawals.filter(x=>x.status==="pending").length;$("transactionsCount").textContent=0;
+  $("usersCount").textContent=u.users.length;$("depositsCount").textContent=pending.length;$("withdrawalsCount").textContent=w.withdrawals.filter(x=>x.status==="pending").length;$("transactionsCount").textContent=t.transactions.length;
   $("users").innerHTML=u.users.map(x=>`<div class="admin-row"><span><b>#${x.id} ${esc(x.username)}</b><small>Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add">+ saldo</button></span></div>`).join("")||"<p class='muted'>Nenhum usuário.</p>";
   $("deposits").innerHTML=pending.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><span class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.username)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum depósito pendente.</p>";
   $("withdrawals").innerHTML=w.withdrawals.filter(x=>x.status==="pending").map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${money(x.amount)} • Pix: ${esc(x.pix_key)}</small></span><span class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum saque pendente.</p>";
+  $("transactions").innerHTML=t.transactions.slice(0,50).map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span></div>`).join("")||"<p class=\"muted\">Nenhuma transação.</p>";
   $("settings").innerHTML=s.settings.map(x=>`<div class="admin-row"><span><b>${esc(x.setting_key)}</b><small>${esc(x.setting_value)}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("");
   if(previousPendingDeposits!==null && pending.length>previousPendingDeposits){
     const n=pending.length-previousPendingDeposits;
