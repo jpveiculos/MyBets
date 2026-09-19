@@ -97,15 +97,24 @@ async function confirmDeposit(){
   }
 }
 
+async function loadTransactions(){
+ try{
+  const result=await api("/api/admin/transactions");
+  const transactions=Array.isArray(result.transactions)?result.transactions:[];
+  $("transactionsCount").textContent=transactions.length;
+  $("transactions").innerHTML=transactions.slice(0,50).map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span></div>`).join("")||'<p class="muted">Nenhuma transação.</p>';
+ }catch(error){
+  $("transactionsCount").textContent="0";
+  $("transactions").innerHTML='<p class="muted">Nenhuma transação.</p>';
+ }
+}
+
 async function load(){
  try{
   const [u,d,w,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings")]);
-  let t={transactions:[]};
-  try{const response=await api("/api/admin/transactions");if(response&&Array.isArray(response.transactions))t=response}catch(error){console.warn("Histórico administrativo:",error)}
-  const transactions=Array.isArray(t?.transactions)?t.transactions:[];
   const pending=d.deposits.filter(x=>x.status==="pending");
   $("adminLogout").classList.remove("hidden");
-  $("usersCount").textContent=u.users.length;$("depositsCount").textContent=pending.length;$("withdrawalsCount").textContent=w.withdrawals.filter(x=>x.status==="pending").length;$("transactionsCount").textContent=transactions.length;
+  $("usersCount").textContent=u.users.length;$("depositsCount").textContent=pending.length;$("withdrawalsCount").textContent=w.withdrawals.filter(x=>x.status==="pending").length;
   $("users").innerHTML=u.users.map(x=>`<div class="admin-row"><span><b>#${x.id} ${esc(x.username)}</b><small>Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add">+ saldo</button></span></div>`).join("")||"<p class='muted'>Nenhum usuário.</p>";
   $("deposits").innerHTML=pending.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><span class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.username)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum depósito pendente.</p>";
   $("withdrawals").innerHTML=w.withdrawals.filter(x=>x.status==="pending").map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${money(x.amount)} • Pix: ${esc(x.pix_key)}</small></span><span class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum saque pendente.</p>";
@@ -124,6 +133,7 @@ async function load(){
     if(navigator.vibrate) navigator.vibrate([180,80,180]);
   }
   previousPendingDeposits=pending.length;notifyReady=true;bind();
+  await loadTransactions();
  }catch(e){
   if(e.message.includes("Sessão administrativa")){window.location.reload();}
   else $("adminMessage").textContent=e.message;
