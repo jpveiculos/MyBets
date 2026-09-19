@@ -60,6 +60,7 @@ function resumeAutoRefresh(){
  refreshTimer=setInterval(()=>{if(adminAuthenticated&&!isEditingDeposit)load()},10000);
 }
 function openView(view){
+ closeMobileMenu();
  currentView=view;
  document.querySelectorAll("[data-view-panel]").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.viewPanel!==view));
  document.querySelectorAll(".admin-nav-link").forEach(link=>link.classList.toggle("active",link.dataset.view===view));
@@ -214,6 +215,10 @@ if("Notification"in window&&Notification.permission==="granted")$("notifyStatus"
   overlay.classList.toggle("open",opening);
  });
  overlay.addEventListener("pointerdown",e=>{e.preventDefault();closeMobileMenu()});
+ sidebar.addEventListener("pointerup",e=>{
+  const link=e.target.closest(".admin-nav-link");
+  if(link)closeMobileMenu();
+ });
  document.querySelector(".admin-main")?.addEventListener("pointerdown",e=>{
   if(sidebar.classList.contains("open")&&!sidebar.contains(e.target))closeMobileMenu();
  });
