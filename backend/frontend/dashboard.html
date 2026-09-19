@@ -12,9 +12,10 @@
 </main></div>
 <div class="modal-backdrop hidden" id="financeModal"><section class="modal finance-modal"><button class="modal-close" id="closeFinance">×</button><h2 id="financeTitle">Depósito via Pix</h2>
 <div id="depositArea" class="hidden">
+  <div class="deposit-player-id"><span>Identificação do jogador</span><strong id="depositPlayer"></strong></div>
+  <div id="qrCard" class="qr-card"><img id="pixQr" alt="QR Code Pix"><strong>Escaneie o QR Code</strong><small id="pixReceiver"></small><div class="pix-code-row"><input id="pixCode" readonly><button type="button" class="small-btn" id="copyPix">Copiar</button></div></div>
   <div class="pix-amount-wrap"><label>Valor do depósito<input id="depositAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></label></div>
-  <div id="qrCard" class="qr-card hidden"><img id="pixQr" alt="QR Code Pix"><strong>Escaneie o QR Code</strong><small id="pixReceiver"></small><div class="pix-code-row"><input id="pixCode" readonly><button type="button" class="small-btn" id="copyPix">Copiar</button></div></div>
-  <button type="button" class="primary-btn full hidden" id="pixDone">✓ JÁ FIZ O PIX — AVISAR ADMINISTRADOR</button>
+  <button type="button" class="primary-btn full" id="pixDone">✓ JÁ FIZ O PIX — SOLICITAR CONFERÊNCIA</button>
   <p class="form-message" id="depositMessage"></p>
 </div>
 <div id="withdrawArea" class="hidden">
