@@ -44,7 +44,7 @@ function buildPixPayload(){
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
-  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerId?`#${playerId} • ${playerUsername}`:(playerUsername||"Jogador");$("pixDone").disabled=false;
+  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
   try{
     const d=await api("/api/settings/public");pixSettings=d.settings;
     if(String(pixSettings.pix_enabled)!=="true"){ $("depositMessage").textContent="Depósitos via Pix estão temporariamente desativados.";return }
