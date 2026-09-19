@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>MyBets — Roleta</title>
+<link rel="stylesheet" href="/roleta.css?v=20260919-2200">
+</head>
+<body>
+<div class="wrap">
+<header class="header">
+<a class="logo" href="/" aria-label="MyBets"><span class="logo-my">My</span><span class="logo-bets">Bets</span></a>
+<div class="balance">SALDO <b id="balance">R$ 0,00</b></div>
+</header>
+<main class="game">
+<div class="wheel-box">
+<div class="pointer"></div>
+<div class="wheel" id="wheel"><svg id="wheelSvg" viewBox="0 0 400 400" aria-label="Roleta MyBets"></svg></div>
+<div class="hub"><div class="hub-logo"><div class="hub-main"><span class="hub-my">My</span><span class="hub-bets">Bets</span></div><div class="hub-sub">JOGOS ONLINE</div></div></div>
+</div>
+<div class="controls">
+<div class="bet-row">
+<span>Valor da aposta</span>
+<div class="bet-controls">
+<button id="betMinus" type="button">−</button>
+<input id="betAmount" type="number" min="0.50" max="100" step="0.50" value="1.00" inputmode="decimal">
+<button id="betPlus" type="button">+</button>
+</div>
+</div>
+<button class="spin" id="spinButton" type="button">↻ GIRAR</button>
+</div>
+</main>
+</div>
+<div class="notice" id="result"></div>
+<div class="notice" id="message"></div>
+<nav class="nav">
+<a href="/dashboard.html"><span>👤</span><b>Área de jogador</b></a>
+<a href="/"><span>⌂</span><b>Início</b></a>
+</nav>
+<script src="/roleta.js?v=20260919-2200"></script>
+</body>
+</html>
