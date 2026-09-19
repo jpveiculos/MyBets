@@ -69,9 +69,25 @@ function openView(view){
  const sidebar=$(".admin-sidebar"),overlay=$("adminMobileOverlay");
  sidebar?.classList.remove("open");overlay?.classList.remove("open");
 }
+function closeMobileMenu(){
+ const sidebar=$(".admin-sidebar"),overlay=$("adminMobileOverlay");
+ sidebar?.classList.remove("open");
+ overlay?.classList.remove("open");
+}
+
+function openView(view){
+ currentView=view;
+ document.querySelectorAll("[data-view-panel]").forEach(panel=>panel.classList.toggle("hidden",panel.dataset.viewPanel!==view));
+ document.querySelectorAll(".admin-nav-link").forEach(link=>link.classList.toggle("active",link.dataset.view===view));
+ document.querySelectorAll(".metric-nav").forEach(button=>button.classList.toggle("active",button.dataset.openView===view));
+ const target=view==="dashboard"?"painel":view;
+ if(location.hash!=="#"+target)history.replaceState(null,"","#"+target);
+ closeMobileMenu();
+}
+
 function bindNavigation(){
- document.querySelectorAll(".admin-nav-link").forEach(link=>link.addEventListener("click",e=>{e.preventDefault();openView(link.dataset.view)}));
- document.querySelectorAll(".metric-nav").forEach(button=>button.addEventListener("click",()=>openView(button.dataset.openView)));
+ document.querySelectorAll(".admin-nav-link").forEach(link=>link.addEventListener("click",e=>{e.preventDefault();openView(link.dataset.view);closeMobileMenu()}));
+ document.querySelectorAll(".metric-nav").forEach(button=>button.addEventListener("click",()=>{openView(button.dataset.openView);closeMobileMenu()}));
 }
 function statusLabel(status){
  const labels={pending:"Pendente",approved:"Aprovado",rejected:"Rejeitado"};
@@ -199,7 +215,18 @@ if("Notification"in window&&Notification.permission==="granted")$("notifyStatus"
  }
 })();
 (()=>{
- const toggle=$("adminMenuToggle"),sidebar=document.querySelector(".admin-sidebar"),overlay=$("adminMobileOverlay");if(!toggle||!sidebar||!overlay)return;
- const close=()=>{sidebar.classList.remove("open");overlay.classList.remove("open")};
- toggle.addEventListener("click",()=>{sidebar.classList.toggle("open");overlay.classList.toggle("open")});overlay.addEventListener("click",close);
+ const toggle=$("adminMenuToggle"),sidebar=document.querySelector(".admin-sidebar"),overlay=$("adminMobileOverlay");
+ if(!toggle||!sidebar||!overlay)return;
+ toggle.addEventListener("click",e=>{
+  e.preventDefault();
+  e.stopPropagation();
+  const opening=!sidebar.classList.contains("open");
+  sidebar.classList.toggle("open",opening);
+  overlay.classList.toggle("open",opening);
+ });
+ overlay.addEventListener("pointerdown",e=>{e.preventDefault();closeMobileMenu()});
+ document.querySelector(".admin-main")?.addEventListener("pointerdown",e=>{
+  if(sidebar.classList.contains("open")&&!sidebar.contains(e.target))closeMobileMenu();
+ });
+ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMobileMenu()});
 })();
