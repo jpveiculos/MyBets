@@ -4,29 +4,15 @@ let playerUsername="";
 let playerId="";
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-const transactionLabel={
-  deposit_requested:"Depósito solicitado",
-  deposit_approved:"Depósito creditado",
-  deposit_rejected:"Depósito rejeitado",
-  withdrawal_reserved:"Saque solicitado",
-  withdrawal_approved:"Saque aprovado",
-  withdrawal_rejected:"Saque rejeitado",
-  withdrawal_refunded:"Saque devolvido",
-  balance_adjustment:"Ajuste de saldo",
-  bet:"Aposta",
-  win:"Prêmio"
-};
-const transactionName=type=>transactionLabel[String(type||"")]||String(type||"Movimentação").replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro na operação.");return d}
 async function load(){
   try{
-    const [a,t]=await Promise.all([api("/api/account"),api("/api/transactions")]);
+    const a=await api("/api/account");
     playerUsername=a.account.username;
     playerId=String(a.account.id);
     $("welcome").textContent="Olá, "+playerUsername;
     $("balance").textContent=money(a.account.available_balance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
-    $("history").innerHTML=t.transactions.length?t.transactions.map(x=>`<div class="history-row"><span><strong>${transactionName(x.type)}</strong><small>${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><b>${money(x.amount)}</b></div>`).join(""):"<p class='muted'>Nenhuma movimentação ainda.</p>";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
