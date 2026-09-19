@@ -34,24 +34,24 @@ app.get("/api/settings/public", asyncRoute(async (_req,res) => {
 app.post("/api/auth/register", asyncRoute(async (req,res) => {
   const user=await register(req.body);
   const logged=await loginPlayer(req.body);
-  setSessionCookie(res,logged.sessionId);
+  setSessionCookie(res,logged.sessionId,"player");
   res.status(201).json({ok:true,user:logged.user});
 }));
 
 app.post("/api/auth/login", asyncRoute(async (req,res) => {
   const logged=await loginPlayer(req.body);
-  setSessionCookie(res,logged.sessionId);
+  setSessionCookie(res,logged.sessionId,"player");
   res.json({ok:true,user:logged.user});
 }));
 
 app.post("/api/auth/admin-login", asyncRoute(async (req,res) => {
   const logged=await loginAdmin(req.body);
-  setSessionCookie(res,logged.sessionId);
+  setSessionCookie(res,logged.sessionId,"admin");
   res.json({ok:true,admin:logged.admin});
 }));
 
 app.post("/api/auth/logout", asyncRoute(async (req,res) => {
-  await logout(req,res);
+  await logout(req,res,req.headers["x-admin-session"]==="1"?"admin":"player");
   res.json({ok:true});
 }));
 
