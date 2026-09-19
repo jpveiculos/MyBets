@@ -3,12 +3,60 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#08090d">
   <title>MyBets Roulette</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <main>
-    <h1>MyBets Roulette</h1>
-    <p>Base do novo projeto pronta.</p>
-  </main>
+  <div class="site-shell">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <span class="brand-my">MY</span><span>BETs</span>
+      </a>
+      <button class="ghost-btn" id="openLogin">Entrar</button>
+    </header>
+
+    <main class="landing">
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">MYBETS ROULETTE</span>
+          <h1>Uma plataforma limpa, focada na roleta.</h1>
+          <p>Crie sua conta, acompanhe seu saldo virtual e acesse a área da roleta em um só lugar.</p>
+          <div class="hero-actions">
+            <button class="primary-btn" id="openRegister">Criar conta</button>
+            <button class="secondary-btn" id="openLogin2">Já tenho conta</button>
+          </div>
+        </div>
+        <div class="hero-visual" aria-hidden="true">
+          <div class="glow"></div>
+          <div class="roulette-preview"><span>2×</span><span>5×</span><span>10×</span><span>3×</span></div>
+        </div>
+      </section>
+
+      <section class="feature-grid">
+        <article class="feature-card"><strong>Roleta</strong><span>Área dedicada ao jogo, sem outros jogos misturados.</span></article>
+        <article class="feature-card"><strong>Saldo virtual</strong><span>Conta, depósitos, saques e histórico integrados.</span></article>
+        <article class="feature-card"><strong>Área segura</strong><span>Sessões e operações financeiras ligadas ao PostgreSQL.</span></article>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop hidden" id="authModal">
+    <section class="modal">
+      <button class="modal-close" id="closeAuth">×</button>
+      <div class="modal-tabs">
+        <button class="tab active" data-mode="login">Entrar</button>
+        <button class="tab" data-mode="register">Criar conta</button>
+      </div>
+      <h2 id="authTitle">Entrar</h2>
+      <form id="authForm">
+        <label>Usuário<input id="username" autocomplete="username" required minlength="3"></label>
+        <label>Senha<input id="password" type="password" autocomplete="current-password" required minlength="6"></label>
+        <button class="primary-btn full" type="submit" id="authSubmit">Entrar</button>
+        <p class="form-message" id="authMessage"></p>
+      </form>
+    </section>
+  </div>
+  <script src="/app.js"></script>
 </body>
 </html>
