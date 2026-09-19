@@ -4,13 +4,76 @@ async function api(url,options={}){const r=await fetch(url,{credentials:"same-or
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let previousPendingDeposits=null;
 let notifyReady=false;
+let refreshTimer=null;
+let editingDepositId=null;
+let isEditingDeposit=false;
+
+function pauseAutoRefresh(){
+  isEditingDeposit=true;
+  if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null;}
+}
+
+function resumeAutoRefresh(){
+  isEditingDeposit=false;
+  if(refreshTimer)clearInterval(refreshTimer);
+  refreshTimer=setInterval(()=>{if(!isEditingDeposit)load()},10000);
+}
+
+function openDepositEditor(id,username,amount){
+  pauseAutoRefresh();
+  editingDepositId=id;
+  $("depositTitle").textContent="Confirmar depósito #"+id;
+  $("depositInfo").textContent="Jogador: "+username;
+  $("depositDeclared").value=money(amount);
+  $("depositApproved").value=Number(amount).toFixed(2);
+  $("depositMessage").textContent="";
+  $("depositModal").classList.remove("hidden");
+  $("depositModal").setAttribute("aria-hidden","false");
+  setTimeout(()=>{$("depositApproved").focus();$("depositApproved").select()},50);
+}
+
+function closeDepositEditor(){
+  editingDepositId=null;
+  $("depositModal").classList.add("hidden");
+  $("depositModal").setAttribute("aria-hidden","true");
+  $("depositMessage").textContent="";
+  resumeAutoRefresh();
+  load();
+}
+
+async function confirmDeposit(){
+  if(!editingDepositId)return;
+  const field=$("depositApproved");
+  const value=Number(String(field.value).replace(",","."));
+  if(!Number.isFinite(value)||value<=0){
+    $("depositMessage").textContent="Informe um valor válido.";
+    field.focus();
+    return;
+  }
+  $("depositConfirm").disabled=true;
+  $("depositMessage").textContent="Confirmando e creditando...";
+  try{
+    await api("/api/admin/deposits/"+editingDepositId+"/approve",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({approvedAmount:value})
+    });
+    $("depositMessage").textContent="Depósito confirmado e saldo creditado.";
+    setTimeout(closeDepositEditor,500);
+  }catch(e){
+    $("depositMessage").textContent=e.message;
+  }finally{
+    $("depositConfirm").disabled=false;
+  }
+}
+
 async function load(){
  try{
   const [u,d,w,s]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings")]);
   const pending=d.deposits.filter(x=>x.status==="pending");
   $("loginPanel").classList.add("hidden");$("adminPanel").classList.remove("hidden");$("adminLogout").classList.remove("hidden");
   $("users").innerHTML=u.users.map(x=>`<div class="admin-row"><span><b>#${x.id} ${esc(x.username)}</b><small>Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add">+ saldo</button></span></div>`).join("")||"<p class='muted'>Nenhum usuário.</p>";
-  $("deposits").innerHTML=pending.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><span class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}">Aprovar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum depósito pendente.</p>";
+  $("deposits").innerHTML=pending.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${new Date(x.created_at).toLocaleString("pt-BR")}</small></span><span class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.username)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum depósito pendente.</p>";
   $("withdrawals").innerHTML=w.withdrawals.filter(x=>x.status==="pending").map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${money(x.amount)} • Pix: ${esc(x.pix_key)}</small></span><span class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></span></div>`).join("")||"<p class='muted'>Nenhum saque pendente.</p>";
   $("settings").innerHTML=s.settings.map(x=>`<div class="admin-row"><span><b>${esc(x.setting_key)}</b><small>${esc(x.setting_value)}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("");
   if(previousPendingDeposits!==null && pending.length>previousPendingDeposits){
@@ -24,15 +87,28 @@ async function load(){
   if(e.message.includes("Sessão administrativa")){$("loginPanel").classList.remove("hidden");$("adminPanel").classList.add("hidden");$("adminLogout").classList.add("hidden");}
   else $("adminMessage").textContent=e.message;
  }}
+
 function bind(){
- document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/approve","POST",{}));
+ document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>openDepositEditor(b.dataset.id,b.dataset.username,b.dataset.amount));
  document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".add").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
  document.querySelectorAll(".edit-setting").forEach(b=>b.onclick=async()=>{const v=prompt("Novo valor para "+b.dataset.key,b.dataset.value);if(v!==null)await action("/api/admin/settings/"+encodeURIComponent(b.dataset.key),"PUT",{value:v})});
 }
-async function action(url,method,body){try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});load()}catch(e){$("adminMessage").textContent=e.message}}
+
+async function action(url,method,body){
+ try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});load()}
+ catch(e){$("adminMessage").textContent=e.message}
+}
+
 $("adminLogin").onsubmit=async e=>{e.preventDefault();$("loginMessage").textContent="";try{await api("/api/auth/admin-login",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({username:$("adminUser").value.trim(),password:$("adminPassword").value})});if("Notification" in window && Notification.permission==="default"){try{await Notification.requestPermission()}catch(e){}}load()}catch(err){$("loginMessage").textContent=err.message}};
 $("adminLogout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.reload()};
-load();setInterval(load,10000);
+$("depositClose").onclick=closeDepositEditor;
+$("depositCancel").onclick=closeDepositEditor;
+$("depositConfirm").onclick=confirmDeposit;
+$("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")closeDepositEditor()});
+$("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
+
+load();
+resumeAutoRefresh();
