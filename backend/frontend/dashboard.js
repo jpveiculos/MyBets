@@ -1,6 +1,7 @@
 let financeMode="deposit";
 let pixSettings=null;
 let playerUsername="";
+let playerId="";
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro na operação.");return d}
@@ -8,6 +9,7 @@ async function load(){
   try{
     const [a,t]=await Promise.all([api("/api/account"),api("/api/transactions")]);
     playerUsername=a.account.username;
+    playerId=String(a.account.id);
     $("welcome").textContent="Olá, "+playerUsername;
     $("balance").textContent=money(a.account.available_balance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
@@ -41,8 +43,8 @@ function buildPixPayload(){
 }
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
 async function openDeposit(){
-  financeMode="deposit";$("financeModal").classList.remove("hidden");$("financeTitle").textContent="Depósito via Pix";
-  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
+  financeMode="deposit";$("financeModal").classList.remove("hidden");
+  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerId?`#${playerId} • ${playerUsername}`:(playerUsername||"Jogador");$("pixDone").disabled=false;
   try{
     const d=await api("/api/settings/public");pixSettings=d.settings;
     if(String(pixSettings.pix_enabled)!=="true"){ $("depositMessage").textContent="Depósitos via Pix estão temporariamente desativados.";return }
@@ -54,7 +56,7 @@ async function openDeposit(){
 function updateQr(){
   if(!pixSettings?.pix_key){$("qrCard").classList.add("hidden");$("pixDone").classList.add("hidden");return}
   const payload=buildPixPayload();
-  $("pixQr").src=qrUrl(payload);$("pixCode").value=payload;$("qrCard").classList.remove("hidden");$("pixDone").classList.remove("hidden");
+  $("pixQr").src=qrUrl(payload);$("pixCode").value=String(pixSettings.pix_key).trim();$("qrCard").classList.remove("hidden");$("pixDone").classList.remove("hidden");
 }
 async function openWithdraw(){
   financeMode="withdraw";$("financeModal").classList.remove("hidden");$("financeTitle").textContent="Solicitar saque";
