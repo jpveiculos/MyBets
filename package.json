@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node backend/src/server.js"
+    "start": "node backend/src/server.js",
+    "check": "node --check backend/src/admin.js && node --check backend/src/auth.js && node --check backend/src/db.js && node --check backend/src/finance.js && node --check backend/src/push.js && node --check backend/src/roulette.js && node --check backend/src/server.js && node --check backend/frontend/app.js && node --check backend/frontend/admin.js && node --check backend/frontend/dashboard.js && node --check backend/frontend/roleta.js && node --check backend/frontend/sw.js"
   },
   "engines": {
     "node": ">=20"
