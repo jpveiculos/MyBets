@@ -20,9 +20,9 @@ function newSessionId() {
   return crypto.randomBytes(32).toString("hex");
 }
 
-function setSessionCookie(res, sessionId) {
+function setSessionCookie(res, sessionId, kind="player") {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
-  res.setHeader("Set-Cookie", `mybets_session=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=2592000${secure}`);
+  const name=kind==="admin"?"mybets_admin_session":"mybets_player_session";\n  res.setHeader("Set-Cookie", `${name}=${sessionId}; HttpOnly; Path=/; SameSite=Lax; Max-Age=2592000${secure}`);
 }
 
 function clearSessionCookie(res) {
