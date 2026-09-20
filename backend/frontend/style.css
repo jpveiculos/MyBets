@@ -421,3 +421,21 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   #financeModal .pix-amount-wrap{margin-bottom:9px}
   #financeModal #pixDone{font-size:13px}
 }
+
+
+/* ===== PÁGINA INICIAL — VISUAL MYBETS ===== */
+.home-main{width:min(1180px,92vw);margin:0 auto;padding:0 0 70px}
+.home-hero{width:100%;overflow:hidden;border-bottom:1px solid rgba(245,197,66,.45);background:#050505}
+.home-hero-image{width:100%;line-height:0;background:#050505}
+.home-hero-image img{display:block;width:100%;height:auto;max-width:100%;object-fit:cover}
+.home-games{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;padding:38px 0 0}
+.home-game-card{position:relative;min-height:300px;padding:28px;border:1px solid rgba(220,165,31,.34);border-radius:24px;background:linear-gradient(145deg,#111923 0%,#080d14 55%,#05080c 100%);box-shadow:0 18px 45px rgba(0,0,0,.42);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.home-game-card:before{content:"";position:absolute;left:12%;right:12%;top:0;height:2px;background:linear-gradient(90deg,transparent,#f5c542,transparent)}
+.home-game-art{position:relative;z-index:2;width:156px;height:156px;margin-bottom:20px;border:2px solid #c99118;background:#090d13;box-shadow:0 12px 28px rgba(0,0,0,.55),0 0 0 5px rgba(245,197,66,.07);display:flex;align-items:center;justify-content:center}
+.home-machine-art{border-radius:28px;border-color:rgba(245,197,66,.55);background:linear-gradient(145deg,#1a2029,#090d13);font-size:68px}
+.home-roulette-art{border-radius:50%;padding:8px}
+.home-roulette-ring{width:100%;height:100%;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:repeating-conic-gradient(from -10deg,#080a0e 0 10deg,#e3ae20 10deg 20deg);border:6px solid #dca51d;box-shadow:inset 0 0 0 5px #11140f,inset 0 0 0 10px #e8b52c,inset 0 0 0 14px #080a0d}
+.home-roulette-ring span{font:900 italic 18px Arial,sans-serif;color:#ffd45a;text-shadow:0 2px 4px #000}.home-roulette-ring span span{color:#fff}.home-roulette-ring small{margin-top:4px;font:700 5px Arial,sans-serif;letter-spacing:1.5px;color:#ddd}
+.home-game-card h2{position:relative;z-index:3;margin:0;text-align:center;font-size:29px;line-height:1.1;color:#fff}.home-game-card h2 span{color:#ffd45a}
+.home-game-button{position:relative;z-index:3;width:min(100%,420px);min-height:54px;margin-top:20px;border:1px solid rgba(255,255,255,.12);border-radius:14px;background:linear-gradient(180deg,#ffe77b 0%,#f5c542 52%,#dca51f 100%);color:#111;text-decoration:none;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:950;letter-spacing:.3px;box-shadow:0 8px 20px rgba(0,0,0,.3)}
+@media(max-width:720px){.home-main{width:calc(100vw - 28px);padding-bottom:50px}.home-hero{width:calc(100% + 28px);margin-left:-14px}.home-hero-image img{width:100%;min-height:0}.home-games{grid-template-columns:1fr;gap:18px;padding-top:24px}.home-game-card{min-height:285px;padding:24px 18px 26px;border-radius:22px}.home-game-art{width:150px;height:150px;margin-bottom:18px}.home-game-card h2{font-size:28px}.home-game-button{min-height:56px;margin-top:18px;font-size:17px;border-radius:15px}}
