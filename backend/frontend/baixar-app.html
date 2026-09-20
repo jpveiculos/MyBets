@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#08090d">
+  <meta name="description" content="Baixe o aplicativo MyBets para Android ou coloque o MyBets na Tela de Início do iPhone.">
+  <title>MyBets | Aplicativo</title>
+  <link rel="stylesheet" href="/style.css?v=20260920-app">
+  <style>
+    .app-page{width:min(980px,92vw);margin:0 auto;padding:18px 0 48px}
+    .app-top{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}
+    .app-back{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 15px;border:1px solid rgba(216,174,88,.45);border-radius:11px;color:#fff;font-size:12px;font-weight:850}
+    .app-hero{text-align:center;padding:8px 0 24px}
+    .app-eyebrow{display:block;color:var(--gold);font-size:11px;font-weight:900;letter-spacing:2.5px;margin-bottom:6px}
+    .app-hero h1{margin:0 0 8px;font-size:clamp(32px,7vw,52px);line-height:1;letter-spacing:-1.5px}
+    .app-hero p{max-width:680px;margin:0 auto;color:var(--muted);font-size:14px;line-height:1.55}
+    .app-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+    .app-card{padding:24px;border:1px solid rgba(216,174,88,.32);border-radius:20px;background:linear-gradient(145deg,#111923,#080d14);box-shadow:0 18px 45px rgba(0,0,0,.35)}
+    .app-card.iphone{border-color:rgba(255,255,255,.12)}
+    .app-icon{width:56px;height:56px;display:grid;place-items:center;border-radius:15px;background:#171b23;border:1px solid rgba(216,174,88,.4);font-size:27px;margin-bottom:15px}
+    .app-card.iphone .app-icon{border-color:rgba(255,255,255,.18)}
+    .app-card h2{margin:0 0 9px;font-size:24px}
+    .app-card p{margin:0 0 17px;color:var(--muted);font-size:13px;line-height:1.55}
+    .app-download{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:1px solid rgba(245,197,66,.85);border-radius:12px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;font-size:12px;font-weight:950;letter-spacing:.8px}
+    .app-note{margin-top:11px;color:#777;font-size:10px;line-height:1.5}
+    .app-steps{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+    .app-steps li{display:flex;gap:10px;align-items:flex-start;color:#ddd;font-size:13px;line-height:1.48}
+    .app-num{flex:0 0 26px;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:#191d25;border:1px solid rgba(216,174,88,.45);color:#f5c542;font-weight:900;font-size:11px}
+    .app-tip{margin-top:16px;padding:13px;border-radius:12px;background:#0b0f15;border:1px solid rgba(255,255,255,.07);color:#9ca3b0;font-size:11px;line-height:1.5}
+    .app-tip strong{color:#fff}
+    @media(max-width:720px){
+      .app-page{width:92vw;padding-bottom:36px}
+      .app-top{margin-bottom:15px}
+      .app-options{grid-template-columns:1fr}
+      .app-card{padding:20px}
+      .app-hero{padding-bottom:18px}
+      .app-hero h1{font-size:34px}
+      .app-hero p{font-size:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app-page">
+    <header class="app-top">
+      <a class="brand" href="/" aria-label="MyBets">
+        <span class="brand-wordmark">
+          <span class="brand-word-my">My</span><span class="brand-word-bets">Bets</span>
+        </span>
+      </a>
+      <a class="app-back" href="/">VOLTAR AO SITE</a>
+    </header>
+
+    <section class="app-hero">
+      <span class="app-eyebrow">APLICATIVO MYBETS</span>
+      <h1>Baixar aplicativo</h1>
+      <p>Escolha a opção do seu celular. No Android, baixe o APK. No iPhone, coloque o MyBets diretamente na Tela de Início para abrir como um aplicativo.</p>
+    </section>
+
+    <section class="app-options" aria-label="Opções do aplicativo">
+      <article class="app-card">
+        <div class="app-icon" aria-hidden="true">🤖</div>
+        <h2>Android</h2>
+        <p>Baixe o aplicativo MyBets para Android e instale o arquivo APK no seu celular.</p>
+        <a class="app-download" href="https://github.com/jpveiculos/MyBets_Roulette/releases/latest/download/app-release.apk">BAIXAR APK ANDROID</a>
+        <div class="app-note">O APK é publicado automaticamente pelo sistema de build do MyBets.</div>
+      </article>
+
+      <article class="app-card iphone">
+        <div class="app-icon" aria-hidden="true"></div>
+        <h2>iPhone</h2>
+        <p>Não é necessário instalar APK. Use o Safari para colocar o MyBets na Tela de Início.</p>
+        <ol class="app-steps">
+          <li><span class="app-num">1</span><span>Abra <strong>mybets.app.br</strong> no <strong>Safari</strong>.</span></li>
+          <li><span class="app-num">2</span><span>Toque em <strong>Compartilhar</strong>, o quadrado com a seta para cima.</span></li>
+          <li><span class="app-num">3</span><span>Role o menu e toque em <strong>Adicionar à Tela de Início</strong>.</span></li>
+          <li><span class="app-num">4</span><span>Confirme em <strong>Adicionar</strong>. O ícone do MyBets aparecerá na tela principal do iPhone.</span></li>
+        </ol>
+        <div class="app-tip"><strong>Dica:</strong> se “Adicionar à Tela de Início” não aparecer, confirme que a página está aberta no Safari, e não dentro do navegador de outro aplicativo.</div>
+      </article>
+    </section>
+  </div>
+</body>
+</html>
