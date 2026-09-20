@@ -65,6 +65,8 @@ function drawWheel(){
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
       label.setAttribute("class","prize-label");
       label.setAttribute("data-sector-angle",String(start+angle/2));
+      const LABEL_ANGLE_OFFSET=-10;
+      label.setAttribute("transform",`rotate(${start+angle/2-90+LABEL_ANGLE_OFFSET} ${x} ${y})`);
       const prizePosition=(i-1)/2;
       label.textContent=String(prizes[prizePosition])+"x";
       svg.appendChild(label);
@@ -83,18 +85,6 @@ function updatePrizeValues(){
     const multiplier=Number(prizes[index]||DEFAULT_PRIZES[index]);
     const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
     t.textContent=money(value);
-  });
-}
-
-function updatePrizeLabels(){
-  document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
-    const x=Number(t.getAttribute("x"));
-    const y=Number(t.getAttribute("y"));
-    const sectorAngle=Number(t.getAttribute("data-sector-angle")||0);
-    // O texto acompanha a posição da fatia, mas compensa a rotação da roda.
-    // Assim ele permanece no mesmo grau visual em relação à tela,
-    // sem ficar atravessado quando a roleta termina o giro.
-    const LABEL_ANGLE_OFFSET=-10;\n    t.setAttribute("transform",`rotate(${sectorAngle-90-rotation+LABEL_ANGLE_OFFSET} ${x} ${y})`);
   });
 }
 
@@ -164,7 +154,7 @@ async function loadConfig(){
   rotation=targetForSector(PRIZE_INDEXES[0]);
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
-  updatePrizeLabels();
+
   configLoaded=true;
 }
 
@@ -203,11 +193,11 @@ async function spin(){
         const value=from+(destination-from)*eased;
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
-        updatePrizeLabels();
+
         if(p<1){requestAnimationFrame(frame);return}
         rotation=destination;
         wheel.style.transform=`rotate(${rotation}deg)`;
-        updatePrizeLabels();
+
         resolve();
       }
       requestAnimationFrame(frame);
