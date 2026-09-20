@@ -148,10 +148,21 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Migra somente configurações antigas da roleta para a configuração atual.
-UPDATE site_settings SET setting_value='[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]',updated_at=CURRENT_TIMESTAMP
+-- Formatos antigos de 8, 9 ou 16 prêmios passam primeiro para 10 posições.
+UPDATE site_settings
+   SET setting_value='[2,2,2,2,2,2,2,2,2,2]',
+       updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='roulette_prizes'
    AND setting_value LIKE '[%'
    AND jsonb_array_length(setting_value::jsonb) IN (8,9,16);
+
+-- Migra apenas a configuração padrão antiga de 10 prêmios.
+-- Valores personalizados salvos pelo administrador não são alterados.
+UPDATE site_settings
+   SET setting_value='[2,3,2,4,3,2,4,3,2,5]',
+       updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='roulette_prizes'
+   AND setting_value='[2,2,2,2,2,2,2,2,2,2]';
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_enabled' AND NULLIF(TRIM(setting_value),'') IS NULL;
 UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',updated_at=CURRENT_TIMESTAMP
