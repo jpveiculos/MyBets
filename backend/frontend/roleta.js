@@ -1,6 +1,6 @@
 const TOTAL=40;
-const PRIZE_INDEXES=[0,5,10,15,20,25,30,35];
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5];
+const PRIZE_INDEXES=[0,4,8,12,16,20,24,28,32,36];
+const DEFAULT_PRIZES=[2,3,2,4,3,2,5,3,2,4];
 
 let MIN_BET=.50;
 let MAX_BET=100;
@@ -42,7 +42,7 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=16, angle=360/visualSlices, radius=186;
+  const visualSlices=20, angle=360/visualSlices, radius=186;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
@@ -100,21 +100,21 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const group=Math.floor(s/5);
-  const position=s%5;
-  const groupAngle=360/8;
+  const group=Math.floor(s/4);
+  const position=s%4;
+  const groupAngle=360/10;
   const yellowAngle=groupAngle/2;
   const yellowStart=group*groupAngle;
   const blackStart=yellowStart+yellowAngle;
 
   if(position===0){
-    // O único setor de prêmio ocupa visualmente toda a fatia amarela.
+    // Cada setor premiado ocupa visualmente toda a faixa dourada.
     return -(yellowStart+yellowAngle/2);
   }
 
-  // Os 4 setores de perda ficam comprimidos dentro da mesma fatia preta.
-  // O ponteiro termina no centro exato do setor lógico sorteado.
-  const blackSectorAngle=yellowAngle/4;
+  // Os 3 setores de perda ficam agrupados dentro da mesma faixa preta,
+  // sem divisões visuais entre eles. O ponteiro ainda termina no setor lógico sorteado.
+  const blackSectorAngle=yellowAngle/3;
   const blackCenter=blackStart+(position-1)*blackSectorAngle+blackSectorAngle/2;
   return -blackCenter;
 }
