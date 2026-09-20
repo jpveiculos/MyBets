@@ -147,6 +147,7 @@ export async function approveWithdrawal({id,adminId,adminNote=null}) {
     if(w.status!=="pending") throw new Error("Este saque já foi processado.");
     const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[w.user_id]);
     const user=u.rows[0];
+    if(Number(user.bonus_balance)>0) throw new Error("O saque permanece bloqueado enquanto houver saldo de bônus.");
     if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
     if(Number(user.cash_balance)<Number(w.amount)) throw new Error("Saldo em dinheiro insuficiente.");
     const newCash=Number(user.cash_balance)-Number(w.amount);
