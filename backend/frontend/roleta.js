@@ -111,12 +111,14 @@ function targetForSector(sector){
   // Como a roleta exibe 20 fatias visuais (10 pretas + 10 amarelas),
   // o ponteiro termina sempre dentro da cor correspondente ao resultado.
   if(position===3){
-    // Prêmio: centro da fatia amarela (18° a 36° dentro de cada grupo).
+    // Prêmio: centro exato da fatia amarela de 18°.
     return -(groupStart+halfAngle+halfAngle/2);
   }
 
-  // Perda: centro da fatia preta (0° a 18° dentro de cada grupo).
-  return -(groupStart+halfAngle/2);
+  // A fatia preta de 18° contém três setores de perda de 6° cada.
+  // O ponteiro termina no centro do setor de perda sorteado.
+  const lossSectorAngle=halfAngle/3;
+  return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
 }
 
 function showWin(amount){
