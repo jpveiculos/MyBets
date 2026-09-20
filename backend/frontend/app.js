@@ -5,21 +5,15 @@ const $=id=>document.getElementById(id);
 function setHomeState(loggedIn){
   const auth=$("homeAuth");
   const footer=$("playerFooterNav");
-  const heroActions=$("heroActions");
-  const heroDescription=$("heroDescription");
   if(!auth)return;
 
   if(loggedIn){
     auth.innerHTML='<button class="ghost-btn" id="homeLogout">Sair</button>';
     footer?.classList.remove("hidden");
-    heroActions?.classList.add("hidden");
-    if(heroDescription)heroDescription.textContent="Acesse sua área do jogador, acompanhe seu saldo virtual e entre na roleta.";
     $("homeLogout")?.addEventListener("click",logoutFromHome);
   }else{
     auth.innerHTML='<button class="ghost-btn" id="openLogin">Entrar / Cadastrar</button>';
     footer?.classList.add("hidden");
-    heroActions?.classList.remove("hidden");
-    if(heroDescription)heroDescription.textContent="Crie sua conta, acompanhe seu saldo virtual e acesse a área da roleta em um só lugar.";
     $("openLogin")?.addEventListener("click",()=>showAuth("login"));
   }
   auth.classList.remove("session-pending");
@@ -43,17 +37,19 @@ async function checkPlayerSession(){
 }
 
 function showAuth(mode="login"){
-  authMode=mode;$("authModal").classList.remove("hidden");
+  authMode=mode;
+  $("authModal")?.classList.remove("hidden");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===mode));
   $("authTitle").textContent=mode==="login"?"Entrar":"Criar conta";
   $("authSubmit").textContent=mode==="login"?"Entrar":"Criar conta";
   $("password").autocomplete=mode==="login"?"current-password":"new-password";
   $("authMessage").textContent="";
 }
-function closeAuth(){$("authModal").classList.add("hidden")}
 
-$("openLogin2")?.addEventListener("click",()=>showAuth("login"));
-$("openRegister")?.addEventListener("click",()=>showAuth("register"));
+function closeAuth(){
+  $("authModal")?.classList.add("hidden");
+}
+
 $("closeAuth")?.addEventListener("click",closeAuth);
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>showAuth(t.dataset.mode)));
 $("authModal")?.addEventListener("click",e=>{if(e.target.id==="authModal")closeAuth()});
@@ -61,18 +57,29 @@ $("authModal")?.addEventListener("click",e=>{if(e.target.id==="authModal")closeA
 $("authForm")?.addEventListener("submit",async e=>{
   e.preventDefault();
   const message=$("authMessage"),button=$("authSubmit");
-  message.textContent="";button.disabled=true;
+  message.textContent="";
+  button.disabled=true;
   try{
     const endpoint=authMode==="login"?"/api/auth/login":"/api/auth/register";
-    const r=await fetch(endpoint,{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({username:$("username").value.trim(),password:$("password").value})});
+    const r=await fetch(endpoint,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      credentials:"same-origin",
+      body:JSON.stringify({
+        username:$("username").value.trim(),
+        password:$("password").value
+      })
+    });
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.message||"Não foi possível concluir.");
     location.href="/dashboard.html";
-  }catch(err){message.textContent=err.message||"Erro ao conectar ao servidor."}
-  finally{button.disabled=false}
+  }catch(err){
+    message.textContent=err.message||"Erro ao conectar ao servidor.";
+  }finally{
+    button.disabled=false;
+  }
 });
-
 
 checkPlayerSession();
 
-if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
+if(new URLSearchParams(location.search).get("login")==="1")showAuth("login");
