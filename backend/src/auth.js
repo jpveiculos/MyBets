@@ -67,6 +67,23 @@ export async function requireUser(req, res, next) {
   } catch (error) { next(error); }
 }
 
+export async function requireUserPage(req, res, next) {
+  try {
+    const cookies = parseCookies(req);
+    const result = await pool.query(
+      `SELECT s.id
+         FROM sessions s
+         JOIN users u ON u.id=s.user_id
+        WHERE s.id=$1 AND s.expires_at>CURRENT_TIMESTAMP`,
+      [cookies.mybets_player_session]
+    );
+    if (!result.rows[0]) return res.redirect("/?login=1");
+    await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
+    setSessionCookie(res,result.rows[0].id,"player");
+    next();
+  } catch (error) { next(error); }
+}
+
 export async function requireAdmin(req, res, next) {
   try {
     const cookies = parseCookies(req);
