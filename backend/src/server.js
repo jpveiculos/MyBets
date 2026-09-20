@@ -4,7 +4,7 @@ import cors from "cors";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
-import { register, loginPlayer, loginAdmin, logout, requireUser, requireAdmin, setSessionCookie } from "./auth.js";
+import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
@@ -173,6 +173,9 @@ app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => 
 }));
 
 const frontendPath=path.join(__dirname,"../frontend");
+for (const page of ["roleta.html","my-tiger.html","my-dragon.html","lucky7.html"]) {
+  app.get("/"+page, requireUserPage, (_req,res)=>res.sendFile(path.join(frontendPath,page)));
+}
 app.use(express.static(frontendPath));
 app.get("/",(_req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 
