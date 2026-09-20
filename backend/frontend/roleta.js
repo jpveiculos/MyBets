@@ -100,16 +100,16 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const visualIndex=Math.floor(s/4);
+  const group=Math.floor(s/4);
   const visualAngle=360/20;
-  const visualStart=visualIndex*visualAngle;
+  const goldStart=group*2*visualAngle;
+  const blackStart=goldStart+visualAngle;
 
   if(s%4===0){
-    return -(visualStart+visualAngle/2);
+    return -(goldStart+visualAngle/2);
   }
 
   const lossIndex=(s%4)-1;
-  const blackStart=visualStart+visualAngle;
   const blackSectorAngle=visualAngle/3;
   return -(blackStart+lossIndex*blackSectorAngle+blackSectorAngle/2);
 }
