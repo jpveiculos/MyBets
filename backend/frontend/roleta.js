@@ -101,11 +101,22 @@ function changeBet(delta){
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
   const group=Math.floor(s/5);
-  const isPrize=s%5===0;
-  const visualIndex=group*2+(isPrize?0:1);
-  const visualAngle=360/16;
-  const center=visualIndex*visualAngle+visualAngle/2;
-  return -center;
+  const position=s%5;
+  const groupAngle=360/8;
+  const yellowAngle=groupAngle/2;
+  const yellowStart=group*groupAngle;
+  const blackStart=yellowStart+yellowAngle;
+
+  if(position===0){
+    // O único setor de prêmio ocupa visualmente toda a fatia amarela.
+    return -(yellowStart+yellowAngle/2);
+  }
+
+  // Os 4 setores de perda ficam comprimidos dentro da mesma fatia preta.
+  // O ponteiro termina no centro exato do setor lógico sorteado.
+  const blackSectorAngle=yellowAngle/4;
+  const blackCenter=blackStart+(position-1)*blackSectorAngle+blackSectorAngle/2;
+  return -blackCenter;
 }
 
 function showWin(amount){
