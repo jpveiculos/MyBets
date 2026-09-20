@@ -3,7 +3,7 @@ import { pool } from "./db.js";
 
 const TOTAL_SECTORS=40;
 const LOSS_SECTORS=24;
-const PRIZE_INDEXES=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15];
+const PRIZE_INDEXES=Array.from({length:40},(_,i)=>i).filter(i=>i%5<2);
 const DEFAULT_PRIZES=[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2];
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
