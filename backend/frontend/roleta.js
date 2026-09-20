@@ -86,14 +86,15 @@ function updatePrizeValues(){
   });
 }
 
-function updatePrizeLabels(angle=rotation){
+function updatePrizeLabels(){
   document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
     const x=Number(t.getAttribute("x"));
     const y=Number(t.getAttribute("y"));
     const sectorAngle=Number(t.getAttribute("data-sector-angle")||0);
-    // O texto acompanha o eixo radial da própria fatia e permanece
-    // centralizado nela durante o giro.
-    t.setAttribute("transform",`rotate(${sectorAngle-90+angle} ${x} ${y})`);
+    // O texto acompanha exatamente o eixo da fatia.
+    // Como o texto faz parte do SVG da roleta, ele gira junto com a fatia,
+    // mantendo-se centralizado e orientado no mesmo grau do setor.
+    t.setAttribute("transform",`rotate(${sectorAngle-90} ${x} ${y})`);
   });
 }
 
@@ -163,7 +164,7 @@ async function loadConfig(){
   rotation=targetForSector(PRIZE_INDEXES[0]);
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
-  updatePrizeLabels(rotation);
+  updatePrizeLabels();
 
   configLoaded=true;
 }
