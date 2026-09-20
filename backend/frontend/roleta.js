@@ -143,7 +143,13 @@ async function loadConfig(){
   $("betAmount").max=MAX_BET.toFixed(2);
   normalizeBet();
   drawWheel();
-  updatePrizeLabels();
+
+  // Estado inicial: ponteiro exatamente no centro do primeiro prêmio (2x).
+  rotation=targetForSector(PRIZE_INDEXES[0]);
+  const wheel=$("wheel");
+  wheel.style.transform=`rotate(${rotation}deg)`;
+  updatePrizeLabels(rotation);
+
   configLoaded=true;
 }
 
