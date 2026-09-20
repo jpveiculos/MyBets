@@ -42,26 +42,6 @@ async function checkPlayerSession(){
   }
 }
 
-async function handleGameLaunch(event){
-  const link=event.currentTarget;
-  const target=link.dataset.gameUrl||link.getAttribute("href");
-  event.preventDefault();
-  try{
-    const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
-    if(r.ok){
-      window.location.href=target;
-      return;
-    }
-  }catch{}
-  showAuth("login");
-}
-
-function bindGameButtons(){
-  document.querySelectorAll(".home-game-button").forEach(link=>{
-    link.addEventListener("click",handleGameLaunch);
-  });
-}
-
 function showAuth(mode="login"){
   authMode=mode;$("authModal").classList.remove("hidden");
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===mode));
@@ -92,4 +72,6 @@ $("authForm")?.addEventListener("submit",async e=>{
   finally{button.disabled=false}
 });
 
-bindGameButtons();\ncheckPlayerSession();
+checkPlayerSession();
+
+if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
