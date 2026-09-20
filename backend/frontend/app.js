@@ -72,46 +72,7 @@ $("authForm")?.addEventListener("submit",async e=>{
   finally{button.disabled=false}
 });
 
-function initGamesCarousel(){
-  const carousel=$("homeGames");
-  if(!carousel)return;
 
-  const cards=[...carousel.querySelectorAll(".home-game-card")];
-  if(cards.length<2)return;
-
-  let current=0;
-  let timer=null;
-
-  const stop=()=>{
-    if(timer){
-      clearInterval(timer);
-      timer=null;
-    }
-  };
-
-  const start=()=>{
-    stop();
-    timer=setInterval(()=>{
-      current=(current+1)%cards.length;
-      cards[current].scrollIntoView({
-        behavior:"smooth",
-        block:"nearest",
-        inline:"start"
-      });
-    },3000);
-  };
-
-  carousel.addEventListener("pointerdown",stop);
-  carousel.addEventListener("pointerup",start);
-  document.addEventListener("visibilitychange",()=>{
-    if(document.hidden)stop();
-    else start();
-  });
-
-  start();
-}
-
-initGamesCarousel();
 checkPlayerSession();
 
 if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
