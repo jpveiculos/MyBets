@@ -1,9 +1,9 @@
-# MyBets Roulette
+# MyBets
 
 Projeto novo e limpo da MyBets, dedicado exclusivamente à roleta.
 
 ## Escopo
-- Roleta da sorte
+- Roleta
 - Conta do jogador e saldo virtual
 - Depósitos manuais via Pix/QR Code
 - Saques manuais com reserva de saldo
