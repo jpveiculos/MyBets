@@ -73,18 +73,34 @@ $("authForm")?.addEventListener("submit",async e=>{
 });
 
 const gamesCarousel=$("homeGames");
-const gamesPrev=$("gamesPrev");
-const gamesNext=$("gamesNext");
 
-function scrollGames(direction){
+function startGamesCarousel(){
   if(!gamesCarousel)return;
-  const card=gamesCarousel.querySelector(".home-game-card");
-  if(!card)return;
-  const gap=parseFloat(getComputedStyle(gamesCarousel).gap)||0;gamesCarousel.scrollBy({left:direction*(card.getBoundingClientRect().width+gap),behavior:"smooth"});
-}
-gamesPrev?.addEventListener("click",()=>scrollGames(-1));
-gamesNext?.addEventListener("click",()=>scrollGames(1));
+  const cards=[...gamesCarousel.querySelectorAll(".home-game-card")];
+  if(cards.length<2)return;
+  let index=0;
+  let timer=null;
 
+  const moveNext=()=>{
+    index++;
+    if(index>=cards.length)index=0;
+    cards[index].scrollIntoView({behavior:"smooth",block:"nearest",inline:"start"});
+  };
+
+  const start=()=>{
+    if(timer)clearInterval(timer);
+    timer=setInterval(moveNext,3000);
+  };
+
+  gamesCarousel.addEventListener("touchstart",()=>{if(timer)clearInterval(timer)},{passive:true});
+  gamesCarousel.addEventListener("touchend",start,{passive:true});
+  gamesCarousel.addEventListener("mouseenter",()=>{if(timer)clearInterval(timer)});
+  gamesCarousel.addEventListener("mouseleave",start);
+
+  start();
+}
+
+startGamesCarousel();
 checkPlayerSession();
 
 if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
