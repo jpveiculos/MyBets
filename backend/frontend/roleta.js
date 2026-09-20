@@ -1,6 +1,6 @@
 const TOTAL=40;
 const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%4===3);
-const DEFAULT_PRIZES=[2,2,2,2,2,2,2,2,2,2];
+const DEFAULT_PRIZES=[2,3,2,4,3,2,4,3,2,5];
 
 let MIN_BET=.50;
 let MAX_BET=100;
