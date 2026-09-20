@@ -44,11 +44,14 @@ async function checkPlayerSession(){
 
 async function handleGameLaunch(event){
   const link=event.currentTarget;
+  event.preventDefault();
   try{
     const r=await fetch("/api/account",{credentials:"same-origin",cache:"no-store"});
-    if(r.ok)return;
+    if(r.ok){
+      window.location.href=link.href;
+      return;
+    }
   }catch{}
-  event.preventDefault();
   showAuth("login");
 }
 
