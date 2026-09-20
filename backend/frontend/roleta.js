@@ -125,7 +125,7 @@ async function loadConfig(){
     const r=d.roulette;
     MIN_BET=Number(r.minBet)||.50;
     MAX_BET=Number(r.maxBet)||100;
-    prizes=Array.isArray(r.prizes)?r.prizes.map(x=>Number(x.multiplier)):DEFAULT_PRIZES;
+    prizes=Array.isArray(r.prizes)&&r.prizes.length===DEFAULT_PRIZES.length?r.prizes.map(Number):[...DEFAULT_PRIZES];
   }catch{
     MIN_BET=.50;MAX_BET=100;prizes=[...DEFAULT_PRIZES];
   }
