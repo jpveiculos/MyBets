@@ -25,32 +25,41 @@
     </div>
   </section>
 
-  <section class="home-games" id="jogos">
-    <article class="home-game-card">
-      <div class="home-game-art home-roulette-art" aria-hidden="true">
-        <div class="home-roulette-ring"><span>My<span>Bets</span></span><small>JOGOS ONLINE</small></div>
+  <section class="home-games-section" id="jogos" aria-label="Jogos">
+    <div class="home-games-header">
+      <h2>Jogos</h2>
+      <div class="home-games-controls" aria-label="Navegação dos jogos">
+        <button type="button" class="home-games-arrow" id="gamesPrev" aria-label="Jogo anterior">‹</button>
+        <button type="button" class="home-games-arrow" id="gamesNext" aria-label="Próximo jogo">›</button>
       </div>
-      <h2>My Roulette</h2>
-      <a class="home-game-button" href="/roleta.html">JOGAR AGORA</a>
-    </article>
+    </div>
+    <div class="home-games" id="homeGames">
+      <article class="home-game-card">
+        <div class="home-game-art home-roulette-art" aria-hidden="true">
+          <div class="home-roulette-ring"><span>My<span>Bets</span></span><small>JOGOS ONLINE</small></div>
+        </div>
+        <h2>My Roulette</h2>
+        <a class="home-game-button" href="/roleta.html">JOGAR AGORA</a>
+      </article>
 
-    <article class="home-game-card">
-      <div class="home-game-art home-machine-art" aria-hidden="true">🐯</div>
-      <h2>My Tiger</h2>
-      <a class="home-game-button" href="/my-tiger.html">JOGAR AGORA</a>
-    </article>
+      <article class="home-game-card">
+        <div class="home-game-art home-machine-art" aria-hidden="true">🐯</div>
+        <h2>My Tiger</h2>
+        <a class="home-game-button" href="/my-tiger.html">JOGAR AGORA</a>
+      </article>
 
-    <article class="home-game-card">
-      <div class="home-game-art home-machine-art" aria-hidden="true">🐉</div>
-      <h2>My Dragon</h2>
-      <a class="home-game-button" href="/my-dragon.html">JOGAR AGORA</a>
-    </article>
+      <article class="home-game-card">
+        <div class="home-game-art home-machine-art" aria-hidden="true">🐉</div>
+        <h2>My Dragon</h2>
+        <a class="home-game-button" href="/my-dragon.html">JOGAR AGORA</a>
+      </article>
 
-    <article class="home-game-card">
-      <div class="home-game-art home-machine-art" aria-hidden="true">7️⃣</div>
-      <h2>My Lucky 7</h2>
-      <a class="home-game-button" href="/lucky7.html">JOGAR AGORA</a>
-    </article>
+      <article class="home-game-card">
+        <div class="home-game-art home-machine-art" aria-hidden="true">7️⃣</div>
+        <h2>My Lucky 7</h2>
+        <a class="home-game-button" href="/lucky7.html">JOGAR AGORA</a>
+      </article>
+    </div>
   </section>
 
   <section class="home-app-cta" aria-label="Aplicativo MyBets">
@@ -86,6 +95,6 @@
     </section>
   </div>
   <script>if(new URLSearchParams(location.search).get("login")==="1")document.getElementById("authModal")?.classList.remove("hidden");</script>
-  <script src="/app.js?v=20260920-auth-gate-2"></script>
+  <script src="/app.js?v=20260920-carousel"></script>
 </body>
 </html>
