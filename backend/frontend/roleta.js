@@ -56,7 +56,7 @@ function drawWheel(){
 
     if(prize){
       const label=document.createElementNS(ns,"text");
-      const [x,y]=polar(200,200,115,start+angle/2);
+      const [x,y]=polar(200,200,120,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
       label.setAttribute("fill","#fff");label.setAttribute("font-size","22");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
