@@ -42,7 +42,7 @@ function sortearSetor(){
 export async function rouletteConfig(){
   const {prizes,minBet,maxBet}=await getConfig();
   return {
-    id:"mybets-roulette-40",
+    id:"roulette",
     totalSectors:TOTAL_SECTORS,
     prizeSectors:PRIZE_INDEXES.length,
     lossSectors:LOSS_SECTORS,
