@@ -5,7 +5,7 @@ const DEFAULT_PRIZES=[2,3,2,4,3,2,5,3,2,4];
 let MIN_BET=.50;
 let MAX_BET=100;
 let prizes=[...DEFAULT_PRIZES];
-let rotation=-10;
+let rotation=0;
 let spinning=false;
 let configLoaded=false;
 
@@ -100,23 +100,18 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const group=Math.floor(s/4);
-  const position=s%4;
-  const groupAngle=360/10;
-  const yellowAngle=groupAngle/2;
-  const yellowStart=group*groupAngle;
-  const blackStart=yellowStart+yellowAngle;
+  const visualIndex=Math.floor(s/4);
+  const visualAngle=360/20;
+  const visualStart=visualIndex*visualAngle;
 
-  if(position===0){
-    // Cada setor premiado ocupa visualmente toda a faixa dourada.
-    return -(yellowStart+yellowAngle/2);
+  if(s%4===0){
+    return -(visualStart+visualAngle/2);
   }
 
-  // Os 3 setores de perda ficam agrupados dentro da mesma faixa preta,
-  // sem divisões visuais entre eles. O ponteiro ainda termina no setor lógico sorteado.
-  const blackSectorAngle=yellowAngle/3;
-  const blackCenter=blackStart+(position-1)*blackSectorAngle+blackSectorAngle/2;
-  return -blackCenter;
+  const lossIndex=(s%4)-1;
+  const blackStart=visualStart+visualAngle;
+  const blackSectorAngle=visualAngle/3;
+  return -(blackStart+lossIndex*blackSectorAngle+blackSectorAngle/2);
 }
 
 function showWin(amount){
