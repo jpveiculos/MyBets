@@ -65,7 +65,7 @@ function drawWheel(){
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
       label.setAttribute("class","prize-label");
       label.setAttribute("data-sector-angle",String(start+angle/2));
-      const LABEL_ANGLE_OFFSET=5;
+      const LABEL_ANGLE_OFFSET=3;
       label.setAttribute("transform",`rotate(${start+angle/2-90+LABEL_ANGLE_OFFSET} ${x} ${y})`);
       const prizePosition=(i-1)/2;
       label.textContent=String(prizes[prizePosition])+"x";
