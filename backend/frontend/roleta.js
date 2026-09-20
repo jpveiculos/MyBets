@@ -64,7 +64,7 @@ function drawWheel(){
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","4");
       label.setAttribute("class","prize-label");
-      const logicalSector=i*2+1;
+      const logicalSector=i*2+3;
       const prizePosition=PRIZE_INDEXES.indexOf(logicalSector);
       label.textContent=String(prizes[prizePosition]||DEFAULT_PRIZES[prizePosition])+"x";
       svg.appendChild(label);
@@ -112,11 +112,12 @@ function targetForSector(sector){
   // Como a roleta exibe 20 fatias visuais (10 pretas + 10 amarelas),
   // o ponteiro termina sempre dentro da cor correspondente ao resultado.
   if(position===3){
-    return -(groupStart+halfAngle/2);
+    // Prêmio: centro da fatia amarela (18° a 36° dentro de cada grupo).
+    return -(groupStart+halfAngle+halfAngle/2);
   }
 
-  // Os três setores de perda compartilham a mesma fatia preta visual.
-  return -(groupStart+halfAngle+halfAngle/2);
+  // Perda: centro da fatia preta (0° a 18° dentro de cada grupo).
+  return -(groupStart+halfAngle/2);
 }
 
 function showWin(amount){
