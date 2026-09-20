@@ -98,6 +98,7 @@ function renderTransactions(transactions){
 }
 function renderRouletteSettings(settings){
  const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet"),prizesField=$("roulettePrizes");
+ if(document.activeElement===minField||document.activeElement===maxField||document.activeElement===prizesField)return;
  if(!minField||!maxField||!prizesField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
@@ -174,7 +175,7 @@ async function load(){
   const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[];
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
   $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
-  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings);
+  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings);bindRouletteEditing();
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
    if(notifyReady&&"Notification"in window&&Notification.permission==="granted"){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification("MyBets • Novo evento",{body:`${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`,tag:"new-admin-event",data:{url:"/admin.html"},renotify:true})}catch(error){console.warn("Notificação local:",error)}}
@@ -210,7 +211,15 @@ function bindActions(){
  });
  document.querySelectorAll(".edit-setting").forEach(b=>b.onclick=async()=>{const v=prompt("Novo valor para "+b.dataset.key,b.dataset.value);if(v!==null)await action("/api/admin/settings/"+encodeURIComponent(b.dataset.key),"PUT",{value:v})});
 }
-async function action(url,method,body){
+async function bindRouletteEditing(){
+ [$("rouletteMinBet"),$("rouletteMaxBet"),$("roulettePrizes")].forEach(field=>{
+  if(!field||field.dataset.editingBound==="true")return;
+  field.dataset.editingBound="true";
+  field.addEventListener("focus",pauseAutoRefresh);
+  field.addEventListener("blur",()=>{resumeAutoRefresh();load()});
+ });
+}
+function action(url,method,body){
  try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});await load();await updateAppBadge()}
  catch(e){$("adminMessage").textContent=e.message}
 }
