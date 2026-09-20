@@ -64,6 +64,7 @@ function drawWheel(){
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
       label.setAttribute("class","prize-label");
+      label.setAttribute("data-sector-angle",String(start+angle/2));
       const prizePosition=(i-1)/2;
       label.textContent=String(prizes[prizePosition])+"x";
       svg.appendChild(label);
@@ -85,10 +86,14 @@ function updatePrizeValues(){
   });
 }
 
-function updatePrizeLabels(){
-  // Os valores ficam horizontais e fixos na tela; apenas a roleta gira por baixo.
+function updatePrizeLabels(angle=rotation){
   document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
-    t.removeAttribute("transform");
+    const x=Number(t.getAttribute("x"));
+    const y=Number(t.getAttribute("y"));
+    const sectorAngle=Number(t.getAttribute("data-sector-angle")||0);
+    // O texto acompanha o eixo radial da própria fatia e permanece
+    // centralizado nela durante o giro.
+    t.setAttribute("transform",`rotate(${sectorAngle-90+angle} ${x} ${y})`);
   });
 }
 
@@ -158,7 +163,7 @@ async function loadConfig(){
   rotation=targetForSector(PRIZE_INDEXES[0]);
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
-  updatePrizeLabels();
+  updatePrizeLabels(rotation);
 
   configLoaded=true;
 }
