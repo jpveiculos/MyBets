@@ -89,12 +89,40 @@ export async function register({ username, password }) {
   const name = String(username || "").trim();
   if (!/^[A-Za-z0-9_.-]{3,50}$/.test(name)) throw new Error("Usuário inválido.");
   if (String(password || "").length < 6) throw new Error("A senha deve ter pelo menos 6 caracteres.");
-  const result = await pool.query(
-    `INSERT INTO users(username,password_hash) VALUES($1,$2)
-     RETURNING id,username`,
-    [name, hashPassword(password)]
-  );
-  return result.rows[0];
+
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+
+    const setting = await client.query(
+      "SELECT setting_value FROM site_settings WHERE setting_key='signup_bonus_amount'"
+    );
+    const signupBonus = Math.max(0, Math.round(Number(setting.rows[0]?.setting_value || 100) * 100) / 100);
+    if (!Number.isFinite(signupBonus)) throw new Error("Valor do bônus de cadastro inválido.");
+
+    const result = await client.query(
+      `INSERT INTO users(username,password_hash,bonus_balance)
+       VALUES($1,$2,$3)
+       RETURNING id,username,bonus_balance`,
+      [name, hashPassword(password), signupBonus]
+    );
+
+    if (signupBonus > 0) {
+      await client.query(
+        `INSERT INTO transactions(user_id,type,amount,balance_after,note)
+         VALUES($1,'signup_bonus',$2,$2,$3)`,
+        [result.rows[0].id, signupBonus, "Bônus de cadastro concedido automaticamente."]
+      );
+    }
+
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 export async function loginPlayer({ username, password }) {
