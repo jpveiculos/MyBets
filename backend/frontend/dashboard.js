@@ -13,6 +13,10 @@ async function load(){
     $("welcome").textContent="Olá, "+playerUsername;
     $("balance").textContent=money(a.account.available_balance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
+    $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
+    const hasBonus=Number(a.account.bonus_balance)>0;
+    $("withdrawBtn").disabled=hasBonus;
+    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":"Solicitar saque";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
