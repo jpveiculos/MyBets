@@ -86,18 +86,6 @@ function updatePrizeValues(){
   });
 }
 
-function updatePrizeLabels(){
-  document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
-    const x=Number(t.getAttribute("x"));
-    const y=Number(t.getAttribute("y"));
-    const sectorAngle=Number(t.getAttribute("data-sector-angle")||0);
-    // O texto acompanha exatamente o eixo da fatia.
-    // Como o texto faz parte do SVG da roleta, ele gira junto com a fatia,
-    // mantendo-se centralizado e orientado no mesmo grau do setor.
-    t.setAttribute("transform",`rotate(${sectorAngle-90} ${x} ${y})`);
-  });
-}
-
 function getBet(){
   const value=Number(String($("betAmount").value).replace(",","."));
   return Number.isFinite(value)?Number(value.toFixed(2)):MIN_BET;
@@ -164,8 +152,6 @@ async function loadConfig(){
   rotation=targetForSector(PRIZE_INDEXES[0]);
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
-  updatePrizeLabels();
-
   configLoaded=true;
 }
 
@@ -203,11 +189,9 @@ async function spin(){
         const eased=1-Math.pow(1-p,5);
         const value=from+(destination-from)*eased;
         wheel.style.transform=`rotate(${value}deg)`;
-        updatePrizeLabels();
         if(p<1){requestAnimationFrame(frame);return}
         rotation=destination;
         wheel.style.transform=`rotate(${rotation}deg)`;
-        updatePrizeLabels();
         resolve();
       }
       requestAnimationFrame(frame);
