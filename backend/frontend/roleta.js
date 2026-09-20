@@ -50,15 +50,15 @@ function drawWheel(){
     path.setAttribute("d",wedge(200,200,radius,start,end));
     const prize=i%5<2;
     path.setAttribute("fill",prize?"#d9aa20":"#07090d");
-    path.setAttribute("stroke",prize?"#ffe16a":"#07090d");
-    path.setAttribute("stroke-width",prize?"3":"1");
+    path.setAttribute("stroke",prize?"#ffe16a":"#6b4c0d");
+    path.setAttribute("stroke-width",prize?"3":"2");
     svg.appendChild(path);
 
     if(prize){
       const label=document.createElementNS(ns,"text");
       const [x,y]=polar(200,200,145,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
-      label.setAttribute("fill","#fff");label.setAttribute("font-size","24");
+      label.setAttribute("fill","#fff");label.setAttribute("font-size","32");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
       label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
