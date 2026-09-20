@@ -72,6 +72,19 @@ $("authForm")?.addEventListener("submit",async e=>{
   finally{button.disabled=false}
 });
 
+const gamesCarousel=$("homeGames");
+const gamesPrev=$("gamesPrev");
+const gamesNext=$("gamesNext");
+
+function scrollGames(direction){
+  if(!gamesCarousel)return;
+  const card=gamesCarousel.querySelector(".home-game-card");
+  if(!card)return;
+  gamesCarousel.scrollBy({left:direction*(card.getBoundingClientRect().width+18),behavior:"smooth"});
+}
+gamesPrev?.addEventListener("click",()=>scrollGames(-1));
+gamesNext?.addEventListener("click",()=>scrollGames(1));
+
 checkPlayerSession();
 
 if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
