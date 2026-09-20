@@ -80,7 +80,7 @@ function scrollGames(direction){
   if(!gamesCarousel)return;
   const card=gamesCarousel.querySelector(".home-game-card");
   if(!card)return;
-  gamesCarousel.scrollBy({left:direction*(card.getBoundingClientRect().width+18),behavior:"smooth"});
+  const gap=parseFloat(getComputedStyle(gamesCarousel).gap)||0;gamesCarousel.scrollBy({left:direction*(card.getBoundingClientRect().width+gap),behavior:"smooth"});
 }
 gamesPrev?.addEventListener("click",()=>scrollGames(-1));
 gamesNext?.addEventListener("click",()=>scrollGames(1));
