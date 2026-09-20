@@ -58,11 +58,11 @@ function drawWheel(){
       const label=document.createElementNS(ns,"text");
       const [x,y]=polar(200,200,145,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
-      label.setAttribute("fill","#fff");label.setAttribute("font-size","32");
+      label.setAttribute("fill","#fff");label.setAttribute("font-size","22");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
       label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
-      label.setAttribute("stroke","#000");label.setAttribute("stroke-width","4");
+      label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
       label.setAttribute("class","prize-label");
       const prizePosition=(i-1)/2;
       label.textContent=String(prizes[prizePosition])+"x";
@@ -85,10 +85,10 @@ function updatePrizeValues(){
   });
 }
 
-function updatePrizeLabels(angle=rotation){
+function updatePrizeLabels(){
+  // Os valores ficam horizontais e fixos na tela; apenas a roleta gira por baixo.
   document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
-    const x=Number(t.getAttribute("x")),y=Number(t.getAttribute("y"));
-    t.setAttribute("transform",`rotate(${-angle} ${x} ${y})`);
+    t.removeAttribute("transform");
   });
 }
 
@@ -158,7 +158,7 @@ async function loadConfig(){
   rotation=targetForSector(PRIZE_INDEXES[0]);
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
-  updatePrizeLabels(rotation);
+  updatePrizeLabels();
 
   configLoaded=true;
 }
@@ -197,11 +197,11 @@ async function spin(){
         const eased=1-Math.pow(1-p,5);
         const value=from+(destination-from)*eased;
         wheel.style.transform=`rotate(${value}deg)`;
-        updatePrizeLabels(value);
+        updatePrizeLabels();
         if(p<1){requestAnimationFrame(frame);return}
         rotation=destination;
         wheel.style.transform=`rotate(${rotation}deg)`;
-        updatePrizeLabels(rotation);
+        updatePrizeLabels();
         resolve();
       }
       requestAnimationFrame(frame);
