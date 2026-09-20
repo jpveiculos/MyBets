@@ -72,35 +72,46 @@ $("authForm")?.addEventListener("submit",async e=>{
   finally{button.disabled=false}
 });
 
-const gamesCarousel=$("homeGames");
+function initGamesCarousel(){
+  const carousel=$("homeGames");
+  if(!carousel)return;
 
-function startGamesCarousel(){
-  if(!gamesCarousel)return;
-  const cards=[...gamesCarousel.querySelectorAll(".home-game-card")];
+  const cards=[...carousel.querySelectorAll(".home-game-card")];
   if(cards.length<2)return;
-  let index=0;
+
+  let current=0;
   let timer=null;
 
-  const moveNext=()=>{
-    index++;
-    if(index>=cards.length)index=0;
-    cards[index].scrollIntoView({behavior:"smooth",block:"nearest",inline:"start"});
+  const stop=()=>{
+    if(timer){
+      clearInterval(timer);
+      timer=null;
+    }
   };
 
   const start=()=>{
-    if(timer)clearInterval(timer);
-    timer=setInterval(moveNext,3000);
+    stop();
+    timer=setInterval(()=>{
+      current=(current+1)%cards.length;
+      cards[current].scrollIntoView({
+        behavior:"smooth",
+        block:"nearest",
+        inline:"start"
+      });
+    },3000);
   };
 
-  gamesCarousel.addEventListener("touchstart",()=>{if(timer)clearInterval(timer)},{passive:true});
-  gamesCarousel.addEventListener("touchend",start,{passive:true});
-  gamesCarousel.addEventListener("mouseenter",()=>{if(timer)clearInterval(timer)});
-  gamesCarousel.addEventListener("mouseleave",start);
+  carousel.addEventListener("pointerdown",stop);
+  carousel.addEventListener("pointerup",start);
+  document.addEventListener("visibilitychange",()=>{
+    if(document.hidden)stop();
+    else start();
+  });
 
   start();
 }
 
-startGamesCarousel();
+initGamesCarousel();
 checkPlayerSession();
 
 if(new URLSearchParams(location.search).get("login")==="1") showAuth("login");
