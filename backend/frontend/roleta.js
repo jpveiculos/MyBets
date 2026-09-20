@@ -1,6 +1,6 @@
 const TOTAL=40;
-const PRIZE_INDEXES=Array.from({length:40},(_,i)=>i).filter(i=>i%5<2);
-const DEFAULT_PRIZES=[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2];
+const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%4===3);
+const DEFAULT_PRIZES=[2,2,2,2,2,2,2,2,2,2];
 
 let MIN_BET=.50;
 let MAX_BET=100;
@@ -48,7 +48,7 @@ function drawWheel(){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%5<2;
+    const prize=i%4===3;
     path.setAttribute("fill",prize?"#d9aa20":"#07090d");
     path.setAttribute("stroke",prize?"#ffe16a":"#6b4c0d");
     path.setAttribute("stroke-width",prize?"3":"2");
@@ -100,7 +100,7 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const visualAngle=360/40;
+  const visualAngle=360/TOTAL;
   return -(s*visualAngle+visualAngle/2);
 }
 
