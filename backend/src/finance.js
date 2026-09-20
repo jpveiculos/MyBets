@@ -78,6 +78,10 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     );
     const wagerRequirement = Number(requirement.rows[0]?.setting_value || 0);
 
+    if (Number(user.bonus_balance) > 0) {
+      throw new Error("O saque está bloqueado enquanto houver saldo de bônus.");
+    }
+
     if (Number(user.bonus_balance) > 0 && Number(user.bonus_wager_progress) < wagerRequirement) {
       throw new Error("O requisito de movimentação do bônus ainda não foi cumprido.");
     }
