@@ -105,10 +105,18 @@ function targetForSector(sector){
   const position=s%4;
   const groupAngle=360/(TOTAL/4);
   const halfAngle=groupAngle/2;
-  const blackStart=group*groupAngle;
-  if(position===3)return -(blackStart+halfAngle/2);
-  const blackSectorAngle=halfAngle/3;
-  return -(blackStart+halfAngle+position*blackSectorAngle+blackSectorAngle/2);
+  const groupStart=group*groupAngle;
+
+  // Cada grupo representa 4 setores lógicos:
+  // 3 perdas ocupam a fatia preta e 1 prêmio ocupa a fatia amarela.
+  // Como a roleta exibe 20 fatias visuais (10 pretas + 10 amarelas),
+  // o ponteiro termina sempre dentro da cor correspondente ao resultado.
+  if(position===3){
+    return -(groupStart+halfAngle/2);
+  }
+
+  // Os três setores de perda compartilham a mesma fatia preta visual.
+  return -(groupStart+halfAngle+halfAngle/2);
 }
 
 function showWin(amount){
