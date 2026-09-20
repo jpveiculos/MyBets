@@ -42,13 +42,13 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=TOTAL, angle=360/visualSlices, radius=186;
+  const visualSlices=16, angle=360/visualSlices, radius=186;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=PRIZE_INDEXES.includes(i);
+    const prize=i%2===0;
     path.setAttribute("fill",prize?"#d9aa20":"#07090d");
     path.setAttribute("stroke",prize?"#ffe16a":"#6b4c0d");
     path.setAttribute("stroke-width",prize?"3":"2");
@@ -64,8 +64,8 @@ function drawWheel(){
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","4");
       label.setAttribute("class","prize-label");
-      const prizePosition=PRIZE_INDEXES.indexOf(i);
-      label.textContent=`${prizes[prizePosition]||DEFAULT_PRIZES[prizePosition]}x`;
+      const prizePosition=i/2;
+      label.textContent=String(prizes[prizePosition]||DEFAULT_PRIZES[prizePosition])+"x";
       svg.appendChild(label);
     }
   }
@@ -100,8 +100,11 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const sectorAngle=360/TOTAL;
-  const center=s*sectorAngle+sectorAngle/2;
+  const group=Math.floor(s/5);
+  const isPrize=s%5===0;
+  const visualIndex=group*2+(isPrize?0:1);
+  const visualAngle=360/16;
+  const center=visualIndex*visualAngle+visualAngle/2;
   return -center;
 }
 
