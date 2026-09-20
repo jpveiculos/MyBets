@@ -461,3 +461,8 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .home-footer-brand strong{display:block;font-size:28px;font-weight:950;font-style:italic;color:#fff;letter-spacing:-1px}.home-footer-brand strong span{color:#f5c542}.home-footer-brand p{margin:3px 0 0;color:#aeb5c0;font-size:13px;line-height:1.45}
 .home-footer-bottom{grid-column:auto;padding-top:5px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;gap:12px;color:#7f8793;font-size:11px;line-height:1.4}
 @media(max-width:720px){.home-footer{margin-top:18px;padding:10px 14px 4px;grid-template-columns:1fr;gap:5px}.home-footer-brand strong{font-size:21px}.home-footer-bottom{grid-column:auto;display:grid;gap:2px;padding-top:3px;font-size:10px}}
+
+
+/* Admin: controles da configuração da roleta */
+.admin-roulette-prizes{display:block;margin-top:14px}
+.admin-roulette-save-actions{margin-top:14px}
