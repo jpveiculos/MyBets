@@ -211,7 +211,7 @@ function bindActions(){
  });
  document.querySelectorAll(".edit-setting").forEach(b=>b.onclick=async()=>{const v=prompt("Novo valor para "+b.dataset.key,b.dataset.value);if(v!==null)await action("/api/admin/settings/"+encodeURIComponent(b.dataset.key),"PUT",{value:v})});
 }
-async function bindRouletteEditing(){
+function bindRouletteEditing(){
  [$("rouletteMinBet"),$("rouletteMaxBet"),$("roulettePrizes")].forEach(field=>{
   if(!field||field.dataset.editingBound==="true")return;
   field.dataset.editingBound="true";
@@ -219,7 +219,7 @@ async function bindRouletteEditing(){
   field.addEventListener("blur",()=>{resumeAutoRefresh();load()});
  });
 }
-function action(url,method,body){
+async function action(url,method,body){
  try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});await load();await updateAppBadge()}
  catch(e){$("adminMessage").textContent=e.message}
 }
