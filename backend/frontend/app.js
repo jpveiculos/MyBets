@@ -16,7 +16,7 @@ function setHomeState(loggedIn){
     if(heroDescription)heroDescription.textContent="Acesse sua área do jogador, acompanhe seu saldo virtual e entre na roleta.";
     $("homeLogout")?.addEventListener("click",logoutFromHome);
   }else{
-    auth.innerHTML='<button class="ghost-btn" id="openLogin">Entrar</button>';
+    auth.innerHTML='<button class="ghost-btn" id="openLogin">Entrar / Cadastrar</button>';
     footer?.classList.add("hidden");
     heroActions?.classList.remove("hidden");
     if(heroDescription)heroDescription.textContent="Crie sua conta, acompanhe seu saldo virtual e acesse a área da roleta em um só lugar.";
