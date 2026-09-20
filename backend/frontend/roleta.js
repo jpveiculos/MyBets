@@ -76,6 +76,15 @@ function drawWheel(){
   svg.appendChild(ring);
 }
 
+function updatePrizeValues(){
+  const bet=getBet();
+  document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
+    const multiplier=Number(prizes[index]||DEFAULT_PRIZES[index]);
+    const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
+    t.textContent=money(value);
+  });
+}
+
 function updatePrizeLabels(angle=rotation){
   document.querySelectorAll("#wheelSvg .prize-label").forEach(t=>{
     const x=Number(t.getAttribute("x")),y=Number(t.getAttribute("y"));
@@ -143,6 +152,7 @@ async function loadConfig(){
   $("betAmount").max=MAX_BET.toFixed(2);
   normalizeBet();
   drawWheel();
+  updatePrizeValues();
 
   // Estado inicial: ponteiro exatamente no centro do primeiro prêmio (2x).
   rotation=targetForSector(PRIZE_INDEXES[0]);
@@ -214,7 +224,11 @@ async function spin(){
 $("betMinus").onclick=()=>changeBet(-1);
 $("betPlus").onclick=()=>changeBet(1);
 $("spinButton").onclick=spin;
-$("betAmount").addEventListener("change",normalizeBet);
+$("betAmount").addEventListener("input",updatePrizeValues);
+$("betAmount").addEventListener("change",()=>{
+  normalizeBet();
+  updatePrizeValues();
+});
 
 loadAccount();
 loadConfig();
