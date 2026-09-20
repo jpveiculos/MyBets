@@ -85,6 +85,7 @@
       </form>
     </section>
   </div>
-  <script src="/app.js?v=20260920-auth-gate"></script>
+  <script>if(new URLSearchParams(location.search).get("login")==="1")document.getElementById("authModal")?.classList.remove("hidden");</script>
+  <script src="/app.js?v=20260920-auth-gate-2"></script>
 </body>
 </html>
