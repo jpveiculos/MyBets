@@ -49,7 +49,7 @@ export async function rouletteConfig(){
     prizeIndexes:PRIZE_INDEXES,
     minBet,
     maxBet,
-    prizes:prizes.map((multiplier,position)=>({position,multiplier,sector:PRIZE_INDEXES[position]}))
+    prizes
   };
 }
 
