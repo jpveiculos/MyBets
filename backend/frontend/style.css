@@ -444,3 +444,11 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 /* Saque: bloqueio visual quando o bônus de cadastro ainda está ativo */
 .withdraw-btn:disabled{opacity:.42;filter:grayscale(.35);cursor:not-allowed;box-shadow:none;transform:none}.withdraw-btn:disabled:hover{filter:grayscale(.35);transform:none}
 .balance-card #bonus{color:#f0c657}
+
+
+/* Aplicativo MyBets — chamada na página inicial */
+.home-app-cta{margin:28px auto 0;max-width:760px;padding:20px 22px;display:flex;align-items:center;gap:16px;border:1px solid rgba(216,174,88,.38);border-radius:18px;background:linear-gradient(145deg,#111923,#080d14);box-shadow:0 16px 38px rgba(0,0,0,.34)}
+.home-app-icon{width:48px;height:48px;flex:0 0 48px;display:grid;place-items:center;border-radius:13px;background:#171b23;border:1px solid rgba(216,174,88,.35);font-size:23px}
+.home-app-copy{min-width:0;display:grid;gap:4px;flex:1}.home-app-copy strong{font-size:17px;color:#fff}.home-app-copy span{font-size:12px;line-height:1.45;color:var(--muted)}
+.home-app-button{display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:0 18px;border:1px solid rgba(245,197,66,.85);border-radius:11px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;font-size:11px;font-weight:950;letter-spacing:.7px;white-space:nowrap}
+@media(max-width:720px){.home-app-cta{margin-top:22px;padding:18px 16px;display:grid;grid-template-columns:48px 1fr;gap:12px}.home-app-copy strong{font-size:16px}.home-app-copy span{font-size:11px}.home-app-button{grid-column:1 / -1;width:100%;min-height:50px}}
