@@ -144,7 +144,7 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('signup_bonus_amount','100'),
 ('roulette_min_bet','0.50'),
 ('roulette_max_bet','100.00'),
-('roulette_prizes','[2,2,2,2,2,2,2,2,2,2]')
+('roulette_prizes','[2,3,2,4,3,2,4,3,2,5]')
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Migra somente configurações antigas da roleta para a configuração atual.
