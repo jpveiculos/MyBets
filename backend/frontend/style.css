@@ -36,8 +36,8 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .brand-wordmark{display:inline-flex;align-items:baseline;white-space:nowrap;font-family:"Arial Black","Helvetica Neue",Arial,sans-serif;font-style:italic;font-weight:900;letter-spacing:-.09em;line-height:.84;transform:skewX(-5deg);-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;text-decoration:none}
 .brand-word-my{color:#f0b92f;font-weight:900}
 .brand-word-bets{color:#f7f7f7;font-weight:900}
-.brand .brand-wordmark{font-size:39px}.admin-side-brand .brand-wordmark{font-size:37px}.admin-top-brand .brand-wordmark{font-size:32px}.admin-footer .brand-wordmark{font-size:29px}
-@media(max-width:900px){.brand .brand-wordmark{font-size:34px}.admin-top-brand .brand-wordmark{font-size:29px}.admin-footer .brand-wordmark{font-size:26px}}
+.brand .brand-wordmark{font-size:32px}.admin-side-brand .brand-wordmark{font-size:32px}.admin-top-brand .brand-wordmark{font-size:32px}.admin-footer .brand-wordmark{font-size:28px}
+@media(max-width:900px){.brand .brand-wordmark{font-size:29px}.admin-top-brand .brand-wordmark{font-size:29px}.admin-footer .brand-wordmark{font-size:26px}}
 
 /* Admin: notificações ficam somente no menu lateral */
 .admin-nav-notify{width:100%;display:flex;align-items:center;gap:16px;padding:14px 16px;margin-top:8px;border:0;border-radius:12px;background:transparent;color:#bfc5d1;font:650 16px inherit;text-align:left;cursor:pointer;position:relative}
