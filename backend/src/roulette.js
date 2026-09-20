@@ -1,16 +1,13 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 
-const TOTAL_SECTORS=54;
-const LOSS_SECTORS=45;
-const PRIZE_INDEXES=[0,6,12,18,24,30,36,42,48];
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,10];
+const TOTAL_SECTORS=40;
+const LOSS_SECTORS=32;
+const PRIZE_INDEXES=[0,5,10,15,20,25,30,35];
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5];
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
-const DRAW_DENOMINATOR=2700;
-const STANDARD_PRIZE_WEIGHT=50;
-const TEN_PRIZE_WEIGHT=49;
-const TOTAL_PRIZE_WEIGHT=8*STANDARD_PRIZE_WEIGHT+TEN_PRIZE_WEIGHT;
+const DRAW_DENOMINATOR=TOTAL_SECTORS;
 const LOSS_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>!PRIZE_INDEXES.includes(i));
 
 async function getSetting(key,fallback){
@@ -26,7 +23,7 @@ async function getConfig(){
 
   try{
     const parsed=JSON.parse(raw);
-    if(Array.isArray(parsed)&&parsed.length===9&&parsed.every(v=>Number.isFinite(Number(v))&&Number(v)>0)){
+    if(Array.isArray(parsed)&&parsed.length===8&&parsed.every(v=>Number.isFinite(Number(v))&&Number(v)>0)){
       prizes=parsed.map(Number);
     }
   }catch{}
@@ -38,19 +35,16 @@ async function getConfig(){
 
 function sortearSetor(){
   const draw=randomInt(DRAW_DENOMINATOR);
-  if(draw<TOTAL_PRIZE_WEIGHT){
-    if(draw<8*STANDARD_PRIZE_WEIGHT)return PRIZE_INDEXES[Math.floor(draw/STANDARD_PRIZE_WEIGHT)];
-    return PRIZE_INDEXES[8];
-  }
+  if(draw<PRIZE_INDEXES.length)return PRIZE_INDEXES[draw];
   return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
 }
 
 export async function rouletteConfig(){
   const {prizes,minBet,maxBet}=await getConfig();
   return {
-    id:"mybets-roulette-54",
+    id:"mybets-roulette-40",
     totalSectors:TOTAL_SECTORS,
-    prizeSectors:9,
+    prizeSectors:8,
     lossSectors:LOSS_SECTORS,
     prizeIndexes:PRIZE_INDEXES,
     minBet,
