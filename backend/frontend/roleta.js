@@ -64,10 +64,8 @@ function drawWheel(){
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","4");
       label.setAttribute("class","prize-label");
-      const logicalSector=i*2+3;
-      const prizePosition=PRIZE_INDEXES.indexOf(logicalSector);
-      const multiplier=Number(prizes[prizePosition]);
-      label.textContent=(Number.isFinite(multiplier)&&multiplier>0?multiplier:DEFAULT_PRIZES[prizePosition])+"x";
+      const prizePosition=(i-1)/2;
+      label.textContent=String(prizes[prizePosition])+"x";
       svg.appendChild(label);
     }
   }
