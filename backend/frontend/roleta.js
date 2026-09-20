@@ -1,6 +1,6 @@
-const TOTAL=54;
-const PRIZE_INDEXES=[0,6,12,18,24,30,36,42,48];
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,10];
+const TOTAL=40;
+const PRIZE_INDEXES=[0,5,10,15,20,25,30,35];
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5];
 
 let MIN_BET=.50;
 let MAX_BET=100;
@@ -42,13 +42,13 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=18, angle=360/visualSlices, radius=186;
+  const visualSlices=TOTAL, angle=360/visualSlices, radius=186;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%2===0;
+    const prize=PRIZE_INDEXES.includes(i);
     path.setAttribute("fill",prize?"#d9aa20":"#07090d");
     path.setAttribute("stroke",prize?"#ffe16a":"#6b4c0d");
     path.setAttribute("stroke-width",prize?"3":"2");
@@ -64,7 +64,8 @@ function drawWheel(){
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
       label.setAttribute("stroke","#000");label.setAttribute("stroke-width","4");
       label.setAttribute("class","prize-label");
-      label.textContent=`${prizes[i/2]||DEFAULT_PRIZES[i/2]}x`;
+      const prizePosition=PRIZE_INDEXES.indexOf(i);
+      label.textContent=`${prizes[prizePosition]||DEFAULT_PRIZES[prizePosition]}x`;
       svg.appendChild(label);
     }
   }
@@ -99,10 +100,9 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const group=Math.floor(s/6);
-  const start=group*6;
-  if(s===start)return group*40+10;
-  return group*40+20+(s-start-1+.5)*4;
+  const sectorAngle=360/TOTAL;
+  const center=s*sectorAngle+sectorAngle/2;
+  return -center;
 }
 
 function showWin(amount){
@@ -152,7 +152,7 @@ async function spin(){
     const sector=Number(d.spin.sector);
     const target=targetForSector(sector);
     const current=((rotation%360)+360)%360;
-    const delta=(360-target-current+360)%360;
+    const delta=((target-current)%360+360)%360;
     const from=rotation;
     const destination=rotation+1080+delta;
     const duration=5000;
