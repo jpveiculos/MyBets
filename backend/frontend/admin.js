@@ -85,7 +85,7 @@ function statusLabel(status){
 function statusClass(status){return "status-"+String(status||"").toLowerCase()}
 
 function renderUsers(users){
- $("users").innerHTML=users.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add">+ saldo</button></span></div>`).join("")||'<p class="muted">Nenhum usuário.</p>';
+ $("users").innerHTML=users.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Saldo: ${money(x.cash_balance)} • Bônus: ${money(x.bonus_balance)} • Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add-cash">+ saldo</button><button data-id="${x.id}" class="small-btn add-bonus">+ bônus</button></span></div>`).join("")||'<p class="muted">Nenhum usuário.</p>';
 }
 function renderDeposits(deposits){
  $("deposits").innerHTML=deposits.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${dateTime(x.created_at)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-deposit" data-id="'+x.id+'" data-username="'+esc(x.username)+'" data-amount="'+x.amount+'">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum depósito.</p>';
@@ -189,7 +189,8 @@ function bindActions(){
  document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
- document.querySelectorAll(".add").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
+ document.querySelectorAll(".add-cash").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo depositado:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
+ document.querySelectorAll(".add-bonus").forEach(b=>b.onclick=async()=>{const v=prompt("Valor de bônus para este jogador:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"bonus"})});
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
   const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
