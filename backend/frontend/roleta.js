@@ -94,7 +94,7 @@ function updatePrizeLabels(){
     // O texto acompanha a posição da fatia, mas compensa a rotação da roda.
     // Assim ele permanece no mesmo grau visual em relação à tela,
     // sem ficar atravessado quando a roleta termina o giro.
-    t.setAttribute("transform",`rotate(${sectorAngle-90-rotation} ${x} ${y})`);
+    const LABEL_ANGLE_OFFSET=-10;\n    t.setAttribute("transform",`rotate(${sectorAngle-90-rotation+LABEL_ANGLE_OFFSET} ${x} ${y})`);
   });
 }
 
