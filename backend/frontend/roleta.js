@@ -49,8 +49,17 @@ function drawWheel(){
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
     const prize=i%2===1;
-    path.setAttribute("fill",prize?"#d9aa20":"#07090d");
-    path.setAttribute("stroke",prize?"#ffe16a":"#6b4c0d");
+    const prizePosition=(i-1)/2;
+    const multiplier=Number(prizes[prizePosition]);
+    const prizeColors={
+      2:{fill:"#2f80ed",stroke:"#78b5ff"},
+      3:{fill:"#20a464",stroke:"#70e0a6"},
+      4:{fill:"#8e44ad",stroke:"#d39bea"},
+      5:{fill:"#e74c3c",stroke:"#ff9187"}
+    };
+    const color=prizeColors[multiplier]||{fill:"#d9aa20",stroke:"#ffe16a"};
+    path.setAttribute("fill",prize?color.fill:"#07090d");
+    path.setAttribute("stroke",prize?color.stroke:"#6b4c0d");
     path.setAttribute("stroke-width",prize?"3":"2");
     svg.appendChild(path);
 
@@ -67,8 +76,7 @@ function drawWheel(){
       label.setAttribute("data-sector-angle",String(start+angle/2));
       const LABEL_ANGLE_OFFSET=0;
       label.setAttribute("transform",`rotate(${start+angle/2-90+LABEL_ANGLE_OFFSET} ${x} ${y})`);
-      const prizePosition=(i-1)/2;
-      label.textContent=String(prizes[prizePosition])+"x";
+      label.textContent=String(multiplier)+"x";
       svg.appendChild(label);
     }
   }
