@@ -103,7 +103,7 @@ function renderRouletteSettings(settings){
  minField.value=map.roulette_min_bet??"0.50";
  maxField.value=map.roulette_max_bet??"100.00";
  try{
-  const prizes=JSON.parse(map.roulette_prizes??"[2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]");
+  const prizes=JSON.parse(map.roulette_prizes??"[2,2,2,2,2,2,2,2,2,2]");
   $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,2,4,3,2,5,3,2,4";
  }catch{
   $("roulettePrizes").value="2,3,2,4,3,2,5,3,2,4";
@@ -194,8 +194,8 @@ function bindActions(){
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
   const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
-  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==16||prizes.some(v=>!Number.isFinite(v)||v<=0)){
-   $("rouletteMessage").textContent="Confira mínimo, máximo e os 16 multiplicadores.";
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==10||prizes.some(v=>!Number.isFinite(v)||v<=0)){
+   $("rouletteMessage").textContent="Confira mínimo, máximo e os 10 multiplicadores.";
    return;
   }
   const button=$("rouletteSave");button.disabled=true;$("rouletteMessage").textContent="Salvando...";
