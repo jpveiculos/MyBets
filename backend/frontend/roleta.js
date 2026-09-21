@@ -2,7 +2,7 @@ const TOTAL=80;
 const GROUP_SIZE=5;
 const VISUAL_GROUPS=16;
 const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,2];
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 let MIN_BET=.50;
 let MAX_BET=100;
