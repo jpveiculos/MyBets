@@ -182,7 +182,7 @@ app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => 
 }));
 
 const frontendPath=path.join(__dirname,"../frontend");
-for (const page of ["roleta.html","my-tiger.html","my-dragon.html","lucky7.html"]) {
+for (const page of ["dashboard.html","roleta.html","my-tiger.html","my-dragon.html","lucky7.html"]) {
   app.get("/"+page, requireUserPage, (_req,res)=>res.sendFile(path.join(frontendPath,page)));
 }
 app.use(express.static(frontendPath));
