@@ -4,8 +4,9 @@ export async function listUsers() {
   const result=await pool.query(
     `SELECT id,username,cash_balance,bonus_balance,reserved_balance,
             (cash_balance+bonus_balance) AS total_balance,
+            is_banned,banned_at,banned_reason,is_deleted,
             created_at,updated_at
-       FROM users ORDER BY id DESC`
+       FROM users WHERE COALESCE(is_deleted,FALSE)=FALSE ORDER BY id DESC`
   );
   return result.rows;
 }
@@ -241,4 +242,48 @@ export async function listTransactions(limit=100) {
       ORDER BY t.created_at DESC LIMIT $1`,[Math.min(Math.max(Number(limit)||100,1),500)]
   );
   return result.rows;
+}
+
+
+export async function banUser({userId,adminId,reason}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const cleanReason=String(reason||"").trim();
+    if(!cleanReason) throw new Error("Informe o motivo do banimento.");
+    const r=await client.query("SELECT id FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE",[userId]);
+    if(!r.rows[0]) throw new Error("Usuário não encontrado.");
+    await client.query("UPDATE users SET is_banned=TRUE,banned_at=CURRENT_TIMESTAMP,banned_reason=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[cleanReason,userId]);
+    await client.query("DELETE FROM sessions WHERE user_id=$1",[userId]);
+    await client.query("INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details) VALUES('admin',$1,'user_banned','user',$2,$3)",[adminId,userId,JSON.stringify({reason:cleanReason})]);
+    await client.query("COMMIT");
+    return {userId,status:"banned"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function unbanUser({userId,adminId}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query("SELECT id FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE",[userId]);
+    if(!r.rows[0]) throw new Error("Usuário não encontrado.");
+    await client.query("UPDATE users SET is_banned=FALSE,banned_at=NULL,banned_reason=NULL,updated_at=CURRENT_TIMESTAMP WHERE id=$1",[userId]);
+    await client.query("INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details) VALUES('admin',$1,'user_unbanned','user',$2,'{}')",[adminId,userId]);
+    await client.query("COMMIT");
+    return {userId,status:"active"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function deleteUser({userId,adminId}) {
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const r=await client.query("SELECT id,username FROM users WHERE id=$1 AND COALESCE(is_deleted,FALSE)=FALSE FOR UPDATE",[userId]);
+    if(!r.rows[0]) throw new Error("Usuário não encontrado.");
+    await client.query("UPDATE users SET is_deleted=TRUE,is_banned=TRUE,banned_at=CURRENT_TIMESTAMP,banned_reason=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",["Usuário removido pelo administrador.",userId]);
+    await client.query("DELETE FROM sessions WHERE user_id=$1",[userId]);
+    await client.query("INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details) VALUES('admin',$1,'user_deleted','user',$2,$3)",[adminId,userId,JSON.stringify({username:r.rows[0].username})]);
+    await client.query("COMMIT");
+    return {userId,status:"deleted"};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
