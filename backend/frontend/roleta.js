@@ -1,6 +1,8 @@
-const TOTAL=40;
-const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%4===3);
-const DEFAULT_PRIZES=[2,3,2,4,3,2,4,3,2,5];
+const TOTAL=80;
+const GROUP_SIZE=5;
+const VISUAL_GROUPS=16;
+const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 let MIN_BET=.50;
 let MAX_BET=100;
@@ -42,20 +44,21 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=20, angle=360/visualSlices, radius=186;
+  const visualSlices=16, angle=360/visualSlices, radius=186;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%2===1;
-    const prizePosition=(i-1)/2;
+    const prize=i%2===0;
+    const prizePosition=i/2;
     const multiplier=Number(prizes[prizePosition]);
     const prizeColors={
       2:{fill:"#2f80ed",stroke:"#78b5ff"},
       3:{fill:"#20a464",stroke:"#70e0a6"},
       4:{fill:"#8e44ad",stroke:"#d39bea"},
-      5:{fill:"#e74c3c",stroke:"#ff9187"}
+      5:{fill:"#ff9f43",stroke:"#ffd08a"},
+      10:{fill:"#e53935",stroke:"#ff8a80"}
     };
     const color=prizeColors[multiplier]||{fill:"#d9aa20",stroke:"#ffe16a"};
     path.setAttribute("fill",prize?color.fill:"#07090d");
@@ -113,25 +116,20 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const group=Math.floor(s/4);
-  const position=s%4;
-  const groupAngle=360/(TOTAL/4);
-  const halfAngle=groupAngle/2;
-  const groupStart=group*groupAngle;
+  const group=Math.floor(s/GROUP_SIZE);
+  const position=s%GROUP_SIZE;
+  const visualAngle=360/VISUAL_GROUPS;
+  const groupStart=group*visualAngle;
 
-  // Cada grupo representa 4 setores lógicos:
-  // 3 perdas ocupam a fatia preta e 1 prêmio ocupa a fatia amarela.
-  // Como a roleta exibe 20 fatias visuais (10 pretas + 10 amarelas),
-  // o ponteiro termina sempre dentro da cor correspondente ao resultado.
-  if(position===3){
-    // Prêmio: centro exato da fatia amarela de 18°.
-    return -(groupStart+halfAngle+halfAngle/2);
+  // Cada grupo visual tem duas metades iguais:
+  // prêmio = 1 setor lógico ocupando metade visual;
+  // perda = 4 setores lógicos ocupando a outra metade.
+  if(position===4){
+    return -(groupStart+visualAngle/4);
   }
 
-  // A fatia preta de 18° contém três setores de perda de 6° cada.
-  // O ponteiro termina no centro do setor de perda sorteado.
-  const lossSectorAngle=halfAngle/3;
-  return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
+  const lossSectorAngle=(visualAngle/2)/4;
+  return -(groupStart+visualAngle/2+position*lossSectorAngle+lossSectorAngle/2);
 }
 
 function showWin(amount){
