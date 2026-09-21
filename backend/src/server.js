@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
-import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
+import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
 import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
@@ -144,6 +144,15 @@ app.post("/api/admin/withdrawals/:id/reject", requireAdmin, asyncRoute(async (re
 }));
 app.post("/api/admin/users/:id/balance", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await adjustBalance({userId:req.params.id,amount:req.body.amount,kind:req.body.kind,adminId:req.admin.id,note:req.body.note})});
+}));
+app.post("/api/admin/users/:id/ban", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,result:await banUser({userId:req.params.id,adminId:req.admin.id,reason:req.body.reason})});
+}));
+app.post("/api/admin/users/:id/unban", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,result:await unbanUser({userId:req.params.id,adminId:req.admin.id})});
+}));
+app.post("/api/admin/users/:id/delete", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,result:await deleteUser({userId:req.params.id,adminId:req.admin.id})});
 }));
 app.get("/api/push/public-key", asyncRoute(async (_req,res) => {
   res.json({ok:true,publicKey:getVapidPublicKey()});
