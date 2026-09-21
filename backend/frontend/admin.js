@@ -102,6 +102,7 @@ function renderRouletteSettings(settings){
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
  maxField.value=map.roulette_max_bet??"100.00";
+}
 function settingLabel(key){
  const labels={
   bonus_amount:"Bônus de cadastro",
