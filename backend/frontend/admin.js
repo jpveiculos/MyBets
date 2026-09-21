@@ -124,7 +124,7 @@ function settingValue(key,value){
 }
 function renderSettings(settings){
  const visible=settings.filter(x=>![
-  "roulette_min_bet","roulette_max_bet","roulette_prizes"
+  "roulette_min_bet","roulette_max_bet"
  ].includes(x.setting_key));
  $("settings").innerHTML=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("")||'<p class="muted">Nenhuma configuração adicional.</p>';
 }
