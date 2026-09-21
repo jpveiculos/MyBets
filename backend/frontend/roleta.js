@@ -120,18 +120,12 @@ function targetForSector(sector){
   const position=s%GROUP_SIZE;
   const visualAngle=360/VISUAL_GROUPS;
   const groupStart=group*visualAngle;
-
-  // Cada grupo visual tem duas metades iguais:
-  // prêmio = 1 setor lógico ocupando metade visual;
-  // perda = 4 setores lógicos ocupando a outra metade.
   if(position===4){
     return -(groupStart+visualAngle/4);
   }
-
   const lossSectorAngle=(visualAngle/2)/4;
   return -(groupStart+visualAngle/2+position*lossSectorAngle+lossSectorAngle/2);
 }
-
 function showWin(amount){
   const box=$("result");
   box.textContent=`Você ganhou ${money(amount)}`;
