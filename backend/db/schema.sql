@@ -148,7 +148,7 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('signup_bonus_amount','100'),
 ('roulette_min_bet','0.50'),
 ('roulette_max_bet','100.00'),
-('roulette_prizes','[2,3,2,4,3,2,4,3,2,5]')
+('roulette_prizes','[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]')
 ON CONFLICT (setting_key) DO NOTHING;
 
 -- Migra somente configurações antigas da roleta para a configuração atual.
@@ -158,12 +158,12 @@ UPDATE site_settings
        updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='roulette_prizes'
    AND setting_value LIKE '[%'
-   AND jsonb_array_length(setting_value::jsonb) IN (8,9,16);
+   AND jsonb_array_length(setting_value::jsonb) IN (8,9);
 
 -- Migra apenas a configuração padrão antiga de 10 prêmios.
 -- Valores personalizados salvos pelo administrador não são alterados.
 UPDATE site_settings
-   SET setting_value='[2,3,2,4,3,2,4,3,2,5]',
+   SET setting_value='[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]',
        updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='roulette_prizes'
    AND setting_value='[2,2,2,2,2,2,2,2,2,2]';
