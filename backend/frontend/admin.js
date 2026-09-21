@@ -109,8 +109,32 @@ function renderRouletteSettings(settings){
   $("roulettePrizes").value="2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10";
  }
 }
+function settingLabel(key){
+ const labels={
+  bonus_amount:"Bônus de cadastro",
+  bonus_wager_requirement:"Requisito de apostas do bônus",
+  pix_enabled:"Pix ativado",
+  pix_key:"Chave Pix",
+  pix_key_type:"Tipo da chave Pix",
+  pix_city:"Cidade do Pix",
+  pix_description:"Descrição do Pix",
+  pix_instructions:"Instruções para depósito",
+  roulette_min_bet:"Aposta mínima da roleta",
+  roulette_max_bet:"Aposta máxima da roleta",
+  roulette_prizes:"Prêmios da roleta"
+ };
+ return labels[key]||key.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
+}
+function settingValue(key,value){
+ if(key==="pix_enabled")return String(value).toLowerCase()==="true"?"Ativado":"Desativado";
+ if(key==="roulette_prizes"){try{return JSON.parse(value).join(" • ")+" x"}catch{}}
+ return value;
+}
 function renderSettings(settings){
- $("settings").innerHTML=settings.map(x=>`<div class="admin-row"><span><b>${esc(x.setting_key)}</b><small>${esc(x.setting_value)}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("")||'<p class="muted">Nenhuma configuração.</p>';
+ const visible=settings.filter(x=>![
+  "roulette_min_bet","roulette_max_bet","roulette_prizes"
+ ].includes(x.setting_key));
+ $("settings").innerHTML=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("")||'<p class="muted">Nenhuma configuração adicional.</p>';
 }
 function renderPendingEvents(deposits,withdrawals){
  const pendingDeposits=deposits.filter(x=>x.status==="pending");
