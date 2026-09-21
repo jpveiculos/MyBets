@@ -1,11 +1,12 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 
-const TOTAL_SECTORS=80;
-const LOSS_SECTORS=64;
+const TOTAL_SECTORS=400;
 const GROUP_SIZE=5;
+const LOSS_SECTORS=320;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
+const PRIZE_COUNTS={2:24,3:20,4:20,5:15,10:1};
+const PRIZE_MULTIPLIERS=Object.entries(PRIZE_COUNTS).flatMap(([multiplier,count])=>Array.from({length:count},()=>Number(multiplier)));
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
@@ -17,21 +18,11 @@ async function getSetting(key,fallback){
 }
 
 async function getConfig(){
-  let prizes=[...DEFAULT_PRIZES];
   const minRaw=Number(await getSetting("roulette_min_bet",String(DEFAULT_MIN_BET)));
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
-  const raw=await getSetting("roulette_prizes",JSON.stringify(DEFAULT_PRIZES));
-
-  try{
-    const parsed=JSON.parse(raw);
-    if(Array.isArray(parsed)&&parsed.length===16&&parsed.every(v=>Number.isFinite(Number(v))&&Number(v)>0)){
-      prizes=parsed.map(Number);
-    }
-  }catch{}
-
   const minBet=Number.isFinite(minRaw)&&minRaw>=DEFAULT_MIN_BET?Number(minRaw.toFixed(2)):DEFAULT_MIN_BET;
   const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Number(maxRaw.toFixed(2)):DEFAULT_MAX_BET;
-  return {prizes,minBet,maxBet};
+  return {minBet,maxBet,prizes:[...PRIZE_MULTIPLIERS]};
 }
 
 function sortearSetor(){
@@ -50,7 +41,14 @@ export async function rouletteConfig(){
     prizeIndexes:PRIZE_INDEXES,
     minBet,
     maxBet,
-    prizes
+    prizes,
+    probability:{
+      2:6,
+      3:5,
+      4:5,
+      5:3.75,
+      10:.25
+    }
   };
 }
 
