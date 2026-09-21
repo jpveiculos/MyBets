@@ -46,6 +46,29 @@ function drawWheel(){
   const ns="http://www.w3.org/2000/svg";
   const visualSlices=32, angle=360/visualSlices, radius=198;
 
+  const defs=document.createElementNS(ns,"defs");
+  const gradients={
+    black:["#11151a","#05070a","#000000"],
+    2:["#78b5ff","#2f80ed","#123d80"],
+    3:["#70e0a6","#20a464","#0b5b35"],
+    4:["#d39bea","#8e44ad","#4b1768"],
+    5:["#ffd08a","#ff9f43","#9a4d08"],
+    10:["#ff8a80","#e53935","#7d0905"]
+  };
+  Object.entries(gradients).forEach(([key,stops])=>{
+    const g=document.createElementNS(ns,"linearGradient");
+    g.setAttribute("id","wheel3d-"+key);
+    g.setAttribute("x1","0%");g.setAttribute("y1","0%");
+    g.setAttribute("x2","100%");g.setAttribute("y2","100%");
+    [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{
+      const s=document.createElementNS(ns,"stop");
+      s.setAttribute("offset",offset);s.setAttribute("stop-color",color);
+      g.appendChild(s);
+    });
+    defs.appendChild(g);
+  });
+  svg.appendChild(defs);
+
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
@@ -61,9 +84,9 @@ function drawWheel(){
       10:{fill:"#e53935",stroke:"#ff8a80"}
     };
     const color=prizeColors[multiplier]||{fill:"#d9aa20",stroke:"#ffe16a"};
-    path.setAttribute("fill",prize?color.fill:"#07090d");
-    path.setAttribute("stroke",prize?color.stroke:"#6b4c0d");
-    path.setAttribute("stroke-width",prize?"3":"2");
+    path.setAttribute("fill",prize?`url(#wheel3d-${multiplier})`:"url(#wheel3d-black)");
+    path.setAttribute("stroke",prize?color.stroke:"#3d4148");
+    path.setAttribute("stroke-width",prize?"2.5":"1.5");
     svg.appendChild(path);
 
     if(prize){
