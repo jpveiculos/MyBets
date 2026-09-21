@@ -160,6 +160,13 @@ UPDATE site_settings
    AND setting_value LIKE '[%'
    AND jsonb_array_length(setting_value::jsonb) IN (8,9);
 
+-- Migra a configuração padrão antiga de 10 prêmios para a configuração atual de 16 prêmios.
+UPDATE site_settings
+   SET setting_value='[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]',
+       updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='roulette_prizes'
+   AND setting_value='[2,3,2,4,3,2,4,3,2,5]';
+
 -- Migra apenas a configuração padrão antiga de 10 prêmios.
 -- Valores personalizados salvos pelo administrador não são alterados.
 UPDATE site_settings
