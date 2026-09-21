@@ -147,8 +147,7 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('bonus_wager_requirement','0'),
 ('signup_bonus_amount','100'),
 ('roulette_min_bet','0.50'),
-('roulette_max_bet','100.00'),
-('roulette_prizes','[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]')
+('roulette_max_bet','100.00')
 ON CONFLICT (setting_key) DO NOTHING;
 
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
