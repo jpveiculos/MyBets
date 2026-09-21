@@ -97,18 +97,11 @@ function renderTransactions(transactions){
  $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${dateTime(x.created_at)}</small></span></div>`).join("")||'<p class="muted">Nenhuma transação.</p>';
 }
 function renderRouletteSettings(settings){
- const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet"),prizesField=$("roulettePrizes");
- if(!minField||!maxField||!prizesField)return;
+ const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet");
+ if(!minField||!maxField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
  maxField.value=map.roulette_max_bet??"100.00";
- try{
-  const prizes=JSON.parse(map.roulette_prizes??"[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]");
-  $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10";
- }catch{
-  $("roulettePrizes").value="2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10";
- }
-}
 function settingLabel(key){
  const labels={
   bonus_amount:"Bônus de cadastro",
@@ -220,17 +213,15 @@ function bindActions(){
  document.querySelectorAll(".delete-user").forEach(b=>b.onclick=async()=>{if(!confirm("Excluir este usuário? O histórico financeiro será preservado e a conta ficará permanentemente inacessível."))return;await action("/api/admin/users/"+b.dataset.id+"/delete","POST",{})});
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
-  const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
-  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==16||prizes.some(v=>!Number.isFinite(v)||v<=0)){
-   $("rouletteMessage").textContent="Confira mínimo, máximo e os 16 multiplicadores.";
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min){
+   $("rouletteMessage").textContent="Confira o valor mínimo e o valor máximo da aposta.";
    return;
   }
   const button=$("rouletteSave");button.disabled=true;$("rouletteMessage").textContent="Salvando...";
   try{
    await api("/api/admin/settings/roulette_min_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:min.toFixed(2)})});
    await api("/api/admin/settings/roulette_max_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:max.toFixed(2)})});
-   await api("/api/admin/settings/roulette_prizes",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:JSON.stringify(prizes)})});
-   $("rouletteMessage").textContent="Configurações da roleta salvas.";
+   $("rouletteMessage").textContent="Configurações da roleta salvas. A distribuição de probabilidades é definida pela configuração oficial do jogo.";
    await load();
   }catch(e){$("rouletteMessage").textContent=e.message||"Não foi possível salvar."}
   finally{button.disabled=false}
