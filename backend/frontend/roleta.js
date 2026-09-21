@@ -48,12 +48,12 @@ function drawWheel(){
 
   const defs=document.createElementNS(ns,"defs");
   const gradients={
-    black:["#15191e","#050608","#000000"],
-    2:["#d7edff","#168cff","#0047c7"],
-    3:["#b8ffd8","#00e676","#008f4c"],
-    4:["#f2c4ff","#b000ff","#6a00a8"],
-    5:["#fff0a8","#ff8c00","#d94a00"],
-    10:["#ffb0aa","#ff2418","#c40000"]
+    black:["#11151a","#020306","#000000"],
+    2:["#e8f7ff","#008cff","#003cff"],
+    3:["#c8ffdf","#00ff66","#007a3d"],
+    4:["#f7d2ff","#c000ff","#6500d9"],
+    5:["#fff5b5","#ff9700","#e63900"],
+    10:["#ffc0bc","#ff170d","#a80000"]
   };
   Object.entries(gradients).forEach(([key,stops])=>{
     const g=document.createElementNS(ns,"linearGradient");
@@ -77,11 +77,11 @@ function drawWheel(){
     const prizePosition=(i-1)/2;
     const multiplier=Number(prizes[prizePosition]);
     const prizeColors={
-      2:{fill:"#168cff",stroke:"#a8d8ff"},
-      3:{fill:"#00d977",stroke:"#9affca"},
-      4:{fill:"#a600ff",stroke:"#e2a5ff"},
-      5:{fill:"#ff8a00",stroke:"#ffe29a"},
-      10:{fill:"#ff2117",stroke:"#ffaaa5"}
+      2:{fill:"#008cff",stroke:"#c4e9ff"},
+      3:{fill:"#00ef66",stroke:"#b4ffd2"},
+      4:{fill:"#b400ff",stroke:"#edbaff"},
+      5:{fill:"#ff9500",stroke:"#fff0ae"},
+      10:{fill:"#ff1710",stroke:"#ffc0bc"}
     };
     const color=prizeColors[multiplier]||{fill:"#d9aa20",stroke:"#ffe16a"};
     path.setAttribute("fill",prize?`url(#wheel3d-${multiplier})`:"url(#wheel3d-black)");
