@@ -86,9 +86,5 @@ $("withdrawForm").onsubmit=async e=>{
   }catch(e){m.textContent=e.message}
 };
 $("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden")};
-$("rouletteBtn").onclick=()=>{location.href="/roleta.html"};
-$("tigerBtn").onclick=()=>{location.href="/my-tiger.html"};
-$("dragonBtn").onclick=()=>{location.href="/my-dragon.html"};
-$("lucky7Btn").onclick=()=>{location.href="/lucky7.html"};
 $("logout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.href="/"};
 load();
