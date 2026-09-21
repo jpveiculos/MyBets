@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS users (
   bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   reserved_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
+  is_banned BOOLEAN NOT NULL DEFAULT FALSE,
+  banned_at TIMESTAMP,
+  banned_reason TEXT,
+  is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -169,3 +173,9 @@ UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',up
  WHERE setting_key='pix_key' AND NULLIF(TRIM(setting_value),'') IS NULL;
 UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_key_type' AND NULLIF(TRIM(setting_value),'') IS NULL;
+
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_reason TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN NOT NULL DEFAULT FALSE;
