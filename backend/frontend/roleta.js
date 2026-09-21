@@ -44,7 +44,7 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=32, angle=360/visualSlices, radius=186;
+  const visualSlices=32, angle=360/visualSlices, radius=198;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
@@ -68,7 +68,7 @@ function drawWheel(){
 
     if(prize){
       const label=document.createElementNS(ns,"text");
-      const [x,y]=polar(200,200,135,start+angle/2);
+      const [x,y]=polar(200,200,146,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
       label.setAttribute("fill","#fff");label.setAttribute("font-size","22");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
@@ -85,7 +85,7 @@ function drawWheel(){
   }
 
   const ring=document.createElementNS(ns,"circle");
-  ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","187");
+  ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","199");
   ring.setAttribute("fill","none");ring.setAttribute("stroke","#f4c83f");ring.setAttribute("stroke-width","3");
   svg.appendChild(ring);
 }
