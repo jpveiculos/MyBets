@@ -70,7 +70,7 @@ function drawWheel(){
       const label=document.createElementNS(ns,"text");
       const [x,y]=polar(200,200,146,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
-      label.setAttribute("fill","#fff");label.setAttribute("font-size","22");
+      label.setAttribute("fill","#fff");label.setAttribute("font-size","20");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
       label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
