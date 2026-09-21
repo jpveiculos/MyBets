@@ -21,15 +21,6 @@ async function getConfig(){
   let prizes=[...DEFAULT_PRIZES];
   const minRaw=Number(await getSetting("roulette_min_bet",String(DEFAULT_MIN_BET)));
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
-  const raw=await getSetting("roulette_prizes",JSON.stringify(DEFAULT_PRIZES));
-
-  try{
-    const parsed=JSON.parse(raw);
-    if(Array.isArray(parsed)&&parsed.length===16&&parsed.every(v=>Number.isFinite(Number(v))&&Number(v)>0)){
-      prizes=parsed.map(Number);
-    }
-  }catch{}
-
   const minBet=Number.isFinite(minRaw)&&minRaw>=DEFAULT_MIN_BET?Number(minRaw.toFixed(2)):DEFAULT_MIN_BET;
   const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Number(maxRaw.toFixed(2)):DEFAULT_MAX_BET;
   return {prizes,minBet,maxBet};
