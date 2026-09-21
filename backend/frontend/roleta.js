@@ -48,12 +48,12 @@ function drawWheel(){
 
   const defs=document.createElementNS(ns,"defs");
   const gradients={
-    black:["#11151a","#05070a","#000000"],
-    2:["#78b5ff","#2f80ed","#123d80"],
-    3:["#70e0a6","#20a464","#0b5b35"],
-    4:["#d39bea","#8e44ad","#4b1768"],
-    5:["#ffd08a","#ff9f43","#9a4d08"],
-    10:["#ff8a80","#e53935","#7d0905"]
+    black:["#20252b","#0b0d10","#000000"],
+    2:["#9dccff","#1687ff","#063d9c"],
+    3:["#8affbd","#16c978","#04733f"],
+    4:["#efb6ff","#a72ee0","#5c087d"],
+    5:["#ffe09a","#ff8a00","#a63d00"],
+    10:["#ff9a93","#ff1d12","#980500"]
   };
   Object.entries(gradients).forEach(([key,stops])=>{
     const g=document.createElementNS(ns,"linearGradient");
