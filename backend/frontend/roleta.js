@@ -134,7 +134,9 @@ function normalizeBet(){
 }
 
 function changeBet(delta){
-  $("betAmount").value=Math.min(MAX_BET,Math.max(MIN_BET,Number((getBet()+delta).toFixed(2)))).toFixed(2);
+  const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((getBet()+delta).toFixed(2))));
+  $("betAmount").value=next.toFixed(2);
+  updatePrizeValues();
 }
 
 function targetForSector(sector){
