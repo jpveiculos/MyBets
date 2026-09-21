@@ -91,10 +91,12 @@
               <input id="rouletteMaxBet" type="number" min="0.01" step="0.01" inputmode="decimal">
             </label>
           </div>
-          <label class="admin-roulette-prizes">Prêmios dos 16 setores premiados
-            <input id="roulettePrizes" type="text" inputmode="decimal" placeholder="2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10">
-          </label>
-          <p class="muted">Informe 16 multiplicadores separados por vírgula.</p>
+          <div class="admin-roulette-probability">
+            <h3>Distribuição atual</h3>
+            <p class="muted">A roleta usa 400 setores de mesma probabilidade. São 320 setores de perda e 80 setores premiados.</p>
+            <p class="muted">2x: 6% • 3x: 5% • 4x: 5% • 5x: 3,75% • 10x: 0,25%</p>
+            <p class="muted">A probabilidade de 10x foi reduzida em 1 ponto percentual e esse 1 ponto foi transferido para 2x.</p>
+          </div>
           <div class="row-actions admin-roulette-save-actions">
             <button class="primary-btn" id="rouletteSave" type="button">Salvar configurações da roleta</button>
           </div>
