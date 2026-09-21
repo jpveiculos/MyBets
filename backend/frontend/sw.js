@@ -1,4 +1,4 @@
-const CACHE_NAME="mybets-v3";
+const CACHE_NAME="mybets-v4";
 const APP_SHELL=["/","/index.html","/admin.html","/admin-manifest.json","/style.css"];
 
 self.addEventListener("install",event=>{
