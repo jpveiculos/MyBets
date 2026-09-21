@@ -197,8 +197,8 @@ function bindActions(){
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
   const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
-  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==10||prizes.some(v=>!Number.isFinite(v)||v<=0)){
-   $("rouletteMessage").textContent="Confira mínimo, máximo e os 10 multiplicadores.";
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==16||prizes.some(v=>!Number.isFinite(v)||v<=0)){
+   $("rouletteMessage").textContent="Confira mínimo, máximo e os 16 multiplicadores.";
    return;
   }
   const button=$("rouletteSave");button.disabled=true;$("rouletteMessage").textContent="Salvando...";
