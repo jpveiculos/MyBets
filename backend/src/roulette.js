@@ -5,7 +5,8 @@ const TOTAL_SECTORS=80;
 const LOSS_SECTORS=64;
 const GROUP_SIZE=5;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,2];
+const PRIZE_WEIGHTS={2:4.5,3:4.5,4:4,5:3};
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
@@ -36,8 +37,21 @@ async function getConfig(){
 
 function sortearSetor(){
   const draw=randomInt(DRAW_DENOMINATOR);
-  if(draw<PRIZE_INDEXES.length)return PRIZE_INDEXES[draw];
-  return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
+  if(draw>=PRIZE_INDEXES.length)return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
+
+  const weightedGroups=Object.entries(PRIZE_WEIGHTS).map(([multiplier,weight])=>({
+    multiplier:Number(multiplier),weight
+  }));
+  const totalWeight=weightedGroups.reduce((sum,item)=>sum+item.weight,0);
+  let pick=(randomInt(1000000)/1000000)*totalWeight;
+  let selected=weightedGroups[weightedGroups.length-1].multiplier;
+  for(const group of weightedGroups){
+    if(pick<group.weight){selected=group.multiplier;break;}
+    pick-=group.weight;
+  }
+
+  const matching=PRIZE_INDEXES.filter((_,index)=>Number(DEFAULT_PRIZES[index])===selected);
+  return matching[randomInt(matching.length)];
 }
 
 export async function rouletteConfig(){
@@ -50,7 +64,8 @@ export async function rouletteConfig(){
     prizeIndexes:PRIZE_INDEXES,
     minBet,
     maxBet,
-    prizes
+    prizes,
+    probability:{2:5.625,3:5.625,4:5,5:3.75}
   };
 }
 
