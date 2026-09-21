@@ -44,14 +44,14 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=16, angle=360/visualSlices, radius=186;
+  const visualSlices=32, angle=360/visualSlices, radius=186;
 
   for(let i=0;i<visualSlices;i++){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%2===0;
-    const prizePosition=i/2;
+    const prize=i%2===1;
+    const prizePosition=(i-1)/2;
     const multiplier=Number(prizes[prizePosition]);
     const prizeColors={
       2:{fill:"#2f80ed",stroke:"#78b5ff"},
@@ -121,10 +121,10 @@ function targetForSector(sector){
   const visualAngle=360/VISUAL_GROUPS;
   const groupStart=group*visualAngle;
   if(position===4){
-    return -(groupStart+visualAngle/4);
+    return -(groupStart+visualAngle/2+visualAngle/4);
   }
   const lossSectorAngle=(visualAngle/2)/4;
-  return -(groupStart+visualAngle/2+position*lossSectorAngle+lossSectorAngle/2);
+  return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
 }
 function showWin(amount){
   const box=$("result");
