@@ -53,13 +53,17 @@ export async function requireUser(req, res, next) {
   try {
     const cookies = parseCookies(req);
     const result = await pool.query(
-      `SELECT s.id, u.id AS user_id, u.username
+      `SELECT s.id, u.id AS user_id, u.username, u.is_banned, u.is_deleted, u.banned_reason
          FROM sessions s
          JOIN users u ON u.id=s.user_id
         WHERE s.id=$1 AND s.expires_at>CURRENT_TIMESTAMP`,
       [cookies.mybets_player_session]
     );
     if (!result.rows[0]) return res.status(401).json({ message:"Sessão do jogador inválida ou expirada." });
+    if (result.rows[0].is_deleted || result.rows[0].is_banned) {
+      await pool.query("DELETE FROM sessions WHERE id=$1",[result.rows[0].id]);
+      return res.status(403).json({ message: result.rows[0].is_deleted ? "Usuário removido pelo administrador." : (result.rows[0].banned_reason ? `Usuário banido. Motivo: ${result.rows[0].banned_reason}` : "Usuário banido.") });
+    }
     req.user = { id: result.rows[0].user_id, username: result.rows[0].username };
     await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
     setSessionCookie(res,result.rows[0].id,"player");
@@ -71,13 +75,17 @@ export async function requireUserPage(req, res, next) {
   try {
     const cookies = parseCookies(req);
     const result = await pool.query(
-      `SELECT s.id
+      `SELECT s.id, u.is_banned, u.is_deleted
          FROM sessions s
          JOIN users u ON u.id=s.user_id
         WHERE s.id=$1 AND s.expires_at>CURRENT_TIMESTAMP`,
       [cookies.mybets_player_session]
     );
     if (!result.rows[0]) return res.redirect("/?login=1");
+    if (result.rows[0].is_deleted || result.rows[0].is_banned) {
+      await pool.query("DELETE FROM sessions WHERE id=$1",[result.rows[0].id]);
+      return res.redirect("/?login=1");
+    }
     await pool.query("UPDATE sessions SET expires_at=CURRENT_TIMESTAMP + INTERVAL '30 days' WHERE id=$1",[result.rows[0].id]);
     setSessionCookie(res,result.rows[0].id,"player");
     next();
@@ -143,9 +151,11 @@ export async function register({ username, password }) {
 }
 
 export async function loginPlayer({ username, password }) {
-  const result = await pool.query("SELECT id,username,password_hash FROM users WHERE username=$1",[String(username || "").trim()]);
+  const result = await pool.query("SELECT id,username,password_hash,is_banned,is_deleted,banned_reason FROM users WHERE username=$1",[String(username || "").trim()]);
   const user=result.rows[0];
   if (!user || !verifyPassword(password,user.password_hash)) throw new Error("Usuário ou senha inválidos.");
+  if (user.is_deleted) throw new Error("Usuário removido pelo administrador.");
+  if (user.is_banned) throw new Error(user.banned_reason ? `Usuário banido. Motivo: ${user.banned_reason}` : "Usuário banido.");
   const sessionId=await createSession({userId:user.id});
   return { user:{id:user.id,username:user.username}, sessionId };
 }
