@@ -103,10 +103,10 @@ function renderRouletteSettings(settings){
  minField.value=map.roulette_min_bet??"0.50";
  maxField.value=map.roulette_max_bet??"100.00";
  try{
-  const prizes=JSON.parse(map.roulette_prizes??"[2,2,2,2,2,2,2,2,2,2]");
-  $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,2,4,3,2,5,3,2,4";
+  const prizes=JSON.parse(map.roulette_prizes??"[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]");
+  $("roulettePrizes").value=Array.isArray(prizes)?prizes.join(","):"2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10";
  }catch{
-  $("roulettePrizes").value="2,3,2,4,3,2,5,3,2,4";
+  $("roulettePrizes").value="2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10";
  }
 }
 function renderSettings(settings){
