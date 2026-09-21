@@ -147,11 +147,9 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('bonus_wager_requirement','0'),
 ('signup_bonus_amount','100'),
 ('roulette_min_bet','0.50'),
-('roulette_max_bet','100.00')
+('roulette_max_bet','100.00'),
+('roulette_prizes','[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10]')
 ON CONFLICT (setting_key) DO NOTHING;
-
--- A distribuição de prêmios da roleta é definida diretamente em backend/src/roulette.js.
-DELETE FROM site_settings WHERE setting_key='roulette_prizes';
 
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_enabled' AND NULLIF(TRIM(setting_value),'') IS NULL;
