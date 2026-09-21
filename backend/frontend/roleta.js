@@ -73,7 +73,7 @@ function drawWheel(){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const group=i/2;
+    const group=Math.floor(i/2);
     const isPrize=i%2===1;
     const prizeColors={2:{fill:"#2f80ed",stroke:"#78b5ff"},3:{fill:"#20a464",stroke:"#70e0a6"},4:{fill:"#8e44ad",stroke:"#d39bea"},5:{fill:"#ff9f43",stroke:"#ffd08a"},10:{fill:"#e53935",stroke:"#ff8a80"}};
     if(!isPrize){
@@ -119,7 +119,8 @@ function drawWheel(){
 function updatePrizeValues(){
   const bet=getBet();
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
-    const multiplier=Number(prizes[index]||DEFAULT_PRIZES[index]);
+    const prizeIndex=index*5;
+    const multiplier=Number(prizes[prizeIndex]||DEFAULT_PRIZES[prizeIndex]);
     const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
     t.textContent=money(value);
   });
@@ -147,12 +148,14 @@ function targetForSector(sector){
   const visualAngle=360/VISUAL_GROUPS;
   const groupStart=group*visualAngle;
   const half=visualAngle/2;
-  if(position>=20){
+  if(position%5===4){
+    const prizeRank=Math.floor(position/5);
     const prizeSectorAngle=half/5;
-    return -(groupStart+half+(position-20)*prizeSectorAngle+prizeSectorAngle/2);
+    return -(groupStart+half+prizeRank*prizeSectorAngle+prizeSectorAngle/2);
   }
+  const lossRank=position-Math.floor(position/5);
   const lossSectorAngle=half/20;
-  return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
+  return -(groupStart+lossRank*lossSectorAngle+lossSectorAngle/2);
 }
 function showWin(amount){
   const box=$("result");
