@@ -214,15 +214,17 @@ function bindActions(){
  document.querySelectorAll(".delete-user").forEach(b=>b.onclick=async()=>{if(!confirm("Excluir este usuário? O histórico financeiro será preservado e a conta ficará permanentemente inacessível."))return;await action("/api/admin/users/"+b.dataset.id+"/delete","POST",{})});
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",",".")),max=Number(String($("rouletteMaxBet").value).replace(",","."));
-  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min){
-   $("rouletteMessage").textContent="Confira o valor mínimo e o valor máximo da aposta.";
+  const prizes=String($("roulettePrizes").value).split(",").map(v=>Number(v.trim().replace(",",".")));
+  if(!Number.isFinite(min)||min<=0||!Number.isFinite(max)||max<min||prizes.length!==16||prizes.some(v=>!Number.isFinite(v)||v<=0)){
+   $("rouletteMessage").textContent="Confira mínimo, máximo e os 16 multiplicadores.";
    return;
   }
   const button=$("rouletteSave");button.disabled=true;$("rouletteMessage").textContent="Salvando...";
   try{
    await api("/api/admin/settings/roulette_min_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:min.toFixed(2)})});
    await api("/api/admin/settings/roulette_max_bet",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:max.toFixed(2)})});
-   $("rouletteMessage").textContent="Configurações da roleta salvas. A distribuição de probabilidades é definida pela configuração oficial do jogo.";
+   await api("/api/admin/settings/roulette_prizes",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:JSON.stringify(prizes)})});
+   $("rouletteMessage").textContent="Configurações da roleta salvas.";
    await load();
   }catch(e){$("rouletteMessage").textContent=e.message||"Não foi possível salvar."}
   finally{button.disabled=false}
