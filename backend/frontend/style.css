@@ -487,3 +487,22 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .home-social-link{width:100%;min-height:40px;padding:0 8px;font-size:10px}
   .home-social-link svg{width:17px;height:17px}
 }
+
+
+/* ===== REDES SOCIAIS — ABAIXO DO CARROSSEL DE JOGOS ===== */
+.home-social-cta{width:min(720px,100%);margin:2px auto 0;padding:18px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;border:1px solid rgba(216,174,88,.28);border-radius:18px;background:linear-gradient(145deg,#111923,#080d14);box-shadow:0 14px 34px rgba(0,0,0,.28);text-align:center}
+.home-social-cta-title{color:#f5c542;font-size:14px;font-weight:900;letter-spacing:.4px}
+.home-social-cta-links{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.home-social-cta-link{min-height:52px;display:flex;align-items:center;justify-content:center;gap:10px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#0b1017;color:#fff;text-decoration:none;font-size:14px;font-weight:900;transition:transform .15s ease,filter .15s ease,border-color .15s ease}
+.home-social-cta-link:hover{transform:translateY(-1px);filter:brightness(1.1)}
+.home-social-cta-link svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.home-social-cta-link svg .fill{fill:currentColor;stroke:none}
+.home-social-cta-link.instagram{border-color:rgba(220,100,180,.45);color:#f3b1df}
+.home-social-cta-link.whatsapp{border-color:rgba(53,197,138,.45);color:#62e0ad}
+@media(max-width:720px){
+  .home-social-cta{margin-top:2px;padding:15px 12px;border-radius:15px;gap:10px}
+  .home-social-cta-title{font-size:13px}
+  .home-social-cta-links{gap:8px}
+  .home-social-cta-link{min-height:48px;font-size:12px;gap:7px;border-radius:11px}
+  .home-social-cta-link svg{width:19px;height:19px}
+}
