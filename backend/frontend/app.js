@@ -42,7 +42,7 @@ function showAuth(mode="login"){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.mode===mode));
   $("authTitle").textContent=mode==="login"?"Entrar":"Criar conta";
   $("authSubmit").textContent=mode==="login"?"Entrar":"Criar conta";
-  $("password").autocomplete=mode==="login"?"current-password":"new-password";
+  $("password").autocomplete=mode==="login"?"current-password":"new-password";\n  $("cpfField")?.classList.toggle("hidden", mode!=="register");\n  if(mode!=="register") $("cpf").value="";
   $("authMessage").textContent="";
 }
 
@@ -78,6 +78,13 @@ $("authForm")?.addEventListener("submit",async e=>{
   }finally{
     button.disabled=false;
   }
+});
+
+$("cpf")?.addEventListener("input", e => {
+  const digits = e.target.value.replace(/\\D/g, "").slice(0, 11);
+  e.target.value = digits.replace(/^(\\d{3})(\\d)/, "$1.$2")
+    .replace(/^(\\d{3})\\.(\\d{3})(\\d)/, "$1.$2.$3")
+    .replace(/^(\\d{3})\\.(\\d{3})\\.(\\d{3})(\\d)/, "$1.$2.$3-$4");
 });
 
 checkPlayerSession();
