@@ -191,6 +191,9 @@ export async function register({ username, password, cpf }) {
     return result.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
+    if (error?.code === "23505" && (error?.constraint === "uq_users_cpf" || error?.constraint === "signup_bonus_claims_cpf_key")) {
+      throw new Error("Este CPF já possui uma conta cadastrada ou já utilizou o bônus de cadastro.");
+    }
     throw error;
   } finally {
     client.release();
