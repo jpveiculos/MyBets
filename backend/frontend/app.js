@@ -44,6 +44,8 @@ function showAuth(mode="login"){
   $("authSubmit").textContent=mode==="login"?"Entrar":"Criar conta";
   $("password").autocomplete=mode==="login"?"current-password":"new-password";
   $("cpfField")?.classList.toggle("hidden", mode!=="register");
+  $("cpfHelp")?.classList.toggle("hidden", mode!=="register");
+  $("cpf")?.toggleAttribute("required", mode==="register");
   if(mode!=="register") $("cpf").value="";
   $("authMessage").textContent="";
 }
