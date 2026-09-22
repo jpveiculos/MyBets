@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username VARCHAR(50) UNIQUE NOT NULL,
+  cpf VARCHAR(11),
   password_hash TEXT NOT NULL,
   cash_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -157,6 +158,9 @@ UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',up
 UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_key_type' AND NULLIF(TRIM(setting_value),'') IS NULL;
 
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS cpf VARCHAR(11);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_users_cpf ON users(cpf) WHERE cpf IS NOT NULL;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP;
