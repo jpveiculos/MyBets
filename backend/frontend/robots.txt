@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin
+Disallow: /dashboard.html
+Disallow: /roleta.html
+Disallow: /my-tiger.html
+Disallow: /my-dragon.html
+Disallow: /lucky7.html
+Sitemap: https://mybets.app.br/sitemap.xml
