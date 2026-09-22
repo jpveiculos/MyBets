@@ -114,9 +114,16 @@ function normalizeCPF(value) {
   return String(value || "").replace(/\D/g, "");
 }
 
+const BLOCKED_TEST_CPFS = new Set([
+  "01234567890",
+  "12345678909",
+  "98765432100"
+]);
+
 function isValidCPF(value) {
   const cpf = normalizeCPF(value);
   if (!/^\d{11}$/.test(cpf)) return false;
+  if (BLOCKED_TEST_CPFS.has(cpf)) return false;
   if (/^(\d)\1{10}$/.test(cpf)) return false;
   let sum = 0;
   for (let i = 0; i < 9; i++) sum += Number(cpf[i]) * (10 - i);
@@ -147,6 +154,12 @@ export async function register({ username, password, cpf }) {
     );
     if (existingCPF.rows[0]) throw new Error("Este CPF já possui uma conta cadastrada.");
 
+    const claimedBonus = await client.query(
+      "SELECT id FROM signup_bonus_claims WHERE cpf=$1 LIMIT 1",
+      [normalizedCPF]
+    );
+    if (claimedBonus.rows[0]) throw new Error("Este CPF já utilizou o bônus de cadastro.");
+
     const setting = await client.query(
       "SELECT setting_value FROM site_settings WHERE setting_key='signup_bonus_amount'"
     );
@@ -167,6 +180,12 @@ export async function register({ username, password, cpf }) {
         [result.rows[0].id, signupBonus, "Bônus de cadastro concedido automaticamente."]
       );
     }
+
+    await client.query(
+      `INSERT INTO signup_bonus_claims(cpf,user_id,bonus_amount)
+       VALUES($1,$2,$3)`,
+      [normalizedCPF, result.rows[0].id, signupBonus]
+    );
 
     await client.query("COMMIT");
     return result.rows[0];
