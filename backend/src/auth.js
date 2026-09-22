@@ -154,8 +154,8 @@ export async function register({ username, password, cpf }) {
     if (!Number.isFinite(signupBonus)) throw new Error("Valor do bônus de cadastro inválido.");
 
     const result = await client.query(
-      `INSERT INTO users(username,password_hash,bonus_balance)
-       VALUES($1,$2,$3)
+      `INSERT INTO users(username,password_hash,cpf,bonus_balance)
+       VALUES($1,$2,$3,$4)
        RETURNING id,username,bonus_balance`,
       [name, hashPassword(password), normalizedCPF, signupBonus]
     );
