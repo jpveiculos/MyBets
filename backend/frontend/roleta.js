@@ -1,7 +1,7 @@
-const TOTAL=80;
-const GROUP_SIZE=5;
+const TOTAL=64;
+const GROUP_SIZE=4;
 const VISUAL_GROUPS=16;
-const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
+const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===3);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 let MIN_BET=.50;
@@ -148,7 +148,7 @@ function targetForSector(sector){
   if(position===4){
     return -(groupStart+visualAngle/2+visualAngle/4);
   }
-  const lossSectorAngle=(visualAngle/2)/4;
+  const lossSectorAngle=(visualAngle/2)/3;
   return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
 }
 function showWin(amount){
