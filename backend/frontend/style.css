@@ -470,25 +470,6 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .home-terms-page{padding-top:34px;padding-bottom:70px}.home-terms-card{max-width:860px;margin:0 auto;padding:30px;border:1px solid rgba(216,174,88,.28);border-radius:20px;background:linear-gradient(145deg,#111923,#080d14);box-shadow:0 18px 45px rgba(0,0,0,.34)}.home-terms-eyebrow{margin:0 0 8px;color:#f0c657;font-size:11px;font-weight:900;letter-spacing:.18em}.home-terms-card h1{margin:0 0 18px;font-size:clamp(30px,5vw,46px);line-height:1.05;color:#fff}.home-terms-lead{margin:0 0 28px;color:#c8cdd6;font-size:16px;line-height:1.7}.home-terms-card h2{margin:25px 0 8px;font-size:19px;color:#f5c542}.home-terms-card p:not(.home-terms-eyebrow){color:#aeb5c0;font-size:14px;line-height:1.7}.home-terms-back{display:inline-flex;align-items:center;justify-content:center;margin-top:24px;min-height:46px;padding:0 18px;border:1px solid rgba(245,197,66,.65);border-radius:11px;background:linear-gradient(135deg,#ffd34a,#efb92c);color:#070707;font-size:13px;font-weight:900}@media(max-width:720px){.home-terms-page{padding-top:18px;padding-bottom:45px}.home-terms-card{padding:20px 16px;border-radius:17px}.home-terms-card h1{font-size:30px}.home-terms-lead{font-size:14px;margin-bottom:22px}.home-terms-card h2{font-size:17px;margin-top:21px}.home-terms-card p:not(.home-terms-eyebrow){font-size:13px}}
 
 
-/* ===== REDES SOCIAIS NO RODAPÉ DA HOME ===== */
-.home-footer-social{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:2px 0 5px}
-.home-footer-social-title{color:#cfd4dc;font-size:12px;font-weight:850}
-.home-footer-social-links{display:flex;align-items:center;gap:9px;flex-wrap:wrap;justify-content:flex-end}
-.home-social-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:38px;padding:0 13px;border:1px solid rgba(255,255,255,.1);border-radius:10px;background:#0d1219;color:#f3f4f7;font-size:11px;font-weight:850;transition:transform .15s ease,filter .15s ease,border-color .15s ease}
-.home-social-link:hover{transform:translateY(-1px);filter:brightness(1.1)}
-.home-social-link svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.home-social-link svg .fill{fill:currentColor;stroke:none}
-.home-social-link.instagram{border-color:rgba(220,100,180,.3);color:#f3b1df}
-.home-social-link.whatsapp{border-color:rgba(53,197,138,.3);color:#62e0ad}
-@media(max-width:720px){
-  .home-footer-social{display:grid;gap:7px;padding:2px 0 4px}
-  .home-footer-social-title{font-size:11px}
-  .home-footer-social-links{justify-content:stretch;display:grid;grid-template-columns:1fr 1fr;gap:7px}
-  .home-social-link{width:100%;min-height:40px;padding:0 8px;font-size:10px}
-  .home-social-link svg{width:17px;height:17px}
-}
-
-
 /* ===== REDES SOCIAIS — ABAIXO DO CARROSSEL DE JOGOS ===== */
 .home-social-cta{width:min(720px,100%);margin:2px auto 0;padding:18px 20px;display:flex;flex-direction:column;align-items:center;gap:12px;border:1px solid rgba(216,174,88,.28);border-radius:18px;background:linear-gradient(145deg,#111923,#080d14);box-shadow:0 14px 34px rgba(0,0,0,.28);text-align:center}
 .home-social-cta-title{color:#f5c542;font-size:14px;font-weight:900;letter-spacing:.4px}
