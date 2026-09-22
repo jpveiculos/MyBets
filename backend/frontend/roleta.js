@@ -1,6 +1,5 @@
 const TOTAL=64;
 const GROUP_SIZE=4;
-const VISUAL_GROUPS=16;
 const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===3);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
@@ -44,7 +43,7 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const visualSlices=32, angle=360/visualSlices, radius=198;
+  const visualSlices=TOTAL, angle=360/visualSlices, radius=198;
 
   const defs=document.createElementNS(ns,"defs");
   const gradients={
@@ -73,8 +72,8 @@ function drawWheel(){
     const start=i*angle,end=start+angle;
     const path=document.createElementNS(ns,"path");
     path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%2===1;
-    const prizePosition=(i-1)/2;
+    const prize=i%GROUP_SIZE===GROUP_SIZE-1;
+    const prizePosition=Math.floor(i/GROUP_SIZE);
     const multiplier=Number(prizes[prizePosition]);
     const prizeColors={
       2:{fill:"#006cff",stroke:"#168cff"},
@@ -93,7 +92,7 @@ function drawWheel(){
       const label=document.createElementNS(ns,"text");
       const [x,y]=polar(200,200,146,start+angle/2);
       label.setAttribute("x",x);label.setAttribute("y",y);
-      label.setAttribute("fill","#fff");label.setAttribute("font-size","20");
+      label.setAttribute("fill","#fff");label.setAttribute("font-size","15");
       label.setAttribute("font-family","Arial,Helvetica,sans-serif");
       label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
       label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
@@ -141,15 +140,8 @@ function changeBet(delta){
 
 function targetForSector(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const group=Math.floor(s/GROUP_SIZE);
-  const position=s%GROUP_SIZE;
-  const visualAngle=360/VISUAL_GROUPS;
-  const groupStart=group*visualAngle;
-  if(position===4){
-    return -(groupStart+visualAngle/2+visualAngle/4);
-  }
-  const lossSectorAngle=(visualAngle/2)/3;
-  return -(groupStart+position*lossSectorAngle+lossSectorAngle/2);
+  const sectorAngle=360/TOTAL;
+  return -(s*sectorAngle+sectorAngle/2);
 }
 function showWin(amount){
   const box=$("result");
