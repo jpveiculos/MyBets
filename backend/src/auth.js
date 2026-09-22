@@ -116,8 +116,8 @@ function normalizeCPF(value) {
 
 function isValidCPF(value) {
   const cpf = normalizeCPF(value);
-  if (!/^\\d{11}$/.test(cpf)) return false;
-  if (/^(\\d)\\1{10}$/.test(cpf)) return false;
+  if (!/^\d{11}$/.test(cpf)) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
   let sum = 0;
   for (let i = 0; i < 9; i++) sum += Number(cpf[i]) * (10 - i);
   let digit = (sum * 10) % 11;
