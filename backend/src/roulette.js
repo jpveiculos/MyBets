@@ -1,10 +1,10 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 
-const TOTAL_SECTORS=80;
-const LOSS_SECTORS=64;
-const GROUP_SIZE=5;
-const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===4);
+const TOTAL_SECTORS=64;
+const LOSS_SECTORS=48;
+const GROUP_SIZE=4;
+const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===3);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 const PRIZE_WEIGHTS={2:5.5,3:5.5,4:5,5:3.75,10:.25};
 const DEFAULT_MIN_BET=.50;
@@ -56,7 +56,7 @@ export async function rouletteConfig(){
     minBet,
     maxBet,
     prizes,
-    probability:{2:5.625,3:5.625,4:5,5:3.75}
+    probability:{2:6.875,3:6.875,4:6.25,5:4.6875,10:.3125}
   };
 }
 
