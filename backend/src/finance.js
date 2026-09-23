@@ -48,6 +48,18 @@ export async function grantBonus({client,userId,amount,type="promotional_bonus",
     [userId,type,value,money(Number(user.cash_balance||0)+newBonus-Number(user.reserved_balance||0)),referenceId,note||"Bônus promocional concedido."]
   );
 
+  await client.query(
+    `INSERT INTO bonus_events(
+       user_id,type,amount,bonus_balance_after,bonus_origin_amount_after,
+       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+       withdrawal_bonus_lock_after,reference_id,note
+     ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+    [
+      userId,type,value,newBonus,newOrigin,newRequirement,newProgress,
+      true,referenceId,note||"Bônus promocional concedido."
+    ]
+  );
+
   return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true};
 }
 export async function applyPostBonusWager({client,user,betAmount,bonusUsed}) {
