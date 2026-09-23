@@ -210,7 +210,7 @@ function renderRouletteSettings(settings){
 }
 function settingLabel(key){
  const labels={
-  bonus_amount:"Bônus de cadastro",
+  signup_bonus_amount:"Bônus de cadastro",
   bonus_wager_requirement:"Requisito de apostas do bônus",
   pix_enabled:"Pix ativado",
   pix_key:"Chave Pix",
@@ -229,10 +229,12 @@ function settingValue(key,value){
  return value;
 }
 function renderSettings(settings){
- const visible=settings.filter(x=>![
-  "roulette_min_bet","roulette_max_bet"
- ].includes(x.setting_key));
- $("settings").innerHTML=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("")||'<p class="muted">Nenhuma configuração adicional.</p>';
+ const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
+ const visible=settings.filter(x=>!["roulette_min_bet","roulette_max_bet","signup_bonus_amount"].includes(x.setting_key));
+ const bonus=Number(map.signup_bonus_amount||50);
+ const bonusCard=`<section class="admin-bonus-card"><div class="admin-bonus-card-head"><div><span class="eyebrow">PROMOÇÃO DE CADASTRO</span><h2>Bônus do jogador</h2></div><span class="admin-bonus-badge">REGRA ATIVA</span></div><div class="admin-bonus-grid"><label>Valor do bônus de cadastro<input id="signupBonusAmount" type="number" min="0" step="0.01" inputmode="decimal" value="${bonus.toFixed(2)}"></label><div class="admin-bonus-rule"><strong>Regra de saque</strong><span>Depois que o bônus chegar a R$ 0,00, o jogador ainda precisa apostar o mesmo valor do bônus para liberar o saque.</span><small>Ex.: bônus de R$ 50 → meta pós-bônus de R$ 50. Se fizer um depósito, o saque é liberado imediatamente.</small></div></div><div class="row-actions"><button class="primary-btn" id="signupBonusSave" type="button">Salvar bônus e regra</button></div><p class="form-message" id="signupBonusMessage"></p></section>`;
+ const rows=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("");
+ $("settings").innerHTML=bonusCard+rows;
 }
 function renderPendingEvents(deposits,withdrawals){
  const pendingDeposits=deposits.filter(x=>x.status==="pending");
@@ -307,6 +309,14 @@ async function load(){
  return adminAuthenticated;
 }
 function bindActions(){
+ $("signupBonusSave")?.addEventListener("click",async()=>{
+  const field=$("signupBonusAmount"),value=Number(String(field.value).replace(",","."));
+  const msg=$("signupBonusMessage");
+  if(!Number.isFinite(value)||value<0){msg.textContent="Informe um valor válido.";return}
+  const button=$("signupBonusSave");button.disabled=true;msg.textContent="Salvando...";
+  try{await api("/api/admin/settings/signup_bonus_amount",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:value.toFixed(2)})});msg.textContent="Bônus salvo. A nova regra vale para os próximos cadastros.";await load();}
+  catch(e){msg.textContent=e.message||"Não foi possível salvar."}finally{button.disabled=false}
+ });
  document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>openDepositEditor(b.dataset.id,b.dataset.username,b.dataset.amount));
  document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
