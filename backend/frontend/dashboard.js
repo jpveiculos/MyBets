@@ -65,7 +65,7 @@ async function openWithdraw(){
   financeMode="withdraw";$("financeModal").classList.remove("hidden");$("financeTitle").textContent="Solicitar saque";
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
 }
-$("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;
+$("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=()=>{  $("depositPromo").classList.add("hidden");$("depositArea").classList.remove("hidden");};
 
 $("copyPix").onclick=async()=>{try{await navigator.clipboard.writeText($("pixCode").value);$("depositMessage").style.color="#35c58a";$("depositMessage").textContent="Código Pix copiado.";setTimeout(()=>$("depositMessage").textContent="",1800)}catch(e){$("pixCode").select()}};
 $("pixDone").onclick=async()=>{
