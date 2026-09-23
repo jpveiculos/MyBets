@@ -43,10 +43,13 @@ function showAuth(mode="login"){
   $("authTitle").textContent=mode==="login"?"Entrar":"Criar conta";
   $("authSubmit").textContent=mode==="login"?"Entrar":"Criar conta";
   $("password").autocomplete=mode==="login"?"current-password":"new-password";
-  $("cpfField")?.classList.toggle("hidden", mode!=="register");
-  $("cpfHelp")?.classList.toggle("hidden", mode!=="register");
-  $("cpf")?.toggleAttribute("required", mode==="register");
-  if(mode!=="register") $("cpf").value="";
+  const isRegister=mode==="register";
+  $("cpfField")?.classList.toggle("hidden", !isRegister);
+  $("cpfHelp")?.classList.toggle("hidden", !isRegister);
+  if($("cpfField")) $("cpfField").style.display=isRegister?"block":"none";
+  if($("cpfHelp")) $("cpfHelp").style.display=isRegister?"block":"none";
+  $("cpf")?.toggleAttribute("required", isRegister);
+  if(!isRegister && $("cpf")) $("cpf").value="";
   $("authMessage").textContent="";
 }
 
