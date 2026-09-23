@@ -150,7 +150,7 @@ function drawWheel(){
     label.setAttribute("class","prize-label");
     // O valor acompanha o eixo da própria fatia: 0° no topo,
     // aumentando no sentido horário junto com a geometria da roleta.
-    label.setAttribute("transform",`rotate(${prizeGeometry.center+90} ${xy[0]} ${xy[1]})`);
+    label.setAttribute("transform",`rotate(${prizeGeometry.center+270} ${xy[0]} ${xy[1]})`);
     label.textContent=String(multiplier)+"x";
     svg.appendChild(label);
   }
