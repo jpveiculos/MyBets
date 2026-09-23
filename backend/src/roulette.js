@@ -1,7 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { applyPostBonusWager } from "./finance.js";
-import { applyPostBonusWager } from "./finance.js";
 
 const TOTAL_SECTORS=64;
 const GROUP_SIZE=4;
