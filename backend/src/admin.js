@@ -61,12 +61,13 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
     const bonusValue=Math.round(value*bonusPercent)/100;
     const newCash=Number(user.cash_balance)+value;
+    const newDepositPrincipal=Number(user.deposit_principal_remaining||0)+value;
 
     await client.query(
       `UPDATE users
-          SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$2`,
-      [newCash,d.user_id]
+          SET cash_balance=$1,deposit_principal_remaining=$2,updated_at=CURRENT_TIMESTAMP
+        WHERE id=$3`,
+      [newCash,newDepositPrincipal,d.user_id]
     );
 
     if(bonusValue>0){
