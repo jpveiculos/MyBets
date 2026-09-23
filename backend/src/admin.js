@@ -62,7 +62,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
 
     await client.query(
       `UPDATE users
-          SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP
+          SET cash_balance=$1,bonus_balance=$2,withdrawal_bonus_lock=FALSE,updated_at=CURRENT_TIMESTAMP
         WHERE id=$3`,
       [newCash,newBonus,d.user_id]
     );
