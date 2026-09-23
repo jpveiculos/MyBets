@@ -2,7 +2,7 @@ import { pool } from "./db.js";
 
 export async function listUsers() {
   const result=await pool.query(
-    `SELECT id,username,cash_balance,bonus_balance,reserved_balance,
+    `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,
             (cash_balance+bonus_balance) AS total_balance,
             is_banned,banned_at,banned_reason,is_deleted,
             created_at,updated_at
