@@ -24,6 +24,18 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json({ limit: "100kb" }));
 app.use(express.urlencoded({ extended: false, limit: "100kb" }));
 
+// A aplicação é dinâmica: páginas, JS, CSS e APIs devem sempre revalidar
+// com o servidor para que um deploy novo apareça imediatamente, sem exigir
+// limpeza manual do cache do navegador.
+app.use((req,res,next)=>{
+  if(req.path.startsWith("/api/")){
+    res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+  }
+  next();
+});
+
 const asyncRoute = fn => (req,res,next) => Promise.resolve(fn(req,res,next)).catch(next);
 
 app.get("/api/health", asyncRoute(async (_req,res) => {
@@ -200,9 +212,26 @@ app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => 
 }));
 
 const frontendPath=path.join(__dirname,"../frontend");
+
+const frontendNoCache=(req,res,next)=>{
+  const ext=path.extname(req.path).toLowerCase();
+  if([".html",".js",".css",".json"].includes(ext) || req.path==="/sw.js"){
+    res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+  }
+  next();
+};
+
 for (const page of ["dashboard.html","roleta.html","my-tiger.html","my-dragon.html","lucky7.html"]) {
-  app.get("/"+page, requireUserPage, (_req,res)=>res.sendFile(path.join(frontendPath,page)));
+  app.get("/"+page, requireUserPage, (_req,res)=>{
+    res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+    res.sendFile(path.join(frontendPath,page));
+  });
 }
+app.use(frontendNoCache);
 app.use(express.static(frontendPath));
 app.get("/",(_req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 
