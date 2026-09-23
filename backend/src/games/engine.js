@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "../db.js";
-import { applyPostBonusWager } from "../finance.js";
+import { applyPostBonusWager, applyDepositPrincipalWager } from "../finance.js";
 
 function money(value){const n=Number(value);if(!Number.isFinite(n))throw new Error("Valor financeiro inválido.");return Math.round(n*100)/100;}
 function pickOutcome(table,scale){const ticket=randomInt(scale);let total=0;for(const item of table){total+=item.weight;if(ticket<total)return item;}return null;}
@@ -35,7 +35,7 @@ export async function spinGame(config,args){
  const client=await pool.connect();
  try{
   await client.query("BEGIN");
-  const r=await client.query("SELECT id,username,cash_balance,bonus_balance,reserved_balance,bonus_wager_progress,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock FROM users WHERE id=$1 FOR UPDATE",[args.userId]);
+  const r=await client.query("SELECT id,username,cash_balance,bonus_balance,reserved_balance,deposit_principal_remaining,bonus_wager_progress,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock FROM users WHERE id=$1 FOR UPDATE",[args.userId]);
   if(!r.rows.length)throw new Error("Usuário não encontrado.");
   const user=r.rows[0],cash=Number(user.cash_balance||0),bonus=Number(user.bonus_balance||0),reserved=Number(user.reserved_balance||0);
   const available=money(cash+bonus-reserved);
@@ -45,6 +45,7 @@ export async function spinGame(config,args){
   const bonusUsed=Math.min(bonus,bet),cashUsed=money(bet-bonusUsed);
   const newBonus=money(bonus-bonusUsed),newCash=money(cash-cashUsed+payout),newBalance=money(newCash+newBonus);
   const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+  const depositPrincipalAfter=await applyDepositPrincipalWager({client,user,cashUsed});
   await client.query("UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3",[newCash,newBonus,args.userId]);
   const grid=buildGrid(config,outcome),resultCode=outcome?outcome.symbol:"LOSS";
   const spin=await client.query(
@@ -52,18 +53,18 @@ export async function spinGame(config,args){
        user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount,
        bonus_used,cash_used,cash_balance_after,bonus_balance_after,
        post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-       withdrawal_bonus_lock_after
-     ) VALUES($1,$2,$3,0,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       withdrawal_bonus_lock_after,deposit_principal_after
+     ) VALUES($1,$2,$3,0,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
      RETURNING id,created_at`,
     [
       args.userId,config.id,resultCode,multiplier,bet,payout,
       bonusUsed,cashUsed,newCash,newBonus,wagerState.requirement,
-      wagerState.progress,wagerState.lock
+      wagerState.progress,wagerState.lock,depositPrincipalAfter
     ]
   );
   const net=money(payout-bet);
   await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)",[args.userId,outcome?config.id+"_win":config.id+"_loss",net,money(newBalance-reserved),spin.rows[0].id,outcome?config.name+" — "+multiplier+"x":config.name+" — perda"]);
   await client.query("COMMIT");
-  return {id:spin.rows[0].id,gameId:config.id,grid:grid.map(function(s){return {id:s.id,label:s.label};}),won:Boolean(outcome),prize:payout,netResult:net,multiplier:multiplier,winningSymbol:outcome?outcome.symbol:null,winningLabel:outcome?outcome.label:null,winningCount:outcome?3:0,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,withdrawalBonusLock:wagerState.lock};
+  return {id:spin.rows[0].id,gameId:config.id,grid:grid.map(function(s){return {id:s.id,label:s.label};}),won:Boolean(outcome),prize:payout,netResult:net,multiplier:multiplier,winningSymbol:outcome?outcome.symbol:null,winningLabel:outcome?outcome.label:null,winningCount:outcome?3:0,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,withdrawalBonusLock:wagerState.lock,depositPrincipalAfter};
  }catch(error){try{await client.query("ROLLBACK");}catch{}throw error;}finally{client.release();}
 }
