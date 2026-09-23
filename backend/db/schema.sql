@@ -163,29 +163,6 @@ CREATE TABLE IF NOT EXISTS bonus_events (
 
 CREATE INDEX IF NOT EXISTS idx_bonus_events_user_created ON bonus_events(user_id, created_at DESC);
 
-INSERT INTO bonus_events(
-  user_id,type,amount,bonus_balance_after,bonus_origin_amount_after,
-  post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-  withdrawal_bonus_lock_after,note,created_at
-)
-SELECT c.user_id,
-       'signup_bonus',
-       c.bonus_amount,
-       c.bonus_amount,
-       c.bonus_amount,
-       c.bonus_amount,
-       0,
-       TRUE,
-       'Registro histórico do bônus de cadastro.',
-       c.created_at
-  FROM signup_bonus_claims c
- WHERE c.bonus_amount > 0
-   AND NOT EXISTS (
-     SELECT 1 FROM bonus_events b
-      WHERE b.user_id=c.user_id
-        AND b.type='signup_bonus'
-        AND b.reference_id IS NULL
-   );
 CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
   id SERIAL PRIMARY KEY,
   admin_id INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
@@ -253,6 +230,31 @@ SELECT u.cpf,u.id,COALESCE(u.bonus_balance,0)
  WHERE u.cpf IS NOT NULL
    AND NULLIF(TRIM(u.cpf),'') IS NOT NULL
 ON CONFLICT (cpf) DO NOTHING;
+
+INSERT INTO bonus_events(
+  user_id,type,amount,bonus_balance_after,bonus_origin_amount_after,
+  post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+  withdrawal_bonus_lock_after,note,created_at
+)
+SELECT c.user_id,
+       'signup_bonus',
+       c.bonus_amount,
+       c.bonus_amount,
+       c.bonus_amount,
+       c.bonus_amount,
+       0,
+       TRUE,
+       'Registro histórico do bônus de cadastro.',
+       c.created_at
+  FROM signup_bonus_claims c
+ WHERE c.bonus_amount > 0
+   AND NOT EXISTS (
+     SELECT 1 FROM bonus_events b
+      WHERE b.user_id=c.user_id
+        AND b.type='signup_bonus'
+        AND b.reference_id IS NULL
+   );
+
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP;
