@@ -183,7 +183,14 @@ app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (req,res) => {
 }));
 
 app.get("/api/admin/users/:id/history", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,history:await getUserHistory(req.params.id)});
+  res.json({ok:true,history:await getUserHistory(req.params.id, {
+    pageSize:req.query.pageSize,
+    transactionsPage:req.query.transactionsPage,
+    depositsPage:req.query.depositsPage,
+    withdrawalsPage:req.query.withdrawalsPage,
+    spinsPage:req.query.spinsPage,
+    auditsPage:req.query.auditsPage
+  })});
 }));
 app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,settings:await getSettings()});
