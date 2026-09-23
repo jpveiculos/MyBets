@@ -11,6 +11,8 @@ let refreshTimer=null;
 let editingDepositId=null;
 let isEditingDeposit=false;
 let currentView="dashboard";
+let userSearchTerm="";
+let transactionFilters={query:"",type:"",from:"",to:""};
 
 function urlBase64ToUint8Array(base64String){
  const padding="=".repeat((4-base64String.length%4)%4);
@@ -85,7 +87,9 @@ function statusLabel(status){
 function statusClass(status){return "status-"+String(status||"").toLowerCase()}
 
 function renderUsers(users){
- $("users").innerHTML=users.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Saldo: ${money(x.cash_balance)} • Bônus: ${money(x.bonus_balance)} • Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn add-cash">+ saldo</button><button data-id="${x.id}" class="small-btn add-bonus">+ bônus</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário.</p>';
+ const term=userSearchTerm.trim().toLowerCase();
+ const filtered=term?users.filter(x=>String(x.username||"").toLowerCase().includes(term)||String(x.id).includes(term)):users;
+ $("users").innerHTML=filtered.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Cadastro: ${dateTime(x.created_at)} • Saldo: ${money(x.cash_balance)} • Bônus: ${money(x.bonus_balance)} • Total: ${money(x.total_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn history-user">Histórico</button><button data-id="${x.id}" class="small-btn add-cash">+ saldo</button><button data-id="${x.id}" class="small-btn add-bonus">+ bônus</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário encontrado.</p>';
 }
 function renderDeposits(deposits){
  $("deposits").innerHTML=deposits.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${dateTime(x.created_at)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-deposit" data-id="'+x.id+'" data-username="'+esc(x.username)+'" data-amount="'+x.amount+'">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum depósito.</p>';
@@ -93,8 +97,63 @@ function renderDeposits(deposits){
 function renderWithdrawals(withdrawals){
  $("withdrawals").innerHTML=withdrawals.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${money(x.amount)} • Pix: ${esc(x.pix_key)} • ${dateTime(x.created_at)}</small><small>Saldo em dinheiro: ${money(x.cash_balance)} • Bônus restante: ${money(x.bonus_balance)} • Progresso bônus: ${money(x.bonus_wager_progress)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${Number(x.bonus_balance)>0?" • ⚠️ BÔNUS ATIVO":" • ✓ BÔNUS CONSUMIDO"}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum saque.</p>';
 }
+function transactionTypeLabel(type){
+ const labels={
+  signup_bonus:"BÔNUS CONCEDIDO",
+  deposit_approved:"DEPÓSITO APROVADO",
+  withdrawal_approved:"SAQUE APROVADO",
+  withdrawal_released:"SAQUE DEVOLVIDO",
+  admin_cash_adjustment:"AJUSTE DE SALDO",
+  admin_bonus_adjustment:"AJUSTE DE BÔNUS",
+  roulette_win:"PRÊMIO ROleta".toUpperCase(),
+  roulette_loss:"APOSTA ROleta".toUpperCase(),
+  "my-tiger_win":"PRÊMIO MY TIGER",
+  "my-tiger_loss":"APOSTA MY TIGER",
+  "my-dragon_win":"PRÊMIO MY DRAGON",
+  "my-dragon_loss":"APOSTA MY DRAGON",
+  lucky7_win:"PRÊMIO LUCKY7",
+  lucky7_loss:"APOSTA LUCKY7"
+ };
+ return labels[type]||String(type||"MOVIMENTAÇÃO").replace(/_/g," ").toUpperCase();
+}
 function renderTransactions(transactions){
- $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(x.type)} • ${money(x.amount)} • ${dateTime(x.created_at)}</small></span></div>`).join("")||'<p class="muted">Nenhuma transação.</p>';
+ $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(transactionTypeLabel(x.type))} • ${money(x.amount)} • ${dateTime(x.created_at)}</small><small>Saldo após: ${money(x.balance_after)}${x.note?" • "+esc(x.note):""}</small></span></div>`).join("")||'<p class="muted">Nenhuma movimentação encontrada.</p>';
+}
+function historyRow(title,detail,date,kind=""){
+ return `<div class="history-item ${kind}"><div><b>${esc(title)}</b><span>${esc(detail||"")}</span></div><time>${dateTime(date)}</time></div>`;
+}
+function openHistoryModal(history){
+ const u=history.user;
+ $("historyTitle").textContent="Histórico • "+u.username;
+ $("historySummary").textContent=`Cadastro: ${dateTime(u.created_at)} • Saldo: ${money(u.cash_balance)} • Bônus atual: ${money(u.bonus_balance)} • Total: ${money(u.total_balance)}`;
+ const bonus=history.bonusClaim;
+ const accountHtml=historyRow("CADASTRO REALIZADO",bonus?`Bônus registrado: ${money(bonus.bonus_amount)}`:"Sem bônus concedido",u.created_at,"history-account");
+ const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at,x.type==="signup_bonus"?"history-bonus":"")).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
+ const depositHtml=history.deposits.length?history.deposits.map(x=>historyRow("DEPÓSITO "+statusLabel(x.status),`Solicitado: ${money(x.amount)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum depósito registrado.</p>';
+ const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum saque registrado.</p>';
+ const spinsHtml=history.spins.length?history.spins.map(x=>historyRow(`${String(x.game_id||"jogo").toUpperCase()} • ${x.payout_amount>0?"PRÊMIO":"APOSTA"}`,`Aposta: ${money(x.bet_amount)} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)}`,x.created_at,"")).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
+ const auditHtml=history.audits.length?history.audits.map(x=>historyRow(String(x.action||"AUDITORIA").replace(/_/g," ").toUpperCase(),x.details?JSON.stringify(x.details):"",x.created_at,"history-audit")).join(""):'<p class="muted">Nenhum evento de auditoria recente.</p>';
+ $("historyContent").innerHTML=`
+  <section class="history-section"><h3>Conta e bônus</h3>${accountHtml}</section>
+  <section class="history-section"><h3>Movimentações financeiras</h3>${txHtml}</section>
+  <section class="history-section"><h3>Depósitos</h3>${depositHtml}</section>
+  <section class="history-section"><h3>Saques</h3>${withdrawalHtml}</section>
+  <section class="history-section"><h3>Jogadas</h3>${spinsHtml}</section>
+  <section class="history-section"><h3>Auditoria</h3>${auditHtml}</section>`;
+ $("historyModal").classList.remove("hidden");$("historyModal").setAttribute("aria-hidden","false");
+}
+async function openUserHistory(userId){
+ pauseAutoRefresh();
+ try{
+  const d=await api("/api/admin/users/"+userId+"/history");
+  openHistoryModal(d.history);
+ }catch(e){
+  $("adminMessage").textContent=e.message||"Não foi possível carregar o histórico.";
+  resumeAutoRefresh();
+ }
+}
+function closeHistoryModal(){
+ $("historyModal").classList.add("hidden");$("historyModal").setAttribute("aria-hidden","true");$("historyContent").innerHTML="";resumeAutoRefresh();
 }
 function renderRouletteSettings(settings){
  const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet");
@@ -186,7 +245,7 @@ $("adminLogin")?.addEventListener("submit",adminLogin);
 async function load(){
  if(!adminAuthenticated)return false;
  try{
-  const [u,d,w,s,t]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api("/api/admin/transactions")]);
+  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,d,w,s,t]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString())]);
   const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[];
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
   $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
@@ -205,6 +264,7 @@ function bindActions(){
  document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
+ document.querySelectorAll(".history-user").forEach(b=>b.onclick=()=>openUserHistory(b.dataset.id));
  document.querySelectorAll(".add-cash").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo depositado:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
  document.querySelectorAll(".add-bonus").forEach(b=>b.onclick=async()=>{const v=prompt("Valor de bônus para este jogador:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"bonus"})});
  document.querySelectorAll(".ban-user").forEach(b=>b.onclick=async()=>{const reason=prompt("Motivo do banimento:","Banimento administrativo");if(reason===null||!reason.trim())return;if(!confirm("Banir este usuário? O acesso será encerrado imediatamente."))return;await action("/api/admin/users/"+b.dataset.id+"/ban","POST",{reason:reason.trim()})});
@@ -232,6 +292,11 @@ async function action(url,method,body){
  try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});await load();await updateAppBadge()}
  catch(e){$("adminMessage").textContent=e.message}
 }
+$("userSearch")?.addEventListener("input",e=>{userSearchTerm=e.target.value;load()});
+$("transactionSearch")?.addEventListener("click",()=>{transactionFilters={query:$("transactionUserSearch").value.trim(),type:$("transactionType").value,from:$("transactionFrom").value,to:$("transactionTo").value};load()});
+$("transactionClear")?.addEventListener("click",()=>{$("transactionUserSearch").value="";$("transactionType").value="";$("transactionFrom").value="";$("transactionTo").value="";transactionFilters={query:"",type:"",from:"",to:""};load()});
+$("historyClose")?.addEventListener("click",closeHistoryModal);
+$("historyModal")?.addEventListener("click",e=>{if(e.target.id==="historyModal")closeHistoryModal()});
 $("enableNotifications").onclick=async()=>{try{await enableNotifications();await updateAppBadge()}catch(err){$("notifyStatus").textContent=err.message||"Não foi possível ativar as notificações."}};
 $("adminLogout").onclick=async()=>{
  const button=$("adminLogout");button.disabled=true;
