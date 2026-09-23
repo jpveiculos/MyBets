@@ -148,6 +148,9 @@ function drawWheel(){
     label.setAttribute("stroke","#000");
     label.setAttribute("stroke-width","3");
     label.setAttribute("class","prize-label");
+    // O valor acompanha o eixo da própria fatia: 0° no topo,
+    // aumentando no sentido horário junto com a geometria da roleta.
+    label.setAttribute("transform",`rotate(${prizeGeometry.center} ${xy[0]} ${xy[1]})`);
     label.textContent=String(multiplier)+"x";
     svg.appendChild(label);
   }
