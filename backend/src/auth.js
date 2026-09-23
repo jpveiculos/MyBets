@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import { pool } from "./db.js";
-import { recordUserRegistration } from "./history.js";
 
 const SESSION_DAYS = 30;
 
@@ -188,12 +187,20 @@ export async function register({ username, password, cpf }) {
       [normalizedCPF, result.rows[0].id, signupBonus]
     );
 
+    await client.query(
+      `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+       VALUES('system',$1,'user_registered','user',$1,$2)`,
+      [
+        result.rows[0].id,
+        JSON.stringify({
+          username: result.rows[0].username,
+          signupBonus,
+          bonusGranted: signupBonus > 0
+        })
+      ]
+    );
+
     await client.query("COMMIT");
-    await recordUserRegistration({
-      userId: result.rows[0].id,
-      username: result.rows[0].username,
-      signupBonus
-    });
     return result.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
