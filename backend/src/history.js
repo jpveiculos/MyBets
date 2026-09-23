@@ -18,7 +18,7 @@ export async function getUserHistory(userId, options = {}) {
   };
 
   const userResult = await pool.query(
-    `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,
+    `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,deposit_principal_remaining,
             (cash_balance+bonus_balance) AS total_balance,
             (cash_balance-reserved_balance+bonus_balance) AS available_balance,
             bonus_wager_progress,bonus_origin_amount,
@@ -56,7 +56,7 @@ export async function getUserHistory(userId, options = {}) {
     pool.query(`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,
                        bonus_used,cash_used,cash_balance_after,bonus_balance_after,
                        post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-                       withdrawal_bonus_lock_after,created_at
+                       withdrawal_bonus_lock_after,deposit_principal_after,created_at
                   FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC
                   LIMIT $2 OFFSET $3`, [id, pageSize, offset("spins")]),
     pool.query(`SELECT id,type,amount,bonus_balance_after,bonus_origin_amount_after,
