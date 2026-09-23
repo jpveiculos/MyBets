@@ -210,7 +210,7 @@ app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
 app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => {
   const editableSettings=new Set([
     "pix_enabled","pix_key","pix_key_type","pix_receiver_name","pix_city","pix_description",
-    "pix_instructions","audit_log_retention_days"
+    "pix_instructions","audit_log_retention_days","signup_bonus_amount","roulette_min_bet","roulette_max_bet"
   ]);
   const key=String(req.params.key);
   if(!editableSettings.has(key)) throw new Error("Essa configuração não pode ser alterada pelo painel administrativo.");
