@@ -103,7 +103,7 @@ app.get("/api/roulette/config", requireUser, asyncRoute(async (_req,res) => {
 app.post("/api/roulette/spin", requireUser, asyncRoute(async (req,res) => {
   const spin=await spinRoulette({userId:req.user.id,betAmount:req.body?.betAmount});
   const account=await getAccount(req.user.id);
-  res.json({ok:true,spin,user:{id:account.id,username:account.username,balance:Number(account.total_balance),availableBalance:Number(account.available_balance),reservedBalance:Number(account.reserved_balance),bonusBalance:Number(account.bonus_balance),cashBalance:Number(account.cash_balance)}});
+  res.json({ok:true,spin,user:{id:account.id,username:account.username,balance:Number(account.total_balance),availableBalance:Number(account.available_balance),reservedBalance:Number(account.reserved_balance),bonusBalance:Number(account.bonus_balance),cashBalance:Number(account.cash_balance),bonusWagerProgress:Number(account.bonus_wager_progress||0),postBonusWagerRequirement:Number(account.post_bonus_wager_requirement||0),postBonusWagerProgress:Number(account.post_bonus_wager_progress||0),withdrawalBonusLock:Boolean(account.withdrawal_bonus_lock)}});
 }));
 
 app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
