@@ -44,13 +44,26 @@ export async function spinGame(config,args){
   const multiplier=outcome?outcome.multiplier:0,payout=money(bet*multiplier);
   const bonusUsed=Math.min(bonus,bet),cashUsed=money(bet-bonusUsed);
   const newBonus=money(bonus-bonusUsed),newCash=money(cash-cashUsed+payout),newBalance=money(newCash+newBonus);
-  await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+  const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
   await client.query("UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3",[newCash,newBonus,args.userId]);
   const grid=buildGrid(config,outcome),resultCode=outcome?outcome.symbol:"LOSS";
-  const spin=await client.query("INSERT INTO spins(user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount) VALUES($1,$2,$3,0,$4,$5,$6) RETURNING id,created_at",[args.userId,config.id,resultCode,multiplier,bet,payout]);
+  const spin=await client.query(
+    `INSERT INTO spins(
+       user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount,
+       bonus_used,cash_used,cash_balance_after,bonus_balance_after,
+       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+       withdrawal_bonus_lock_after
+     ) VALUES($1,$2,$3,0,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+     RETURNING id,created_at`,
+    [
+      args.userId,config.id,resultCode,multiplier,bet,payout,
+      bonusUsed,cashUsed,newCash,newBonus,wagerState.requirement,
+      wagerState.progress,wagerState.lock
+    ]
+  );
   const net=money(payout-bet);
   await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)",[args.userId,outcome?config.id+"_win":config.id+"_loss",net,money(newBalance-reserved),spin.rows[0].id,outcome?config.name+" — "+multiplier+"x":config.name+" — perda"]);
   await client.query("COMMIT");
-  return {id:spin.rows[0].id,gameId:config.id,grid:grid.map(function(s){return {id:s.id,label:s.label};}),won:Boolean(outcome),prize:payout,netResult:net,multiplier:multiplier,winningSymbol:outcome?outcome.symbol:null,winningLabel:outcome?outcome.label:null,winningCount:outcome?3:0,betAmount:bet};
+  return {id:spin.rows[0].id,gameId:config.id,grid:grid.map(function(s){return {id:s.id,label:s.label};}),won:Boolean(outcome),prize:payout,netResult:net,multiplier:multiplier,winningSymbol:outcome?outcome.symbol:null,winningLabel:outcome?outcome.label:null,winningCount:outcome?3:0,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,withdrawalBonusLock:wagerState.lock};
  }catch(error){try{await client.query("ROLLBACK");}catch{}throw error;}finally{client.release();}
 }
