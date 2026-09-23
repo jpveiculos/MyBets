@@ -18,6 +18,7 @@ async function load(){
     $("balance").textContent=money(availableBalance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
     $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
+    $("withdrawCurrentBalance").textContent=money(availableBalance);
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
@@ -124,6 +125,7 @@ async function openWithdraw(){
     $("withdrawArea").classList.remove("hidden");
     $("withdrawMessage").textContent="";
     $("withdrawForm").reset();
+    $("withdrawCurrentBalance").textContent=money(availableBalance);
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance.toFixed(2);
     $("withdrawMax").disabled=false;
