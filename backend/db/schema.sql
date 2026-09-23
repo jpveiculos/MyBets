@@ -118,6 +118,13 @@ CREATE TABLE IF NOT EXISTS spins (
   multiplier NUMERIC(8,2) NOT NULL,
   bet_amount NUMERIC(12,2) NOT NULL,
   payout_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  bonus_used NUMERIC(12,2) NOT NULL DEFAULT 0,
+  cash_used NUMERIC(12,2) NOT NULL DEFAULT 0,
+  cash_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -129,8 +136,32 @@ CREATE INDEX IF NOT EXISTS idx_deposits_status_created ON deposits(status, creat
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status_created ON withdrawals(status, created_at DESC);
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS game_id VARCHAR(40) NOT NULL DEFAULT 'roulette';
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS result_code VARCHAR(80);
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS bonus_used NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS cash_used NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS cash_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE;
 CREATE INDEX IF NOT EXISTS idx_spins_user_game_created ON spins(user_id, game_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spins_user_created ON spins(user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS bonus_events (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  type VARCHAR(40) NOT NULL,
+  amount NUMERIC(12,2) NOT NULL,
+  bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  bonus_origin_amount_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0,
+  withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT TRUE,
+  reference_id INTEGER,
+  note TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_bonus_events_user_created ON bonus_events(user_id, created_at DESC);
 CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
   id SERIAL PRIMARY KEY,
   admin_id INTEGER NOT NULL REFERENCES admins(id) ON DELETE CASCADE,
