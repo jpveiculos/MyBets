@@ -12,15 +12,21 @@ async function load(){
     const a=await api("/api/account");
     playerUsername=a.account.username;
     playerId=String(a.account.id);
+    availableBalance=Number(a.account.available_balance||0);
+    withdrawableBalance=Number(a.account.withdrawable_balance||0);
     $("welcome").textContent="Olá, "+playerUsername;
-    $("balance").textContent=money(a.account.available_balance);
+    $("balance").textContent=money(availableBalance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
     $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
+    $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
+    $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
+    $("withdrawMax").disabled=withdrawableBalance<=0;
     const hasBonus=Number(a.account.bonus_balance)>0;
     const withdrawalLocked=Boolean(a.account.withdrawal_bonus_lock);
     const remaining=Math.max(0,Number(a.account.post_bonus_wager_requirement||0)-Number(a.account.post_bonus_wager_progress||0));
-    $("withdrawBtn").disabled=hasBonus||withdrawalLocked;
-    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":"Solicitar saque";
+    const depositPrincipal=Math.max(0,Number(a.account.deposit_principal_remaining||0));
+    $("withdrawBtn").disabled=hasBonus||withdrawalLocked||withdrawableBalance<=0;
+    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":depositPrincipal>0?"Aposte o principal de depósito restante para liberar os ganhos.":withdrawableBalance<=0?"Ainda não há ganhos disponíveis para saque.":"Solicitar saque";
     const hint=$("withdrawHint");
     if(hint) hint.textContent=hasBonus
       ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque."
@@ -88,9 +94,9 @@ function updateQr(){
 async function openWithdraw(){
   financeMode="withdraw";$("financeModal").classList.remove("hidden");$("depositPromo").classList.add("hidden");$("financeTitle").textContent="Solicitar saque";
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
-  $("withdrawAvailableBalance").textContent=money(availableBalance);
-  $("withdrawAmount").max=availableBalance>0?availableBalance.toFixed(2):"0.01";
-  $("withdrawMax").disabled=availableBalance<=0;
+  $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
+  $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
+  $("withdrawMax").disabled=withdrawableBalance<=0;
 }
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 $("withdrawMax").onclick=()=>{
