@@ -7,6 +7,10 @@ CREATE TABLE IF NOT EXISTS users (
   bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   reserved_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
+  bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0,
+  post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
+  withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE,
   is_banned BOOLEAN NOT NULL DEFAULT FALSE,
   banned_at TIMESTAMP,
   banned_reason TEXT,
@@ -156,8 +160,6 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('audit_log_retention_days','30')
 ON CONFLICT (setting_key) DO NOTHING;
 
-UPDATE site_settings SET setting_value='50',updated_at=CURRENT_TIMESTAMP
- WHERE setting_key='signup_bonus_amount';
 UPDATE site_settings SET setting_value='100',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='deposit_bonus_percent';
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
@@ -169,6 +171,11 @@ UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
 
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS cpf VARCHAR(11);
+ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE users SET bonus_origin_amount=COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance), post_bonus_wager_requirement=CASE WHEN post_bonus_wager_requirement=0 AND COALESCE(bonus_balance,0)>0 THEN COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance) ELSE post_bonus_wager_requirement END, withdrawal_bonus_lock=CASE WHEN COALESCE(bonus_balance,0)>0 THEN TRUE ELSE withdrawal_bonus_lock END WHERE COALESCE(bonus_balance,0)>0;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_users_cpf ON users(cpf) WHERE cpf IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS signup_bonus_claims (
