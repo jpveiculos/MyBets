@@ -1,5 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "../db.js";
+import { applyPostBonusWager } from "../finance.js";
 
 function money(value){const n=Number(value);if(!Number.isFinite(n))throw new Error("Valor financeiro inválido.");return Math.round(n*100)/100;}
 function pickOutcome(table,scale){const ticket=randomInt(scale);let total=0;for(const item of table){total+=item.weight;if(ticket<total)return item;}return null;}
@@ -43,10 +44,8 @@ export async function spinGame(config,args){
   const multiplier=outcome?outcome.multiplier:0,payout=money(bet*multiplier);
   const bonusUsed=Math.min(bonus,bet),cashUsed=money(bet-bonusUsed);
   const newBonus=money(bonus-bonusUsed),newCash=money(cash-cashUsed+payout),newBalance=money(newCash+newBonus);
-  const setting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='bonus_wager_requirement'");
-  const req=Number(setting.rows[0]&&setting.rows[0].setting_value||0)||0;
-  const newProgress=money(Math.min(req,Number(user.bonus_wager_progress||0)+bonusUsed));
-  await client.query("UPDATE users SET cash_balance=$1,bonus_balance=$2,bonus_wager_progress=$3,updated_at=CURRENT_TIMESTAMP WHERE id=$4",[newCash,newBonus,newProgress,args.userId]);
+  await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+  await client.query("UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3",[newCash,newBonus,args.userId]);
   const grid=buildGrid(config,outcome),resultCode=outcome?outcome.symbol:"LOSS";
   const spin=await client.query("INSERT INTO spins(user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount) VALUES($1,$2,$3,0,$4,$5,$6) RETURNING id,created_at",[args.userId,config.id,resultCode,multiplier,bet,payout]);
   const net=money(payout-bet);
