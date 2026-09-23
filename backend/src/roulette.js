@@ -2,15 +2,22 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 
 const TOTAL_SECTORS=64;
-const LOSS_SECTORS=48;
 const GROUP_SIZE=4;
+const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
+const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
+const LOSS_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE!==0);
+
+// Configuração fixa da roleta: 4x 2, 4x 3, 4x 4, 3x 5 e 1x 10.
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
+
+// Pesos dos multiplicadores dentro dos 16 setores de prêmio.
+// Mantém o 10x com 0,25% de ocorrência no total da roleta.
 const PRIZE_WEIGHTS={2:5.525,3:5.525,4:5,5:3.75,10:.2};
+
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
-const LOSS_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>!PRIZE_INDEXES.includes(i));
 
 async function getSetting(key,fallback){
   const r=await pool.query("SELECT setting_value FROM site_settings WHERE setting_key=$1 LIMIT 1",[key]);
@@ -18,7 +25,7 @@ async function getSetting(key,fallback){
 }
 
 async function getConfig(){
-  let prizes=[...DEFAULT_PRIZES];
+  const prizes=[...DEFAULT_PRIZES];
   const minRaw=Number(await getSetting("roulette_min_bet",String(DEFAULT_MIN_BET)));
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
   const minBet=Number.isFinite(minRaw)&&minRaw>=DEFAULT_MIN_BET?Number(minRaw.toFixed(2)):DEFAULT_MIN_BET;
@@ -28,7 +35,11 @@ async function getConfig(){
 
 function sortearSetor(){
   const draw=randomInt(DRAW_DENOMINATOR);
-  if(draw>=PRIZE_INDEXES.length)return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
+
+  // 16 setores de prêmio e 48 setores de perda.
+  if(draw>=PRIZE_SECTORS){
+    return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
+  }
 
   const weightedGroups=Object.entries(PRIZE_WEIGHTS).map(([multiplier,weight])=>({
     multiplier:Number(multiplier),weight
@@ -36,8 +47,12 @@ function sortearSetor(){
   const totalWeight=weightedGroups.reduce((sum,item)=>sum+item.weight,0);
   let pick=(randomInt(1000000)/1000000)*totalWeight;
   let selected=weightedGroups[weightedGroups.length-1].multiplier;
+
   for(const group of weightedGroups){
-    if(pick<group.weight){selected=group.multiplier;break;}
+    if(pick<group.weight){
+      selected=group.multiplier;
+      break;
+    }
     pick-=group.weight;
   }
 
@@ -50,12 +65,13 @@ export async function rouletteConfig(){
   return {
     id:"roulette",
     totalSectors:TOTAL_SECTORS,
-    prizeSectors:PRIZE_INDEXES.length,
+    prizeSectors:PRIZE_SECTORS,
     lossSectors:LOSS_SECTORS,
     prizeIndexes:PRIZE_INDEXES,
     minBet,
     maxBet,
     prizes,
+    prizeDistribution:{2:4,3:4,4:4,5:3,10:1},
     probability:{2:6.90625,3:6.90625,4:6.25,5:4.6875,10:.25}
   };
 }
