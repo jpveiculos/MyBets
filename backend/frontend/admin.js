@@ -123,8 +123,28 @@ function renderTransactions(transactions){
 function historyRow(title,detail,date,kind=""){
  return `<div class="history-item ${kind}"><div><b>${esc(title)}</b><span>${esc(detail||"")}</span></div><time>${dateTime(date)}</time></div>`;
 }
+let historyState = { userId:null, pages:{}, loading:false };
+
+function historyPagination(section, pagination){
+ const p=pagination?.[section];
+ if(!p || p.total<=p.pageSize) return "";
+ const first=(p.page-1)*p.pageSize+1;
+ const last=Math.min(p.page*p.pageSize,p.total);
+ return `<div class="history-pagination">
+   <span>Mostrando ${first}–${last} de ${p.total}</span>
+   <div class="row-actions">
+    <button class="small-btn history-page" data-section="${section}" data-page="${p.page-1}" ${p.page<=1?"disabled":""}>Anterior</button>
+    <span class="muted">Página ${p.page} de ${p.totalPages}</span>
+    <button class="small-btn history-page" data-section="${section}" data-page="${p.page+1}" ${p.page>=p.totalPages?"disabled":""}>Próxima</button>
+   </div>
+  </div>`;
+}
+function historySection(title, rowsHtml, section, pagination){
+ return `<section class="history-section"><h3>${title}</h3>${rowsHtml}${historyPagination(section,pagination)}</section>`;
+}
 function openHistoryModal(history){
  const u=history.user;
+ historyState.pages=Object.fromEntries(Object.entries(history.pagination||{}).map(([name,p])=>[name,p.page]));
  $("historyTitle").textContent="Histórico • "+u.username;
  $("historySummary").textContent=`CPF: ${u.cpf||"Não informado"} • Cadastro: ${dateTime(u.created_at)} • Saldo: ${money(u.cash_balance)} • Bônus atual: ${money(u.bonus_balance)} • Total: ${money(u.total_balance)}`;
  const bonus=history.bonusClaim;
@@ -137,25 +157,41 @@ function openHistoryModal(history){
  const accountHtml=historyRow("CADASTRO REALIZADO",bonusDetail,u.created_at,"history-account");
  const bonusHtml=Number(grantedBonus)>0
   ? historyRow("BÔNUS DE CADASTRO CONCEDIDO","Valor: "+money(grantedBonus)+" • "+(bonus?.created_at?"Registro: "+dateTime(bonus.created_at):"registrado na transação de cadastro"),bonus?.created_at||signupTransaction?.created_at||u.created_at,"history-bonus")
-  : "<p class=\"muted\">Nenhum bônus de cadastro registrado.</p>";
+  : '<p class="muted">Nenhum bônus de cadastro registrado.</p>';
  const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at,x.type==="signup_bonus"?"history-bonus":"")).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
  const depositHtml=history.deposits.length?history.deposits.map(x=>historyRow("DEPÓSITO "+statusLabel(x.status),`Solicitado: ${money(x.amount)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum depósito registrado.</p>';
  const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum saque registrado.</p>';
  const spinsHtml=history.spins.length?history.spins.map(x=>historyRow(`${String(x.game_id||"jogo").toUpperCase()} • ${x.payout_amount>0?"PRÊMIO":"APOSTA"}`,`Aposta: ${money(x.bet_amount)} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)}`,x.created_at,"")).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
  const auditHtml=history.audits.length?history.audits.map(x=>historyRow(String(x.action||"AUDITORIA").replace(/_/g," ").toUpperCase(),x.details?JSON.stringify(x.details):"",x.created_at,"history-audit")).join(""):'<p class="muted">Nenhum evento de auditoria recente.</p>';
  $("historyContent").innerHTML=`
-  <section class="history-section"><h3>Conta e bônus</h3>${accountHtml}${bonusHtml}</section>
-  <section class="history-section"><h3>Movimentações financeiras</h3>${txHtml}</section>
-  <section class="history-section"><h3>Depósitos</h3>${depositHtml}</section>
-  <section class="history-section"><h3>Saques</h3>${withdrawalHtml}</section>
-  <section class="history-section"><h3>Jogadas</h3>${spinsHtml}</section>
-  <section class="history-section"><h3>Auditoria</h3>${auditHtml}</section>`;
+  ${historySection("Conta e bônus",accountHtml+bonusHtml,"bonus",{page:1,pageSize:1,total:1,totalPages:1})}
+  ${historySection("Movimentações financeiras",txHtml,"transactions",history.pagination?.transactions)}
+  ${historySection("Depósitos",depositHtml,"deposits",history.pagination?.deposits)}
+  ${historySection("Saques",withdrawalHtml,"withdrawals",history.pagination?.withdrawals)}
+  ${historySection("Jogadas",spinsHtml,"spins",history.pagination?.spins)}
+  ${historySection("Auditoria",auditHtml,"audits",history.pagination?.audits)}`;
  $("historyModal").classList.remove("hidden");$("historyModal").setAttribute("aria-hidden","false");
+}
+async function loadHistoryPage(section,page){
+ if(!historyState.userId||historyState.loading||!Number(page)||page<1)return;
+ historyState.loading=true;
+ try{
+  const params=new URLSearchParams({pageSize:"50"});
+  for(const [name,value] of Object.entries(historyState.pages)) params.set(name+"Page",String(name===section?page:value||1));
+  const d=await api("/api/admin/users/"+historyState.userId+"/history?"+params.toString());
+  openHistoryModal(d.history);
+ }catch(e){
+  $("adminMessage").textContent=e.message||"Não foi possível carregar o histórico.";
+ }finally{
+  historyState.loading=false;
+ }
 }
 async function openUserHistory(userId){
  pauseAutoRefresh();
+ historyState.userId=Number(userId);
+ historyState.pages={transactions:1,deposits:1,withdrawals:1,spins:1,audits:1};
  try{
-  const d=await api("/api/admin/users/"+userId+"/history");
+  const d=await api("/api/admin/users/"+userId+"/history?pageSize=50&transactionsPage=1&depositsPage=1&withdrawalsPage=1&spinsPage=1&auditsPage=1");
   openHistoryModal(d.history);
  }catch(e){
   $("adminMessage").textContent=e.message||"Não foi possível carregar o histórico.";
@@ -163,7 +199,7 @@ async function openUserHistory(userId){
  }
 }
 function closeHistoryModal(){
- $("historyModal").classList.add("hidden");$("historyModal").setAttribute("aria-hidden","true");$("historyContent").innerHTML="";resumeAutoRefresh();
+ $("historyModal").classList.add("hidden");$("historyModal").setAttribute("aria-hidden","true");$("historyContent").innerHTML="";historyState={userId:null,pages:{},loading:false};resumeAutoRefresh();
 }
 function renderRouletteSettings(settings){
  const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet");
