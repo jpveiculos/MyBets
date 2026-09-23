@@ -37,6 +37,7 @@ export async function getUserHistory(userId, options = {}) {
     pool.query("SELECT COUNT(*)::int AS count FROM withdrawals WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM spins WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM bonus_events WHERE user_id=$1", [id]),
+    pool.query("SELECT COALESCE(SUM(amount),0)::numeric AS total FROM bonus_events WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_logs WHERE target_type='user' AND target_id=$1", [id])
   ]);
 
@@ -79,7 +80,7 @@ export async function getUserHistory(userId, options = {}) {
     withdrawals: Number(countRows[2].rows[0].count),
     spins: Number(countRows[3].rows[0].count),
     bonusEvents: Number(countRows[4].rows[0].count),
-    audits: Number(countRows[5].rows[0].count)
+    audits: Number(countRows[6].rows[0].count)
   };
   const pagination = Object.fromEntries(Object.entries(pages).map(([name, current]) => [
     name,
@@ -101,7 +102,7 @@ export async function getUserHistory(userId, options = {}) {
     bonusClaim: bonusClaim.rows[0] || null,
     bonusEvents: bonusEvents.rows,
     bonusStatus: {
-      totalGranted: bonusEvents.rows.reduce((sum, row) => sum + Number(row.amount || 0), 0),
+      totalGranted: Number(countRows[5].rows[0].total || 0),
       currentBonus: Number(user.bonus_balance || 0),
       originAmount: Number(user.bonus_origin_amount || 0),
       requirement: Number(user.post_bonus_wager_requirement || 0),
