@@ -175,6 +175,7 @@ function settingLabel(key){
   pix_instructions:"Instruções para depósito",
   roulette_min_bet:"Aposta mínima da roleta",
   roulette_max_bet:"Aposta máxima da roleta",
+  audit_log_retention_days:"Retenção da auditoria (dias)",
  };
  return labels[key]||key.replace(/_/g," ").replace(/\b\w/g,c=>c.toUpperCase());
 }
