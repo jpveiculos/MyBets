@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
   cash_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   reserved_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
+  deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
   post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -125,6 +126,7 @@ CREATE TABLE IF NOT EXISTS spins (
   post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0,
   post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0,
   withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE,
+  deposit_principal_after NUMERIC(12,2) NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -143,6 +145,7 @@ ALTER TABLE spins ADD COLUMN IF NOT EXISTS bonus_balance_after NUMERIC(12,2) NOT
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE spins ADD COLUMN IF NOT EXISTS deposit_principal_after NUMERIC(12,2) NOT NULL DEFAULT 0;
 CREATE INDEX IF NOT EXISTS idx_spins_user_game_created ON spins(user_id, game_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spins_user_created ON spins(user_id, created_at DESC);
 
@@ -207,6 +210,13 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0;
+UPDATE users u
+   SET deposit_principal_remaining=GREATEST(
+     0,
+     COALESCE((SELECT SUM(COALESCE(d.approved_amount,d.amount)) FROM deposits d WHERE d.user_id=u.id AND d.status='approved'),0)
+     - COALESCE((SELECT SUM(s.cash_used) FROM spins s WHERE s.user_id=u.id),0)
+   );
 UPDATE users
    SET bonus_origin_amount=CASE WHEN COALESCE(bonus_origin_amount,0)>0 THEN bonus_origin_amount ELSE COALESCE(bonus_balance,0) END,
        post_bonus_wager_requirement=CASE WHEN COALESCE(post_bonus_wager_requirement,0)>0 THEN post_bonus_wager_requirement ELSE COALESCE(bonus_balance,0) END,
