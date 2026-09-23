@@ -53,13 +53,18 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     const user=u.rows[0];
     if(!user) throw new Error("Usuário não encontrado.");
 
+    const bonusSetting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='deposit_bonus_percent'");
+    const bonusPercent=Math.max(0,Number(bonusSetting.rows[0]?.setting_value ?? 100));
+    if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de recarga inválido.");
+    const bonusValue=Math.round(value*bonusPercent)/100;
     const newCash=Number(user.cash_balance)+value;
+    const newBonus=Number(user.bonus_balance)+bonusValue;
 
     await client.query(
       `UPDATE users
-          SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$2`,
-      [newCash,d.user_id]
+          SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP
+        WHERE id=$3`,
+      [newCash,newBonus,d.user_id]
     );
 
     await client.query(
@@ -82,9 +87,17 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
         value,
         newCash+Number(user.bonus_balance),
         id,
-        `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; valor creditado: R$ ${value.toFixed(2)}.`
+        `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; créditos: R$ ${value.toFixed(2)}; bônus de recarga: R$ ${bonusValue.toFixed(2)}.`
       ]
     );
+
+    if(bonusValue>0){
+      await client.query(
+        `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+         VALUES($1,'deposit_bonus',$2,$3,$4,$5)`,
+        [d.user_id,bonusValue,newCash+newBonus,id,`Bônus de recarga de ${bonusPercent.toFixed(2)}% aplicado sobre R$ ${value.toFixed(2)}.`]
+      );
+    }
 
     await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
@@ -92,12 +105,12 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
       [
         adminId,
         id,
-        JSON.stringify({declaredAmount,approvedAmount:value,adminNote})
+        JSON.stringify({declaredAmount,approvedAmount:value,bonusPercent,bonusValue,adminNote})
       ]
     );
 
     await client.query("COMMIT");
-    return {id,status:"approved",declaredAmount,approvedAmount:value};
+    return {id,status:"approved",declaredAmount,approvedAmount:value,bonusPercent,bonusValue,totalCredited:value+bonusValue};
   } catch(e){
     await client.query("ROLLBACK");
     throw e;
