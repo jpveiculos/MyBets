@@ -175,6 +175,12 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE;
+UPDATE users
+   SET bonus_origin_amount=CASE WHEN COALESCE(bonus_origin_amount,0)>0 THEN bonus_origin_amount ELSE COALESCE(bonus_balance,0) END,
+       post_bonus_wager_requirement=CASE WHEN COALESCE(post_bonus_wager_requirement,0)>0 THEN post_bonus_wager_requirement ELSE COALESCE(bonus_balance,0) END,
+       post_bonus_wager_progress=CASE WHEN COALESCE(bonus_balance,0)<=0 AND COALESCE(withdrawal_bonus_lock,FALSE)=FALSE THEN GREATEST(COALESCE(post_bonus_wager_progress,0),COALESCE(post_bonus_wager_requirement,0)) ELSE COALESCE(post_bonus_wager_progress,0) END,
+       withdrawal_bonus_lock=CASE WHEN COALESCE(bonus_balance,0)>0 THEN TRUE ELSE COALESCE(withdrawal_bonus_lock,FALSE) END
+ WHERE TRUE;
 UPDATE users SET bonus_origin_amount=COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance), post_bonus_wager_requirement=CASE WHEN post_bonus_wager_requirement=0 AND COALESCE(bonus_balance,0)>0 THEN COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance) ELSE post_bonus_wager_requirement END, withdrawal_bonus_lock=CASE WHEN COALESCE(bonus_balance,0)>0 THEN TRUE ELSE withdrawal_bonus_lock END WHERE COALESCE(bonus_balance,0)>0;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_users_cpf ON users(cpf) WHERE cpf IS NOT NULL;
 
