@@ -2,9 +2,19 @@ import { pool } from "./db.js";
 
 const DEFAULT_AUDIT_RETENTION_DAYS = 30;
 
-export async function getUserHistory(userId) {
+export async function getUserHistory(userId, options = {}) {
   const id = Number(userId);
   if (!Number.isInteger(id) || id <= 0) throw new Error("Usuário inválido.");
+
+  const pageSize = Math.min(Math.max(Number(options.pageSize) || 50, 10), 100);
+  const page = name => Math.max(1, Number(options[name]) || 1);
+  const pages = {
+    transactions: page("transactionsPage"),
+    deposits: page("depositsPage"),
+    withdrawals: page("withdrawalsPage"),
+    spins: page("spinsPage"),
+    audits: page("auditsPage")
+  };
 
   const userResult = await pool.query(
     `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,
@@ -16,25 +26,51 @@ export async function getUserHistory(userId) {
   const user = userResult.rows[0];
   if (!user) throw new Error("Usuário não encontrado.");
 
+  const offset = name => (pages[name] - 1) * pageSize;
+  const countRows = await Promise.all([
+    pool.query("SELECT COUNT(*)::int AS count FROM transactions WHERE user_id=$1", [id]),
+    pool.query("SELECT COUNT(*)::int AS count FROM deposits WHERE user_id=$1", [id]),
+    pool.query("SELECT COUNT(*)::int AS count FROM withdrawals WHERE user_id=$1", [id]),
+    pool.query("SELECT COUNT(*)::int AS count FROM spins WHERE user_id=$1", [id]),
+    pool.query("SELECT COUNT(*)::int AS count FROM audit_logs WHERE target_type='user' AND target_id=$1", [id])
+  ]);
+
   const [transactions, deposits, withdrawals, spins, audits, bonusClaim] = await Promise.all([
     pool.query(`SELECT id,type,amount,balance_after,reference_id,note,created_at
-                  FROM transactions WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+                  FROM transactions WHERE user_id=$1 ORDER BY created_at DESC,id DESC
+                  LIMIT $2 OFFSET $3`, [id, pageSize, offset("transactions")]),
     pool.query(`SELECT id,amount,approved_amount,status,payment_method,player_note,admin_note,
                        approved_at,rejected_at,created_at,updated_at
-                  FROM deposits WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+                  FROM deposits WHERE user_id=$1 ORDER BY created_at DESC,id DESC
+                  LIMIT $2 OFFSET $3`, [id, pageSize, offset("deposits")]),
     pool.query(`SELECT id,amount,status,withdrawal_method,pix_key,player_note,admin_note,
                        rejection_reason,approved_at,paid_at,rejected_at,created_at,updated_at
-                  FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+                  FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC,id DESC
+                  LIMIT $2 OFFSET $3`, [id, pageSize, offset("withdrawals")]),
     pool.query(`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,created_at
-                  FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+                  FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC
+                  LIMIT $2 OFFSET $3`, [id, pageSize, offset("spins")]),
     pool.query(`SELECT id,actor_type,actor_id,action,target_type,target_id,details,created_at
                   FROM audit_logs
                  WHERE target_type='user' AND target_id=$1
-                 ORDER BY created_at DESC,id DESC`, [id]),
+                 ORDER BY created_at DESC,id DESC
+                 LIMIT $2 OFFSET $3`, [id, pageSize, offset("audits")]),
     pool.query(`SELECT id,bonus_amount,created_at
                   FROM signup_bonus_claims WHERE user_id=$1
                  ORDER BY created_at DESC,id DESC LIMIT 1`, [id])
   ]);
+
+  const counts = {
+    transactions: Number(countRows[0].rows[0].count),
+    deposits: Number(countRows[1].rows[0].count),
+    withdrawals: Number(countRows[2].rows[0].count),
+    spins: Number(countRows[3].rows[0].count),
+    audits: Number(countRows[4].rows[0].count)
+  };
+  const pagination = Object.fromEntries(Object.entries(pages).map(([name, current]) => [
+    name,
+    { page: current, pageSize, total: counts[name], totalPages: Math.max(1, Math.ceil(counts[name] / pageSize)) }
+  ]));
 
   return {
     user,
@@ -43,7 +79,8 @@ export async function getUserHistory(userId) {
     deposits: deposits.rows,
     withdrawals: withdrawals.rows,
     spins: spins.rows,
-    audits: audits.rows
+    audits: audits.rows,
+    pagination
   };
 }
 
