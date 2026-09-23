@@ -58,16 +58,42 @@ function drawWheel(){
     const g=document.createElementNS(ns,"linearGradient");g.setAttribute("id","wheel3d-"+key);g.setAttribute("x1","0%");g.setAttribute("y1","0%");g.setAttribute("x2","100%");g.setAttribute("y2","100%");
     [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{const s=document.createElementNS(ns,"stop");s.setAttribute("offset",offset);s.setAttribute("stop-color",color);g.appendChild(s);});defs.appendChild(g);
   });svg.appendChild(defs);
-  for(let i=0;i<TOTAL;i++){
-    const geometry=sectorGeometry(i),prize=i%GROUP_SIZE===0,prizePosition=Math.floor(i/GROUP_SIZE),multiplier=Number(prizes[prizePosition]);
-    const path=document.createElementNS(ns,"path");path.setAttribute("d",wedge(200,200,radius,geometry.start,geometry.end));
-    const colors={2:{stroke:"#168cff"},3:{stroke:"#00ff66"},4:{stroke:"#c000ff"},5:{stroke:"#ff9d00"},10:{stroke:"#ff2525"}};const color=colors[multiplier]||{stroke:"#ffe16a"};
-    path.setAttribute("fill",prize?"url(#wheel3d-"+multiplier+")":"url(#wheel3d-black)");path.setAttribute("stroke",prize?color.stroke:"#3d4148");path.setAttribute("stroke-width",prize?"2.5":"1.5");svg.appendChild(path);
-    if(prize){
-      const label=document.createElementNS(ns,"text");const xy=polar(200,200,146,geometry.center);
-      label.setAttribute("x",xy[0]);label.setAttribute("y",xy[1]);label.setAttribute("fill","#fff");label.setAttribute("font-size","15");label.setAttribute("font-family","Arial,Helvetica,sans-serif");label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");label.setAttribute("class","prize-label");
-      label.textContent=String(multiplier)+"x";svg.appendChild(label);
-    }
+  const colors={2:{stroke:"#168cff"},3:{stroke:"#00ff66"},4:{stroke:"#c000ff"},5:{stroke:"#ff9d00"},10:{stroke:"#ff2525"}};
+  // Visualmente cada grupo de 30° é composto por uma única fatia de prêmio
+  // e uma única fatia preta de perda. Os 3 resultados de perda continuam
+  // existindo logicamente dentro da fatia preta, mas suas divisões internas
+  // não são desenhadas. Assim a roleta deixa de parecer formada por dezenas
+  // de fatias finíssimas sem alterar a lógica de 64 posições.
+  for(let group=0;group<TOTAL/GROUP_SIZE;group++){
+    const prizeIndex=group*GROUP_SIZE;
+    const multiplier=Number(prizes[group]);
+    const prizeGeometry=sectorGeometry(prizeIndex);
+    const prizePath=document.createElementNS(ns,"path");
+    prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
+    const color=colors[multiplier]||{stroke:"#ffe16a"};
+    prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
+    prizePath.setAttribute("stroke",color.stroke);
+    prizePath.setAttribute("stroke-width","2.5");
+    svg.appendChild(prizePath);
+
+    const lossPath=document.createElementNS(ns,"path");
+    lossPath.setAttribute("d",wedge(200,200,radius,prizeGeometry.end,group*30+30));
+    lossPath.setAttribute("fill","url(#wheel3d-black)");
+    lossPath.setAttribute("stroke","#3d4148");
+    lossPath.setAttribute("stroke-width","1.5");
+    svg.appendChild(lossPath);
+
+    const label=document.createElementNS(ns,"text");
+    const xy=polar(200,200,146,prizeGeometry.center);
+    label.setAttribute("x",xy[0]);label.setAttribute("y",xy[1]);
+    label.setAttribute("fill","#fff");label.setAttribute("font-size","15");
+    label.setAttribute("font-family","Arial,Helvetica,sans-serif");
+    label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
+    label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
+    label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
+    label.setAttribute("class","prize-label");
+    label.textContent=String(multiplier)+"x";
+    svg.appendChild(label);
   }
   const ring=document.createElementNS(ns,"circle");ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","199");ring.setAttribute("fill","none");ring.setAttribute("stroke","#f4c83f");ring.setAttribute("stroke-width","3");svg.appendChild(ring);
 }
