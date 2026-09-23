@@ -7,33 +7,33 @@ export async function getUserHistory(userId) {
   if (!Number.isInteger(id) || id <= 0) throw new Error("Usuário inválido.");
 
   const userResult = await pool.query(
-    \`SELECT id,username,cash_balance,bonus_balance,reserved_balance,
+    `SELECT id,username,cash_balance,bonus_balance,reserved_balance,
             (cash_balance+bonus_balance) AS total_balance,
             bonus_wager_progress,is_banned,is_deleted,created_at,updated_at
-       FROM users WHERE id=$1\`,
+       FROM users WHERE id=$1`,
     [id]
   );
   const user = userResult.rows[0];
   if (!user) throw new Error("Usuário não encontrado.");
 
   const [transactions, deposits, withdrawals, spins, audits, bonusClaim] = await Promise.all([
-    pool.query(\`SELECT id,type,amount,balance_after,reference_id,note,created_at
-                  FROM transactions WHERE user_id=$1 ORDER BY created_at DESC,id DESC\`, [id]),
-    pool.query(\`SELECT id,amount,approved_amount,status,payment_method,player_note,admin_note,
+    pool.query(`SELECT id,type,amount,balance_after,reference_id,note,created_at
+                  FROM transactions WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+    pool.query(`SELECT id,amount,approved_amount,status,payment_method,player_note,admin_note,
                        approved_at,rejected_at,created_at,updated_at
-                  FROM deposits WHERE user_id=$1 ORDER BY created_at DESC,id DESC\`, [id]),
-    pool.query(\`SELECT id,amount,status,withdrawal_method,pix_key,player_note,admin_note,
+                  FROM deposits WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+    pool.query(`SELECT id,amount,status,withdrawal_method,pix_key,player_note,admin_note,
                        rejection_reason,approved_at,paid_at,rejected_at,created_at,updated_at
-                  FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC,id DESC\`, [id]),
-    pool.query(\`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,created_at
-                  FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC\`, [id]),
-    pool.query(\`SELECT id,actor_type,actor_id,action,target_type,target_id,details,created_at
+                  FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+    pool.query(`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,created_at
+                  FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC`, [id]),
+    pool.query(`SELECT id,actor_type,actor_id,action,target_type,target_id,details,created_at
                   FROM audit_logs
                  WHERE target_type='user' AND target_id=$1
-                 ORDER BY created_at DESC,id DESC\`, [id]),
-    pool.query(\`SELECT id,bonus_amount,created_at
+                 ORDER BY created_at DESC,id DESC`, [id]),
+    pool.query(`SELECT id,bonus_amount,created_at
                   FROM signup_bonus_claims WHERE user_id=$1
-                 ORDER BY created_at DESC,id DESC LIMIT 1\`, [id])
+                 ORDER BY created_at DESC,id DESC LIMIT 1`, [id])
   ]);
 
   return {
@@ -55,47 +55,32 @@ export async function searchTransactionHistory({ query="", type="", from="", to=
   const where = [];
 
   if (q) {
-    values.push(\`%\${q}%\`);
-    where.push(\`u.username ILIKE $\${values.length}\`);
+    values.push(`%${q}%`);
+    where.push(`u.username ILIKE $${values.length}`);
   }
   if (eventType) {
     values.push(eventType);
-    where.push(\`t.type=$\${values.length}\`);
+    where.push(`t.type=$${values.length}`);
   }
   if (from) {
     values.push(from);
-    where.push(\`t.created_at >= $\${values.length}::date\`);
+    where.push(`t.created_at >= $${values.length}::date`);
   }
   if (to) {
     values.push(to);
-    where.push(\`t.created_at < ($\${values.length}::date + INTERVAL '1 day')\`);
+    where.push(`t.created_at < ($${values.length}::date + INTERVAL '1 day')`);
   }
 
   values.push(safeLimit);
   const result = await pool.query(
-    \`SELECT t.id,t.user_id,u.username,t.type,t.amount,t.balance_after,
+    `SELECT t.id,t.user_id,u.username,t.type,t.amount,t.balance_after,
             t.reference_id,t.note,t.created_at
        FROM transactions t JOIN users u ON u.id=t.user_id
-      \${where.length ? "WHERE " + where.join(" AND ") : ""}
-      ORDER BY t.created_at DESC,t.id DESC LIMIT $\${values.length}\`,
+      ${where.length ? "WHERE " + where.join(" AND ") : ""}
+      ORDER BY t.created_at DESC,t.id DESC LIMIT $${values.length}`,
     values
   );
   return result.rows;
-}
-
-export async function recordUserRegistration({userId, username, signupBonus}) {
-  await pool.query(
-    \`INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-     VALUES('system',$1,'user_registered','user',$1,$2)\`,
-    [
-      userId,
-      JSON.stringify({
-        username: String(username || ""),
-        signupBonus: Number(signupBonus) || 0,
-        bonusGranted: Number(signupBonus) > 0
-      })
-    ]
-  );
 }
 
 export async function pruneOldAuditLogs() {
