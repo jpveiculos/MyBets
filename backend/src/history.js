@@ -13,13 +13,17 @@ export async function getUserHistory(userId, options = {}) {
     deposits: page("depositsPage"),
     withdrawals: page("withdrawalsPage"),
     spins: page("spinsPage"),
+    bonusEvents: page("bonusEventsPage"),
     audits: page("auditsPage")
   };
 
   const userResult = await pool.query(
     `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,
             (cash_balance+bonus_balance) AS total_balance,
-            bonus_wager_progress,is_banned,is_deleted,created_at,updated_at
+            (cash_balance-reserved_balance+bonus_balance) AS available_balance,
+            bonus_wager_progress,bonus_origin_amount,
+            post_bonus_wager_requirement,post_bonus_wager_progress,
+            withdrawal_bonus_lock,is_banned,is_deleted,created_at,updated_at
        FROM users WHERE id=$1`,
     [id]
   );
@@ -32,10 +36,11 @@ export async function getUserHistory(userId, options = {}) {
     pool.query("SELECT COUNT(*)::int AS count FROM deposits WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM withdrawals WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM spins WHERE user_id=$1", [id]),
+    pool.query("SELECT COUNT(*)::int AS count FROM bonus_events WHERE user_id=$1", [id]),
     pool.query("SELECT COUNT(*)::int AS count FROM audit_logs WHERE target_type='user' AND target_id=$1", [id])
   ]);
 
-  const [transactions, deposits, withdrawals, spins, audits, bonusClaim] = await Promise.all([
+  const [transactions, deposits, withdrawals, spins, bonusEvents, audits, bonusClaim] = await Promise.all([
     pool.query(`SELECT id,type,amount,balance_after,reference_id,note,created_at
                   FROM transactions WHERE user_id=$1 ORDER BY created_at DESC,id DESC
                   LIMIT $2 OFFSET $3`, [id, pageSize, offset("transactions")]),
@@ -47,9 +52,17 @@ export async function getUserHistory(userId, options = {}) {
                        rejection_reason,approved_at,paid_at,rejected_at,created_at,updated_at
                   FROM withdrawals WHERE user_id=$1 ORDER BY created_at DESC,id DESC
                   LIMIT $2 OFFSET $3`, [id, pageSize, offset("withdrawals")]),
-    pool.query(`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,created_at
+    pool.query(`SELECT id,game_id,result_code,result,multiplier,bet_amount,payout_amount,
+                       bonus_used,cash_used,cash_balance_after,bonus_balance_after,
+                       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+                       withdrawal_bonus_lock_after,created_at
                   FROM spins WHERE user_id=$1 ORDER BY created_at DESC,id DESC
                   LIMIT $2 OFFSET $3`, [id, pageSize, offset("spins")]),
+    pool.query(`SELECT id,type,amount,bonus_balance_after,bonus_origin_amount_after,
+                       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+                       withdrawal_bonus_lock_after,reference_id,note,created_at
+                  FROM bonus_events WHERE user_id=$1 ORDER BY created_at DESC,id DESC
+                  LIMIT $2 OFFSET $3`, [id, pageSize, offset("bonusEvents")]),
     pool.query(`SELECT id,actor_type,actor_id,action,target_type,target_id,details,created_at
                   FROM audit_logs
                  WHERE target_type='user' AND target_id=$1
@@ -65,16 +78,38 @@ export async function getUserHistory(userId, options = {}) {
     deposits: Number(countRows[1].rows[0].count),
     withdrawals: Number(countRows[2].rows[0].count),
     spins: Number(countRows[3].rows[0].count),
-    audits: Number(countRows[4].rows[0].count)
+    bonusEvents: Number(countRows[4].rows[0].count),
+    audits: Number(countRows[5].rows[0].count)
   };
   const pagination = Object.fromEntries(Object.entries(pages).map(([name, current]) => [
     name,
     { page: current, pageSize, total: counts[name], totalPages: Math.max(1, Math.ceil(counts[name] / pageSize)) }
   ]));
 
+  const remainingPostBonus = Math.max(
+    0,
+    Number(user.post_bonus_wager_requirement || 0) - Number(user.post_bonus_wager_progress || 0)
+  );
+  const withdrawalStatus = Number(user.bonus_balance || 0) > 0
+    ? "blocked_bonus"
+    : Boolean(user.withdrawal_bonus_lock)
+      ? "blocked_post_bonus"
+      : "unlocked";
+
   return {
     user,
     bonusClaim: bonusClaim.rows[0] || null,
+    bonusEvents: bonusEvents.rows,
+    bonusStatus: {
+      totalGranted: bonusEvents.rows.reduce((sum, row) => sum + Number(row.amount || 0), 0),
+      currentBonus: Number(user.bonus_balance || 0),
+      originAmount: Number(user.bonus_origin_amount || 0),
+      requirement: Number(user.post_bonus_wager_requirement || 0),
+      progress: Number(user.post_bonus_wager_progress || 0),
+      remainingPostBonus,
+      lock: Boolean(user.withdrawal_bonus_lock),
+      status: withdrawalStatus
+    },
     transactions: transactions.rows,
     deposits: deposits.rows,
     withdrawals: withdrawals.rows,
@@ -83,7 +118,6 @@ export async function getUserHistory(userId, options = {}) {
     pagination
   };
 }
-
 export async function searchTransactionHistory({ query="", type="", from="", to="", limit=500 } = {}) {
   const q = String(query || "").trim();
   const eventType = String(type || "").trim();
