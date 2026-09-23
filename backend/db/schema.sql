@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
   setting_value TEXT NOT NULL,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+DELETE FROM site_settings WHERE setting_key='bonus_wager_requirement';
 
 CREATE TABLE IF NOT EXISTS spins (
   id SERIAL PRIMARY KEY,
@@ -187,7 +188,6 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_city',''),
 ('pix_description','MyBets'),
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
-('bonus_wager_requirement','0'),
 ('signup_bonus_amount','50'),
 ('deposit_bonus_percent','100'),
 ('roulette_min_bet','0.50'),
