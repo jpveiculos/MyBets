@@ -7,7 +7,7 @@ export async function getUserHistory(userId) {
   if (!Number.isInteger(id) || id <= 0) throw new Error("Usuário inválido.");
 
   const userResult = await pool.query(
-    `SELECT id,username,cash_balance,bonus_balance,reserved_balance,
+    `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,
             (cash_balance+bonus_balance) AS total_balance,
             bonus_wager_progress,is_banned,is_deleted,created_at,updated_at
        FROM users WHERE id=$1`,
