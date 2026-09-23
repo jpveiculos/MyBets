@@ -62,7 +62,11 @@
 
       <section class="admin-view hidden" id="view-users" data-view-panel="users">
         <div class="admin-view-head"><div><span class="eyebrow">ADMINISTRAÇÃO</span><h1>Usuários</h1></div></div>
-        <section class="admin-panel-block"><p class="muted">Saldo e bônus são separados. Depósitos entram somente no saldo; bônus concedidos aqui entram somente no saldo de bônus.</p><div id="users"></div></section>
+        <section class="admin-panel-block">
+  <p class="muted">Saldo e bônus são separados. O histórico do jogador mostra cadastro, bônus concedido, depósitos, saques, apostas, prêmios e ajustes.</p>
+  <div class="admin-history-search"><input id="userSearch" type="search" placeholder="Buscar usuário..." autocomplete="off"></div>
+  <div id="users"></div>
+</section>
       </section>
 
       <section class="admin-view hidden" id="view-deposits" data-view-panel="deposits">
@@ -77,7 +81,24 @@
 
       <section class="admin-view hidden" id="view-transactions" data-view-panel="transactions">
         <div class="admin-view-head"><div><span class="eyebrow">HISTÓRICO</span><h1>Transações</h1></div></div>
-        <section class="admin-panel-block"><div id="transactions"></div></section>
+        <section class="admin-panel-block">
+  <div class="admin-history-toolbar">
+    <input id="transactionUserSearch" type="search" placeholder="Usuário..." autocomplete="off">
+    <select id="transactionType">
+      <option value="">Todas as movimentações</option>
+      <option value="signup_bonus">Bônus de cadastro</option>
+      <option value="deposit_approved">Depósito aprovado</option>
+      <option value="withdrawal_approved">Saque aprovado</option>
+      <option value="admin_cash_adjustment">Ajuste de saldo</option>
+      <option value="admin_bonus_adjustment">Ajuste de bônus</option>
+    </select>
+    <input id="transactionFrom" type="date" aria-label="Data inicial">
+    <input id="transactionTo" type="date" aria-label="Data final">
+    <button class="small-btn" id="transactionSearch" type="button">Buscar</button>
+    <button class="ghost-btn" id="transactionClear" type="button">Limpar</button>
+  </div>
+  <div id="transactions"></div>
+</section>
       </section>
 
       <section class="admin-view hidden" id="view-roulette" data-view-panel="roulette">
@@ -127,6 +148,15 @@
   </div>
 </div>
 
+<div class="modal hidden" id="historyModal" aria-hidden="true">
+  <div class="modal-card history-modal-card">
+    <button class="ghost-btn modal-close" id="historyClose" type="button">×</button>
+    <span class="eyebrow">HISTÓRICO DO JOGADOR</span>
+    <h2 id="historyTitle">Histórico</h2>
+    <p class="muted" id="historySummary"></p>
+    <div id="historyContent"></div>
+  </div>
+</div>
 <script src="/admin.js"></script>
 </body>
 </html>
