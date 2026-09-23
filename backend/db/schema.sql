@@ -195,6 +195,8 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('audit_log_retention_days','30')
 ON CONFLICT (setting_key) DO NOTHING;
 
+DELETE FROM site_settings WHERE setting_key='bonus_wager_requirement';
+
 UPDATE site_settings SET setting_value='100',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='deposit_bonus_percent';
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
