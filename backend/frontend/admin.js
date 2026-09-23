@@ -128,14 +128,23 @@ function openHistoryModal(history){
  $("historyTitle").textContent="Histórico • "+u.username;
  $("historySummary").textContent=`CPF: ${u.cpf||"Não informado"} • Cadastro: ${dateTime(u.created_at)} • Saldo: ${money(u.cash_balance)} • Bônus atual: ${money(u.bonus_balance)} • Total: ${money(u.total_balance)}`;
  const bonus=history.bonusClaim;
- const accountHtml=historyRow("CADASTRO REALIZADO",bonus?`Bônus registrado: ${money(bonus.bonus_amount)}`:"Sem bônus concedido",u.created_at,"history-account");
+ const signupTransaction=history.transactions.find(x=>x.type==="signup_bonus");
+ const grantedBonus=bonus?.bonus_amount ?? signupTransaction?.amount ?? 0;
+ const consumedBonus=Math.max(0,Number(grantedBonus)-Number(u.bonus_balance||0));
+ const bonusDetail=Number(grantedBonus)>0
+  ? "Concedido: "+money(grantedBonus)+" • Consumido: "+money(consumedBonus)+" • Saldo de bônus atual: "+money(u.bonus_balance)
+  : "Nenhum bônus de cadastro registrado";
+ const accountHtml=historyRow("CADASTRO REALIZADO",bonusDetail,u.created_at,"history-account");
+ const bonusHtml=Number(grantedBonus)>0
+  ? historyRow("BÔNUS DE CADASTRO CONCEDIDO","Valor: "+money(grantedBonus)+" • "+(bonus?.created_at?"Registro: "+dateTime(bonus.created_at):"registrado na transação de cadastro"),bonus?.created_at||signupTransaction?.created_at||u.created_at,"history-bonus")
+  : "<p class=\"muted\">Nenhum bônus de cadastro registrado.</p>";
  const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at,x.type==="signup_bonus"?"history-bonus":"")).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
  const depositHtml=history.deposits.length?history.deposits.map(x=>historyRow("DEPÓSITO "+statusLabel(x.status),`Solicitado: ${money(x.amount)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum depósito registrado.</p>';
  const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum saque registrado.</p>';
  const spinsHtml=history.spins.length?history.spins.map(x=>historyRow(`${String(x.game_id||"jogo").toUpperCase()} • ${x.payout_amount>0?"PRÊMIO":"APOSTA"}`,`Aposta: ${money(x.bet_amount)} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)}`,x.created_at,"")).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
  const auditHtml=history.audits.length?history.audits.map(x=>historyRow(String(x.action||"AUDITORIA").replace(/_/g," ").toUpperCase(),x.details?JSON.stringify(x.details):"",x.created_at,"history-audit")).join(""):'<p class="muted">Nenhum evento de auditoria recente.</p>';
  $("historyContent").innerHTML=`
-  <section class="history-section"><h3>Conta e bônus</h3>${accountHtml}</section>
+  <section class="history-section"><h3>Conta e bônus</h3>${accountHtml}${bonusHtml}</section>
   <section class="history-section"><h3>Movimentações financeiras</h3>${txHtml}</section>
   <section class="history-section"><h3>Depósitos</h3>${depositHtml}</section>
   <section class="history-section"><h3>Saques</h3>${withdrawalHtml}</section>
