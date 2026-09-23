@@ -26,7 +26,11 @@ async function load(){
       ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque."
       : withdrawalLocked
         ? "Bônus zerado. Meta pós-bônus: "+money(a.account.post_bonus_wager_progress||0)+" / "+money(a.account.post_bonus_wager_requirement||0)+". Falta "+money(remaining)+"."
-        : "Saque liberado. Informe o valor e sua chave Pix.";
+        : depositPrincipal>0
+          ? "Principal de depósito protegido: "+money(depositPrincipal)+". Aposte esse valor para liberar os ganhos para saque."
+          : withdrawableBalance>0
+            ? "Ganhos disponíveis para saque: "+money(withdrawableBalance)+". Informe o valor e sua chave Pix."
+            : "Ainda não há ganhos disponíveis para saque.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
