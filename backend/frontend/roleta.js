@@ -1,12 +1,17 @@
 const TOTAL=64;
 const GROUP_SIZE=4;
+const PRIZE_COUNT=TOTAL/GROUP_SIZE;
+const GROUP_ANGLE=360/PRIZE_COUNT;
+const PRIZE_ANGLE=GROUP_ANGLE/2;
+const LOSS_ANGLE=PRIZE_ANGLE/3;
+
 const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 let MIN_BET=.50;
 let MAX_BET=100;
 let prizes=[...DEFAULT_PRIZES];
-let rotation=-11.25;
+let rotation=-PRIZE_ANGLE/2;
 let spinning=false;
 let configLoaded=false;
 
@@ -43,60 +48,113 @@ function sectorGeometry(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
   const group=Math.floor(s/GROUP_SIZE);
   const position=s%GROUP_SIZE;
-  const groupStart=group*30;
-  if(position===0)return {start:groupStart,end:groupStart+22.5,center:groupStart+11.25};
-  const start=groupStart+22.5+(position-1)*2.5;
-  return {start,end:start+2.5,center:start+1.25};
+  const groupStart=group*GROUP_ANGLE;
+
+  if(position===0){
+    return {
+      start:groupStart,
+      end:groupStart+PRIZE_ANGLE,
+      center:groupStart+PRIZE_ANGLE/2
+    };
+  }
+
+  const start=groupStart+PRIZE_ANGLE+(position-1)*LOSS_ANGLE;
+  return {
+    start,
+    end:start+LOSS_ANGLE,
+    center:start+LOSS_ANGLE/2
+  };
 }
 
 function drawWheel(){
-  const svg=$("wheelSvg");svg.innerHTML="";
-  const ns="http://www.w3.org/2000/svg";const radius=198;
+  const svg=$("wheelSvg");
+  svg.innerHTML="";
+  const ns="http://www.w3.org/2000/svg";
+  const radius=198;
+
   const defs=document.createElementNS(ns,"defs");
-  const gradients={black:["#111111","#050505","#000000"],2:["#168cff","#0066ff","#003399"],3:["#00e85a","#00b83f","#006b24"],4:["#c000ff","#8a00cc","#4b0075"],5:["#ff9d00","#ff6800","#b83a00"],10:["#ff2525","#e00000","#8f0000"]};
+  const gradients={
+    black:["#111111","#050505","#000000"],
+    2:["#168cff","#0066ff","#003399"],
+    3:["#00e85a","#00b83f","#006b24"],
+    4:["#c000ff","#8a00cc","#4b0075"],
+    5:["#ff9d00","#ff6800","#b83a00"],
+    10:["#ff2525","#e00000","#8f0000"]
+  };
+
   Object.entries(gradients).forEach(([key,stops])=>{
-    const g=document.createElementNS(ns,"linearGradient");g.setAttribute("id","wheel3d-"+key);g.setAttribute("x1","0%");g.setAttribute("y1","0%");g.setAttribute("x2","100%");g.setAttribute("y2","100%");
-    [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{const s=document.createElementNS(ns,"stop");s.setAttribute("offset",offset);s.setAttribute("stop-color",color);g.appendChild(s);});defs.appendChild(g);
-  });svg.appendChild(defs);
-  const colors={2:{stroke:"#168cff"},3:{stroke:"#00ff66"},4:{stroke:"#c000ff"},5:{stroke:"#ff9d00"},10:{stroke:"#ff2525"}};
-  // Visualmente cada grupo de 30° é composto por uma única fatia de prêmio
-  // e uma única fatia preta de perda. Os 3 resultados de perda continuam
-  // existindo logicamente dentro da fatia preta, mas suas divisões internas
-  // não são desenhadas. Assim a roleta deixa de parecer formada por dezenas
-  // de fatias finíssimas sem alterar a lógica de 64 posições.
-  for(let group=0;group<TOTAL/GROUP_SIZE;group++){
-    const prizeIndex=group*GROUP_SIZE;
-    const multiplier=Number(prizes[group]);
-    const prizeGeometry=sectorGeometry(prizeIndex);
-    const prizePath=document.createElementNS(ns,"path");
-    prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
-    const color=colors[multiplier]||{stroke:"#ffe16a"};
-    prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
-    prizePath.setAttribute("stroke",color.stroke);
-    prizePath.setAttribute("stroke-width","2.5");
-    svg.appendChild(prizePath);
+    const g=document.createElementNS(ns,"linearGradient");
+    g.setAttribute("id","wheel3d-"+key);
+    g.setAttribute("x1","0%");
+    g.setAttribute("y1","0%");
+    g.setAttribute("x2","100%");
+    g.setAttribute("y2","100%");
 
-    const lossPath=document.createElementNS(ns,"path");
-    lossPath.setAttribute("d",wedge(200,200,radius,prizeGeometry.end,group*30+30));
-    lossPath.setAttribute("fill","url(#wheel3d-black)");
-    lossPath.setAttribute("stroke","#3d4148");
-    lossPath.setAttribute("stroke-width","1.5");
-    svg.appendChild(lossPath);
+    [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{
+      const s=document.createElementNS(ns,"stop");
+      s.setAttribute("offset",offset);
+      s.setAttribute("stop-color",color);
+      g.appendChild(s);
+    });
 
-    const label=document.createElementNS(ns,"text");
-    const xy=polar(200,200,146,prizeGeometry.center);
-    label.setAttribute("x",xy[0]);label.setAttribute("y",xy[1]);
-    label.setAttribute("fill","#fff");label.setAttribute("font-size","15");
-    label.setAttribute("font-family","Arial,Helvetica,sans-serif");
-    label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
-    label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
-    label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
-    label.setAttribute("class","prize-label");
-    label.textContent=String(multiplier)+"x";
-    svg.appendChild(label);
+    defs.appendChild(g);
+  });
+
+  svg.appendChild(defs);
+
+  const colors={
+    2:{stroke:"#168cff"},
+    3:{stroke:"#00ff66"},
+    4:{stroke:"#c000ff"},
+    5:{stroke:"#ff9d00"},
+    10:{stroke:"#ff2525"}
+  };
+
+  // Desenha os 64 setores reais: 16 prêmios e 48 perdas.
+  // Em cada grupo de 4, o prêmio ocupa metade do arco e os 3 setores
+  // de perda dividem igualmente a outra metade.
+  for(let sector=0;sector<TOTAL;sector++){
+    const geometry=sectorGeometry(sector);
+    const isPrize=sector%GROUP_SIZE===0;
+    const multiplier=isPrize?Number(prizes[sector/GROUP_SIZE]):0;
+
+    const path=document.createElementNS(ns,"path");
+    path.setAttribute("d",wedge(200,200,radius,geometry.start,geometry.end));
+    path.setAttribute("fill",isPrize?`url(#wheel3d-${multiplier})`:"url(#wheel3d-black)");
+    path.setAttribute("stroke",isPrize?(colors[multiplier]?.stroke||"#ffe16a"):"#3d4148");
+    path.setAttribute("stroke-width",isPrize?"2.5":"1.2");
+    svg.appendChild(path);
+
+    if(isPrize){
+      const label=document.createElementNS(ns,"text");
+      const xy=polar(200,200,146,geometry.center);
+      label.setAttribute("x",xy[0]);
+      label.setAttribute("y",xy[1]);
+      label.setAttribute("fill","#fff");
+      label.setAttribute("font-size","15");
+      label.setAttribute("font-family","Arial,Helvetica,sans-serif");
+      label.setAttribute("font-weight","900");
+      label.setAttribute("text-anchor","middle");
+      label.setAttribute("dominant-baseline","middle");
+      label.setAttribute("paint-order","stroke");
+      label.setAttribute("stroke","#000");
+      label.setAttribute("stroke-width","3");
+      label.setAttribute("class","prize-label");
+      label.textContent=String(multiplier)+"x";
+      svg.appendChild(label);
+    }
   }
-  const ring=document.createElementNS(ns,"circle");ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","199");ring.setAttribute("fill","none");ring.setAttribute("stroke","#f4c83f");ring.setAttribute("stroke-width","3");svg.appendChild(ring);
+
+  const ring=document.createElementNS(ns,"circle");
+  ring.setAttribute("cx","200");
+  ring.setAttribute("cy","200");
+  ring.setAttribute("r","199");
+  ring.setAttribute("fill","none");
+  ring.setAttribute("stroke","#f4c83f");
+  ring.setAttribute("stroke-width","3");
+  svg.appendChild(ring);
 }
+
 function updatePrizeValues(){
   const bet=getBet();
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
@@ -107,7 +165,7 @@ function updatePrizeValues(){
 }
 
 function getBet(){
-  const value=Number(String($("betAmount").value).replace(",","."));
+  const value=Number(String($("betAmount").value).replace(",",".")); 
   return Number.isFinite(value)?Number(value.toFixed(2)):MIN_BET;
 }
 
@@ -123,7 +181,10 @@ function changeBet(delta){
   updatePrizeValues();
 }
 
-function targetForSector(sector){ return -sectorGeometry(sector).center; }
+function targetForSector(sector){
+  return -sectorGeometry(sector).center;
+}
+
 function showWin(amount){
   const box=$("result");
   box.textContent=`Você ganhou ${money(amount)}`;
@@ -136,12 +197,19 @@ async function loadConfig(){
   try{
     const d=await api("/api/roulette/config");
     const r=d.roulette;
+
     MIN_BET=Number(r.minBet)||.50;
     MAX_BET=Number(r.maxBet)||100;
-    prizes=Array.isArray(r.prizes)&&r.prizes.length===DEFAULT_PRIZES.length?r.prizes.map(Number):[...DEFAULT_PRIZES];
+
+    const configured=Array.isArray(r.prizes)?r.prizes.map(Number):[];
+    const exactConfig=configured.length===DEFAULT_PRIZES.length&&configured.every((value,index)=>value===DEFAULT_PRIZES[index]);
+    prizes=exactConfig?configured:[...DEFAULT_PRIZES];
   }catch{
-    MIN_BET=.50;MAX_BET=100;prizes=[...DEFAULT_PRIZES];
+    MIN_BET=.50;
+    MAX_BET=100;
+    prizes=[...DEFAULT_PRIZES];
   }
+
   $("betAmount").min=MIN_BET.toFixed(2);
   $("betAmount").max=MAX_BET.toFixed(2);
   normalizeBet();
@@ -192,12 +260,16 @@ async function spin(){
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
 
-        if(p<1){requestAnimationFrame(frame);return}
+        if(p<1){
+          requestAnimationFrame(frame);
+          return;
+        }
+
         rotation=destination;
         wheel.style.transform=`rotate(${rotation}deg)`;
-
         resolve();
       }
+
       requestAnimationFrame(frame);
     });
 
