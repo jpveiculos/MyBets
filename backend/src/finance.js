@@ -10,9 +10,10 @@ function money(value) {
 export async function getAccount(userId) {
   const result = await pool.query(
     `SELECT id, username,
-            cash_balance, bonus_balance, reserved_balance,
+            cash_balance, bonus_balance, reserved_balance, deposit_principal_remaining,
             (cash_balance + bonus_balance) AS total_balance,
             (cash_balance - reserved_balance + bonus_balance) AS available_balance,
+            GREATEST(0, cash_balance - reserved_balance - deposit_principal_remaining) AS withdrawable_balance,
             bonus_wager_progress, bonus_origin_amount, post_bonus_wager_requirement,
             post_bonus_wager_progress, withdrawal_bonus_lock
        FROM users
@@ -62,6 +63,17 @@ export async function grantBonus({client,userId,amount,type="promotional_bonus",
 
   return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true};
 }
+export async function applyDepositPrincipalWager({client,user,cashUsed}) {
+  const current=Number(user.deposit_principal_remaining||0);
+  const used=Number(cashUsed||0);
+  const remaining=Number(Math.max(0,current-used).toFixed(2));
+  await client.query(
+    "UPDATE users SET deposit_principal_remaining=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
+    [remaining,user.id]
+  );
+  return remaining;
+}
+
 export async function applyPostBonusWager({client,user,betAmount,bonusUsed}) {
   const newBonus=Number((Number(user.bonus_balance||0)-Number(bonusUsed||0)).toFixed(2));
   let progress=Number(user.post_bonus_wager_progress||0),lock=Boolean(user.withdrawal_bonus_lock);
@@ -111,7 +123,7 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     await client.query("BEGIN");
 
     const userResult = await client.query(
-      `SELECT id, cash_balance, bonus_balance, reserved_balance,
+      `SELECT id, cash_balance, bonus_balance, reserved_balance, deposit_principal_remaining,
               bonus_wager_progress, withdrawal_bonus_lock, post_bonus_wager_progress, post_bonus_wager_requirement
          FROM users
         WHERE id = $1
@@ -123,8 +135,9 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     if (!user) throw new Error("Usuário não encontrado.");
 
     const availableCash = Number(user.cash_balance) - Number(user.reserved_balance);
-    if (value > availableCash) {
-      throw new Error("Saldo disponível insuficiente para o saque.");
+    const withdrawableCash = Math.max(0, availableCash - Number(user.deposit_principal_remaining||0));
+    if (value > withdrawableCash) {
+      throw new Error("Esse valor inclui saldo de depósito ainda não apostado. Aposte 100% do valor depositado para liberar o principal; somente os ganhos ficam disponíveis para saque.");
     }
 
     if (Number(user.bonus_balance) > 0) {
