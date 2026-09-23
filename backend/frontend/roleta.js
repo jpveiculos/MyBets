@@ -1,12 +1,12 @@
 const TOTAL=64;
 const GROUP_SIZE=4;
-const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===3);
+const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 let MIN_BET=.50;
 let MAX_BET=100;
 let prizes=[...DEFAULT_PRIZES];
-let rotation=0;
+let rotation=-11.25;
 let spinning=false;
 let configLoaded=false;
 
@@ -39,79 +39,38 @@ function wedge(cx,cy,r,a0,a1){
   return `M ${cx} ${cy} L ${p0[0]} ${p0[1]} A ${r} ${r} 0 ${a1-a0>180?1:0} 1 ${p1[0]} ${p1[1]} Z`;
 }
 
-function drawWheel(){
-  const svg=$("wheelSvg");
-  svg.innerHTML="";
-  const ns="http://www.w3.org/2000/svg";
-  const visualSlices=TOTAL, angle=360/visualSlices, radius=198;
-
-  const defs=document.createElementNS(ns,"defs");
-  const gradients={
-    black:["#111111","#050505","#000000"],
-    2:["#168cff","#0066ff","#003399"],
-    3:["#00e85a","#00b83f","#006b24"],
-    4:["#c000ff","#8a00cc","#4b0075"],
-    5:["#ff9d00","#ff6800","#b83a00"],
-    10:["#ff2525","#e00000","#8f0000"]
-  };
-  Object.entries(gradients).forEach(([key,stops])=>{
-    const g=document.createElementNS(ns,"linearGradient");
-    g.setAttribute("id","wheel3d-"+key);
-    g.setAttribute("x1","0%");g.setAttribute("y1","0%");
-    g.setAttribute("x2","100%");g.setAttribute("y2","100%");
-    [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{
-      const s=document.createElementNS(ns,"stop");
-      s.setAttribute("offset",offset);s.setAttribute("stop-color",color);
-      g.appendChild(s);
-    });
-    defs.appendChild(g);
-  });
-  svg.appendChild(defs);
-
-  for(let i=0;i<visualSlices;i++){
-    const start=i*angle,end=start+angle;
-    const path=document.createElementNS(ns,"path");
-    path.setAttribute("d",wedge(200,200,radius,start,end));
-    const prize=i%GROUP_SIZE===GROUP_SIZE-1;
-    const prizePosition=Math.floor(i/GROUP_SIZE);
-    const multiplier=Number(prizes[prizePosition]);
-    const prizeColors={
-      2:{fill:"#006cff",stroke:"#168cff"},
-      3:{fill:"#00d94f",stroke:"#00ff66"},
-      4:{fill:"#a000e8",stroke:"#c000ff"},
-      5:{fill:"#ff7800",stroke:"#ff9d00"},
-      10:{fill:"#e00000",stroke:"#ff2525"}
-    };
-    const color=prizeColors[multiplier]||{fill:"#d9aa20",stroke:"#ffe16a"};
-    path.setAttribute("fill",prize?`url(#wheel3d-${multiplier})`:"url(#wheel3d-black)");
-    path.setAttribute("stroke",prize?color.stroke:"#3d4148");
-    path.setAttribute("stroke-width",prize?"2.5":"1.5");
-    svg.appendChild(path);
-
-    if(prize){
-      const label=document.createElementNS(ns,"text");
-      const [x,y]=polar(200,200,146,start+angle/2);
-      label.setAttribute("x",x);label.setAttribute("y",y);
-      label.setAttribute("fill","#fff");label.setAttribute("font-size","15");
-      label.setAttribute("font-family","Arial,Helvetica,sans-serif");
-      label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");
-      label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");
-      label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");
-      label.setAttribute("class","prize-label");
-      label.setAttribute("data-sector-angle",String(start+angle/2));
-      const LABEL_ANGLE_OFFSET=0;
-      label.setAttribute("transform",`rotate(${start+angle/2-90+LABEL_ANGLE_OFFSET} ${x} ${y})`);
-      label.textContent=String(multiplier)+"x";
-      svg.appendChild(label);
-    }
-  }
-
-  const ring=document.createElementNS(ns,"circle");
-  ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","199");
-  ring.setAttribute("fill","none");ring.setAttribute("stroke","#f4c83f");ring.setAttribute("stroke-width","3");
-  svg.appendChild(ring);
+function sectorGeometry(sector){
+  const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
+  const group=Math.floor(s/GROUP_SIZE);
+  const position=s%GROUP_SIZE;
+  const groupStart=group*30;
+  if(position===0)return {start:groupStart,end:groupStart+22.5,center:groupStart+11.25};
+  const start=groupStart+22.5+(position-1)*2.5;
+  return {start,end:start+2.5,center:start+1.25};
 }
 
+function drawWheel(){
+  const svg=$("wheelSvg");svg.innerHTML="";
+  const ns="http://www.w3.org/2000/svg";const radius=198;
+  const defs=document.createElementNS(ns,"defs");
+  const gradients={black:["#111111","#050505","#000000"],2:["#168cff","#0066ff","#003399"],3:["#00e85a","#00b83f","#006b24"],4:["#c000ff","#8a00cc","#4b0075"],5:["#ff9d00","#ff6800","#b83a00"],10:["#ff2525","#e00000","#8f0000"]};
+  Object.entries(gradients).forEach(([key,stops])=>{
+    const g=document.createElementNS(ns,"linearGradient");g.setAttribute("id","wheel3d-"+key);g.setAttribute("x1","0%");g.setAttribute("y1","0%");g.setAttribute("x2","100%");g.setAttribute("y2","100%");
+    [["0%",stops[0]],["45%",stops[1]],["100%",stops[2]]].forEach(([offset,color])=>{const s=document.createElementNS(ns,"stop");s.setAttribute("offset",offset);s.setAttribute("stop-color",color);g.appendChild(s);});defs.appendChild(g);
+  });svg.appendChild(defs);
+  for(let i=0;i<TOTAL;i++){
+    const geometry=sectorGeometry(i),prize=i%GROUP_SIZE===0,prizePosition=Math.floor(i/GROUP_SIZE),multiplier=Number(prizes[prizePosition]);
+    const path=document.createElementNS(ns,"path");path.setAttribute("d",wedge(200,200,radius,geometry.start,geometry.end));
+    const colors={2:{stroke:"#168cff"},3:{stroke:"#00ff66"},4:{stroke:"#c000ff"},5:{stroke:"#ff9d00"},10:{stroke:"#ff2525"}};const color=colors[multiplier]||{stroke:"#ffe16a"};
+    path.setAttribute("fill",prize?"url(#wheel3d-"+multiplier+")":"url(#wheel3d-black)");path.setAttribute("stroke",prize?color.stroke:"#3d4148");path.setAttribute("stroke-width",prize?"2.5":"1.5");svg.appendChild(path);
+    if(prize){
+      const label=document.createElementNS(ns,"text");const xy=polar(200,200,146,geometry.center);
+      label.setAttribute("x",xy[0]);label.setAttribute("y",xy[1]);label.setAttribute("fill","#fff");label.setAttribute("font-size","15");label.setAttribute("font-family","Arial,Helvetica,sans-serif");label.setAttribute("font-weight","900");label.setAttribute("text-anchor","middle");label.setAttribute("dominant-baseline","middle");label.setAttribute("paint-order","stroke");label.setAttribute("stroke","#000");label.setAttribute("stroke-width","3");label.setAttribute("class","prize-label");
+      label.textContent=String(multiplier)+"x";svg.appendChild(label);
+    }
+  }
+  const ring=document.createElementNS(ns,"circle");ring.setAttribute("cx","200");ring.setAttribute("cy","200");ring.setAttribute("r","199");ring.setAttribute("fill","none");ring.setAttribute("stroke","#f4c83f");ring.setAttribute("stroke-width","3");svg.appendChild(ring);
+}
 function updatePrizeValues(){
   const bet=getBet();
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
@@ -138,11 +97,7 @@ function changeBet(delta){
   updatePrizeValues();
 }
 
-function targetForSector(sector){
-  const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
-  const sectorAngle=360/TOTAL;
-  return -(s*sectorAngle+sectorAngle/2);
-}
+function targetForSector(sector){ return -sectorGeometry(sector).center; }
 function showWin(amount){
   const box=$("result");
   box.textContent=`Você ganhou ${money(amount)}`;
