@@ -194,7 +194,7 @@ function renderPendingEvents(deposits,withdrawals){
  const pendingWithdrawals=withdrawals.filter(x=>x.status==="pending");
  const events=[
   ...pendingDeposits.map(x=>({kind:"deposit",date:x.created_at,id:x.id,user:x.username,amount:x.amount})),
-  ...pendingWithdrawals.map(x=>({kind:"withdrawal",date:x.created_at,id:x.id,user:x.username,amount:x.amount,pix:x.pix_key}))
+  ...pendingWithdrawals.map(x=>({kind:"withdrawal",date:x.created_at,id:x.id,user:x.username,cpf:x.cpf,amount:x.amount,pix:x.pix_key}))
  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
  $("eventsCount").textContent=events.length+" pendente"+(events.length===1?"":"s");
  if(!events.length){
@@ -203,7 +203,7 @@ function renderPendingEvents(deposits,withdrawals){
  }
  $("pendingEvents").innerHTML=events.map(x=>x.kind==="deposit"
   ?`<div class="admin-event admin-event-deposit"><div class="admin-event-icon">↓</div><div class="admin-event-body"><b>Novo depósito #${x.id}</b><span>${esc(x.user)} • ${money(x.amount)} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.user)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></div></div>`
-  :`<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #${x.id}</b><span>${esc(x.user)} • ${money(x.amount)} • Pix: ${esc(x.pix||"—")} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></div></div>`
+  :`<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #${x.id}</b><span>${esc(x.user)} • CPF: ${esc(x.cpf||"Não informado")} • ${money(x.amount)} • Pix: ${esc(x.pix||"—")} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></div></div>`
  ).join("");
 }
 function openDepositEditor(id,username,amount){
