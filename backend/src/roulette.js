@@ -1,5 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
+import { applyPostBonusWager } from "./finance.js";
 
 const TOTAL_SECTORS=64;
 const GROUP_SIZE=4;
@@ -107,10 +108,8 @@ export async function spinRoulette({userId,betAmount}){
     const newCash=Number((cash-cashUsed+payout).toFixed(2));
     const newBalance=Number((newBonus+newCash).toFixed(2));
 
-    const req=Number(await getSetting("bonus_wager_requirement","0"))||0;
-    const newProgress=Number(Math.min(req,Number(user.bonus_wager_progress||0)+bonusUsed).toFixed(2));
-
-    await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,bonus_wager_progress=$3,updated_at=CURRENT_TIMESTAMP WHERE id=$4`,[newCash,newBonus,newProgress,userId]);
+    await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+    await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newBonus,userId]);
 
     const spin=await client.query(`INSERT INTO spins(user_id,result,multiplier,bet_amount,payout_amount) VALUES($1,$2,$3,$4,$5) RETURNING id,created_at`,[userId,sector,multiplier,bet,payout]);
     const net=Number((payout-bet).toFixed(2));
