@@ -96,7 +96,11 @@ function renderDeposits(deposits){
  $("deposits").innerHTML=deposits.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${dateTime(x.created_at)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-deposit" data-id="'+x.id+'" data-username="'+esc(x.username)+'" data-amount="'+x.amount+'">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum depósito.</p>';
 }
 function renderWithdrawals(withdrawals){
- $("withdrawals").innerHTML=withdrawals.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: <strong>${esc(x.cpf||"Não informado")}</strong></small><small>Valor: ${money(x.amount)} • Chave Pix: ${esc(x.pix_key)} • ${dateTime(x.created_at)}</small><small>Saldo em dinheiro: ${money(x.cash_balance)} • Bônus restante: ${money(x.bonus_balance)} • Progresso bônus: ${money(x.bonus_wager_progress)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${Number(x.bonus_balance)>0?" • ⚠️ BÔNUS ATIVO":" • ✓ BÔNUS CONSUMIDO"}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum saque.</p>';
+ $("withdrawals").innerHTML=withdrawals.map(x=>{
+  const remaining=Math.max(0,Number(x.post_bonus_wager_requirement||0)-Number(x.post_bonus_wager_progress||0));
+  const status=Number(x.bonus_balance)>0?"⚠️ BÔNUS ATIVO":Boolean(x.withdrawal_bonus_lock)?"🔒 PÓS-BÔNUS PENDENTE":"✓ SAQUE LIBERADO";
+  return `<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: <strong>${esc(x.cpf||"Não informado")}</strong></small><small>Valor: ${money(x.amount)} • Chave Pix: ${esc(x.pix_key)} • ${dateTime(x.created_at)}</small><small>Dinheiro: ${money(x.cash_balance)} • Bônus: ${money(x.bonus_balance)} • Meta: ${money(x.post_bonus_wager_progress)} / ${money(x.post_bonus_wager_requirement)} • Falta: ${money(remaining)}</small><span class="admin-status ${statusClass(x.status)}">${status}${statusLabel(x.status)!=="Pendente"?" • "+statusLabel(x.status):" • Pendente"}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`;
+ }).join("")||'<p class="muted">Nenhum saque.</p>';
 }
 function transactionTypeLabel(type){
  const labels={
@@ -146,30 +150,62 @@ function openHistoryModal(history){
  const u=history.user;
  historyState.pages=Object.fromEntries(Object.entries(history.pagination||{}).map(([name,p])=>[name,p.page]));
  $("historyTitle").textContent="Histórico • "+u.username;
- $("historySummary").textContent=`CPF: ${u.cpf||"Não informado"} • Cadastro: ${dateTime(u.created_at)} • Saldo: ${money(u.cash_balance)} • Bônus atual: ${money(u.bonus_balance)} • Total: ${money(u.total_balance)}`;
+ const bs=history.bonusStatus||{};
+ const statusText=bs.status==="unlocked"?"SAQUE LIBERADO":bs.status==="blocked_bonus"?"SAQUE BLOQUEADO • BÔNUS ATIVO":"SAQUE BLOQUEADO • META PÓS-BÔNUS";
+ $("historySummary").innerHTML=
+  `CPF: ${esc(u.cpf||"Não informado")} • Cadastro: ${dateTime(u.created_at)}<br>
+   <strong>Dinheiro:</strong> ${money(u.cash_balance)} • <strong>Bônus:</strong> ${money(u.bonus_balance)} • <strong>Total:</strong> ${money(u.total_balance)} • <strong>Reservado:</strong> ${money(u.reserved_balance)}`;
  const bonus=history.bonusClaim;
  const signupTransaction=history.transactions.find(x=>x.type==="signup_bonus");
  const grantedBonus=bonus?.bonus_amount ?? signupTransaction?.amount ?? 0;
- const consumedBonus=Math.max(0,Number(grantedBonus)-Number(u.bonus_balance||0));
- const bonusDetail=Number(grantedBonus)>0
-  ? "Concedido: "+money(grantedBonus)+" • Consumido: "+money(consumedBonus)+" • Saldo de bônus atual: "+money(u.bonus_balance)
-  : "Nenhum bônus de cadastro registrado";
- const accountHtml=historyRow("CADASTRO REALIZADO",bonusDetail,u.created_at,"history-account");
- const bonusHtml=Number(grantedBonus)>0
-  ? historyRow("BÔNUS DE CADASTRO CONCEDIDO","Valor: "+money(grantedBonus)+" • "+(bonus?.created_at?"Registro: "+dateTime(bonus.created_at):"registrado na transação de cadastro"),bonus?.created_at||signupTransaction?.created_at||u.created_at,"history-bonus")
-  : '<p class="muted">Nenhum bônus de cadastro registrado.</p>';
- const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at,x.type==="signup_bonus"?"history-bonus":"")).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
+ const bonusHtml=history.bonusEvents?.length
+  ? history.bonusEvents.map(x=>historyRow(
+      String(x.type||"BÔNUS").replace(/_/g," ").toUpperCase(),
+      `Concedido: ${money(x.amount)} • Bônus após: ${money(x.bonus_balance_after)} • Meta: ${money(x.post_bonus_wager_progress_after)} / ${money(x.post_bonus_wager_requirement_after)} • Falta: ${money(Math.max(0,Number(x.post_bonus_wager_requirement_after)-Number(x.post_bonus_wager_progress_after)))} • ${x.note||""}`,
+      x.created_at,"history-bonus"
+    )).join("")
+  : Number(grantedBonus)>0
+    ? historyRow("BÔNUS DE CADASTRO CONCEDIDO", `Valor: ${money(grantedBonus)}`, bonus?.created_at||signupTransaction?.created_at||u.created_at,"history-bonus")
+    : '<p class="muted">Nenhum bônus registrado.</p>';
+ const bonusProgressHtml=`
+  <div class="history-bonus-summary">
+    <div class="history-bonus-status"><span>STATUS DO SAQUE</span><strong>${statusText}</strong></div>
+    <div class="history-bonus-grid">
+      <div><small>Bônus concedido acumulado</small><b>${money(bs.totalGranted)}</b></div>
+      <div><small>Bônus atual</small><b>${money(bs.currentBonus)}</b></div>
+      <div><small>Meta pós-bônus</small><b>${money(bs.progress)} / ${money(bs.requirement)}</b></div>
+      <div><small>Falta para liberar</small><b>${money(bs.remainingPostBonus)}</b></div>
+    </div>
+    <p>${Number(bs.currentBonus)>0
+      ? "O jogador ainda possui bônus. A meta pós-bônus não é consumida enquanto o bônus não estiver zerado."
+      : bs.remainingPostBonus>0
+        ? "O bônus está zerado. As apostas elegíveis pós-bônus estão sendo contadas separadamente do saldo e de novos depósitos."
+        : "A meta pós-bônus foi cumprida. O saque está liberado, desde que exista saldo em dinheiro disponível."}</p>
+  </div>`;
+ const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at,x.type.includes("bonus")?"history-bonus":"")).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
  const depositHtml=history.deposits.length?history.deposits.map(x=>historyRow("DEPÓSITO "+statusLabel(x.status),`Solicitado: ${money(x.amount)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum depósito registrado.</p>';
- const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum saque registrado.</p>';
- const spinsHtml=history.spins.length?history.spins.map(x=>historyRow(`${String(x.game_id||"jogo").toUpperCase()} • ${x.payout_amount>0?"PRÊMIO":"APOSTA"}`,`Aposta: ${money(x.bet_amount)} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)}`,x.created_at,"")).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
+ const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)} • ${x.status==="pending"?statusText:statusLabel(x.status)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at,"")).join(""):'<p class="muted">Nenhum saque registrado.</p>';
+ const spinsHtml=history.spins.length?history.spins.map(x=>{
+   const afterBonus=Number(x.bonus_balance_after||0),progress=Number(x.post_bonus_wager_progress_after||0),req=Number(x.post_bonus_wager_requirement_after||0);
+   const source=Number(x.bonus_used||0)>0?`Bônus usado: ${money(x.bonus_used)}${Number(x.cash_used||0)>0?" • Dinheiro: "+money(x.cash_used):""}`:"Dinheiro";
+   const post=afterBonus<=0&&req>0?` • Pós-bônus: ${money(progress)} / ${money(req)}`:"";
+   const lock=x.withdrawal_bonus_lock_after?" • 🔒 saque bloqueado":" • ✓ saque liberado";
+   return historyRow(
+     `${String(x.game_id||"jogo").toUpperCase()} • ${x.payout_amount>0?"PRÊMIO":"APOSTA"}`,
+     `Aposta: ${money(x.bet_amount)} • ${source} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)} • Bônus após: ${money(afterBonus)}${post}${lock}`,
+     x.created_at,""
+   );
+ }).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
  const auditHtml=history.audits.length?history.audits.map(x=>historyRow(String(x.action||"AUDITORIA").replace(/_/g," ").toUpperCase(),x.details?JSON.stringify(x.details):"",x.created_at,"history-audit")).join(""):'<p class="muted">Nenhum evento de auditoria recente.</p>';
+ const bonusEventsHtml=historySection("Concessões de bônus",bonusHtml,"bonusEvents",history.pagination?.bonusEvents);
  $("historyContent").innerHTML=`
-  ${historySection("Conta e bônus",accountHtml+bonusHtml,"bonus",{page:1,pageSize:1,total:1,totalPages:1})}
+  ${bonusProgressHtml}
+  ${historySection("Concessões de bônus",bonusHtml,"bonusEvents",history.pagination?.bonusEvents)}
   ${historySection("Movimentações financeiras",txHtml,"transactions",history.pagination?.transactions)}
   ${historySection("Depósitos",depositHtml,"deposits",history.pagination?.deposits)}
   ${historySection("Saques",withdrawalHtml,"withdrawals",history.pagination?.withdrawals)}
-  ${historySection("Jogadas",spinsHtml,"spins",history.pagination?.spins)}
-  ${historySection("Auditoria",auditHtml,"audits",history.pagination?.audits)}`;
+  ${historySection("Jogadas e consumo de saldo",spinsHtml,"spins",history.pagination?.spins)}
+  ${historySection("Auditoria administrativa",auditHtml,"audits",history.pagination?.audits)}`;
  $("historyModal").classList.remove("hidden");$("historyModal").setAttribute("aria-hidden","false");
 }
 async function loadHistoryPage(section,page){
@@ -189,7 +225,7 @@ async function loadHistoryPage(section,page){
 async function openUserHistory(userId){
  pauseAutoRefresh();
  historyState.userId=Number(userId);
- historyState.pages={transactions:1,deposits:1,withdrawals:1,spins:1,audits:1};
+ historyState.pages={transactions:1,deposits:1,withdrawals:1,spins:1,bonusEvents:1,audits:1};
  try{
   const d=await api("/api/admin/users/"+userId+"/history?pageSize=50&transactionsPage=1&depositsPage=1&withdrawalsPage=1&spinsPage=1&auditsPage=1");
   openHistoryModal(d.history);
