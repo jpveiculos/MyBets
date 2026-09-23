@@ -4,9 +4,9 @@ import { pool } from "./db.js";
 const TOTAL_SECTORS=64;
 const LOSS_SECTORS=48;
 const GROUP_SIZE=4;
-const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===3);
+const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
-const PRIZE_WEIGHTS={2:5.5,3:5.5,4:5,5:3.75,10:.25};
+const PRIZE_WEIGHTS={2:5.525,3:5.525,4:5,5:3.75,10:.2};
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
@@ -56,7 +56,7 @@ export async function rouletteConfig(){
     minBet,
     maxBet,
     prizes,
-    probability:{2:6.875,3:6.875,4:6.25,5:4.6875,10:.3125}
+    probability:{2:6.90625,3:6.90625,4:6.25,5:4.6875,10:.25}
   };
 }
 
