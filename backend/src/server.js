@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
-import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
+import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
