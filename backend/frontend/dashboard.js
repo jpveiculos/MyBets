@@ -20,7 +20,11 @@ async function load(){
     $("withdrawBtn").disabled=hasBonus||withdrawalLocked;
     $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":"Solicitar saque";
     const hint=$("withdrawHint");
-    if(hint) hint.textContent=hasBonus?"O saque será liberado somente após zerar o bônus e cumprir a meta de apostas.":withdrawalLocked?"Após zerar o bônus, aposte mais "+money(remaining)+" para liberar o saque.":"Saque liberado. Informe o valor e sua chave Pix.";
+    if(hint) hint.textContent=hasBonus
+      ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque."
+      : withdrawalLocked
+        ? "Bônus zerado. Meta pós-bônus: "+money(a.account.post_bonus_wager_progress||0)+" / "+money(a.account.post_bonus_wager_requirement||0)+". Falta "+money(remaining)+"."
+        : "Saque liberado. Informe o valor e sua chave Pix.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
