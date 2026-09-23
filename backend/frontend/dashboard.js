@@ -47,7 +47,7 @@ function buildPixPayload(){
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
-  $("depositArea").classList.remove("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
+  $("depositPromo").classList.remove("hidden");$("depositArea").classList.add("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
   try{
     const d=await api("/api/settings/public");pixSettings=d.settings;
     if(String(pixSettings.pix_enabled)!=="true"){ $("depositMessage").textContent="Depósitos via Pix estão temporariamente desativados.";return }
@@ -62,7 +62,7 @@ function updateQr(){
   $("pixQr").src=qrUrl(payload);$("pixCode").value=String(pixSettings.pix_key).trim();$("qrCard").classList.remove("hidden");$("pixDone").classList.remove("hidden");
 }
 async function openWithdraw(){
-  financeMode="withdraw";$("financeModal").classList.remove("hidden");$("financeTitle").textContent="Solicitar saque";
+  financeMode="withdraw";$("financeModal").classList.remove("hidden");$("depositPromo").classList.add("hidden");$("financeTitle").textContent="Solicitar saque";
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
 }
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=()=>{  $("depositPromo").classList.add("hidden");$("depositArea").classList.remove("hidden");};
