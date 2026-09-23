@@ -48,13 +48,13 @@ function sectorGeometry(sector){
   const s=((Number(sector)%TOTAL)+TOTAL)%TOTAL;
   const group=Math.floor(s/GROUP_SIZE);
   const position=s%GROUP_SIZE;
-  const groupStart=group*GROUP_ANGLE;
+  const groupStart=group*GROUP_ANGLE-PRIZE_ANGLE/2;
 
   if(position===0){
     return {
       start:groupStart,
       end:groupStart+PRIZE_ANGLE,
-      center:groupStart+PRIZE_ANGLE/2
+      center:group*GROUP_ANGLE
     };
   }
 
@@ -110,41 +110,47 @@ function drawWheel(){
     10:{stroke:"#ff2525"}
   };
 
-  // Desenha os 64 setores reais: 16 prêmios e 48 perdas.
-  // Em cada grupo de 4, o prêmio ocupa metade do arco e os 3 setores
-  // de perda dividem igualmente a outra metade.
-  for(let sector=0;sector<TOTAL;sector++){
-    const geometry=sectorGeometry(sector);
-    const isPrize=sector%GROUP_SIZE===0;
-    const multiplier=isPrize?Number(prizes[sector/GROUP_SIZE]):0;
+  // Visual: cada grupo mostra uma única fatia colorida e uma única
+  // fatia preta sólida. A divisão dos 3 setores de perda continua existindo
+  // apenas na geometria lógica usada pelo sorteio e pelo ponteiro.
+  for(let group=0;group<PRIZE_COUNT;group++){
+    const prizeIndex=group*GROUP_SIZE;
+    const prizeGeometry=sectorGeometry(prizeIndex);
+    const multiplier=Number(prizes[group]);
 
-    const path=document.createElementNS(ns,"path");
-    path.setAttribute("d",wedge(200,200,radius,geometry.start,geometry.end));
-    path.setAttribute("fill",isPrize?`url(#wheel3d-${multiplier})`:"url(#wheel3d-black)");
-    path.setAttribute("stroke",isPrize?(colors[multiplier]?.stroke||"#ffe16a"):"#3d4148");
-    path.setAttribute("stroke-width",isPrize?"2.5":"1.2");
-    svg.appendChild(path);
+    const prizePath=document.createElementNS(ns,"path");
+    prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
+    prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
+    prizePath.setAttribute("stroke",colors[multiplier]?.stroke||"#ffe16a");
+    prizePath.setAttribute("stroke-width","2.5");
+    svg.appendChild(prizePath);
 
-    if(isPrize){
-      const label=document.createElementNS(ns,"text");
-      const xy=polar(200,200,146,geometry.center);
-      label.setAttribute("x",xy[0]);
-      label.setAttribute("y",xy[1]);
-      label.setAttribute("fill","#fff");
-      label.setAttribute("font-size","15");
-      label.setAttribute("font-family","Arial,Helvetica,sans-serif");
-      label.setAttribute("font-weight","900");
-      label.setAttribute("text-anchor","middle");
-      label.setAttribute("dominant-baseline","middle");
-      label.setAttribute("paint-order","stroke");
-      label.setAttribute("stroke","#000");
-      label.setAttribute("stroke-width","3");
-      label.setAttribute("class","prize-label");
-      label.textContent=String(multiplier)+"x";
-      svg.appendChild(label);
-    }
+    const blackStart=prizeGeometry.end;
+    const blackEnd=prizeGeometry.start+GROUP_ANGLE;
+    const lossPath=document.createElementNS(ns,"path");
+    lossPath.setAttribute("d",wedge(200,200,radius,blackStart,blackEnd));
+    lossPath.setAttribute("fill","url(#wheel3d-black)");
+    lossPath.setAttribute("stroke","none");
+    lossPath.setAttribute("stroke-width","0");
+    svg.appendChild(lossPath);
+
+    const label=document.createElementNS(ns,"text");
+    const xy=polar(200,200,146,prizeGeometry.center);
+    label.setAttribute("x",xy[0]);
+    label.setAttribute("y",xy[1]);
+    label.setAttribute("fill","#fff");
+    label.setAttribute("font-size","15");
+    label.setAttribute("font-family","Arial,Helvetica,sans-serif");
+    label.setAttribute("font-weight","900");
+    label.setAttribute("text-anchor","middle");
+    label.setAttribute("dominant-baseline","middle");
+    label.setAttribute("paint-order","stroke");
+    label.setAttribute("stroke","#000");
+    label.setAttribute("stroke-width","3");
+    label.setAttribute("class","prize-label");
+    label.textContent=String(multiplier)+"x";
+    svg.appendChild(label);
   }
-
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
@@ -216,8 +222,8 @@ async function loadConfig(){
   drawWheel();
   updatePrizeValues();
 
-  // Estado inicial: ponteiro exatamente no centro do primeiro prêmio (2x).
-  rotation=targetForSector(PRIZE_INDEXES[0]);
+  // Estado inicial: primeiro prêmio centralizado exatamente em 0°, sob o ponteiro no topo.
+  rotation=0;
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
 
