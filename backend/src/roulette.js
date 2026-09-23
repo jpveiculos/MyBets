@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
-import { applyPostBonusWager } from "./finance.js";
+import { applyPostBonusWager, applyDepositPrincipalWager } from "./finance.js";
 
 const TOTAL_SECTORS=64;
 const GROUP_SIZE=4;
@@ -87,7 +87,7 @@ export async function spinRoulette({userId,betAmount}){
   const client=await pool.connect();
   try{
     await client.query("BEGIN");
-    const r=await client.query(`SELECT id,username,cash_balance,bonus_balance,reserved_balance,bonus_wager_progress,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock
+    const r=await client.query(`SELECT id,username,cash_balance,bonus_balance,reserved_balance,deposit_principal_remaining,bonus_wager_progress,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock
       FROM users WHERE id=$1 FOR UPDATE`,[userId]);
     if(!r.rows.length)throw new Error("Usuário não encontrado.");
     const user=r.rows[0];
@@ -109,6 +109,7 @@ export async function spinRoulette({userId,betAmount}){
     const newBalance=Number((newBonus+newCash).toFixed(2));
 
     const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+    const depositPrincipalAfter=await applyDepositPrincipalWager({client,user,cashUsed});
     await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newBonus,userId]);
 
     const spin=await client.query(
@@ -116,13 +117,13 @@ export async function spinRoulette({userId,betAmount}){
          user_id,result,multiplier,bet_amount,payout_amount,
          bonus_used,cash_used,cash_balance_after,bonus_balance_after,
          post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-         withdrawal_bonus_lock_after
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+         withdrawal_bonus_lock_after,deposit_principal_after
+       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
        RETURNING id,created_at`,
       [
         userId,sector,multiplier,bet,payout,
         bonusUsed,cashUsed,newCash,newBonus,wagerState.requirement,
-        wagerState.progress,wagerState.lock
+        wagerState.progress,wagerState.lock,depositPrincipalAfter
       ]
     );
     const net=Number((payout-bet).toFixed(2));
@@ -135,7 +136,7 @@ export async function spinRoulette({userId,betAmount}){
       id:spin.rows[0].id,sector,resultType:multiplier>0?"prize":"loss",multiplier,prize:payout,
       netResult:net,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,
       postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,
-      withdrawalBonusLock:wagerState.lock,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
+      withdrawalBonusLock:wagerState.lock,depositPrincipalAfter,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
     };
   }catch(error){
     try{await client.query("ROLLBACK")}catch{}
