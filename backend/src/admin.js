@@ -1,4 +1,5 @@
 import { pool } from "./db.js";
+import { grantBonus } from "./finance.js";
 
 export async function listUsers() {
   const result=await pool.query(
@@ -55,17 +56,27 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
 
     const bonusSetting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='deposit_bonus_percent'");
     const bonusPercent=Math.max(0,Number(bonusSetting.rows[0]?.setting_value ?? 100));
-    if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de recarga inválido.");
+    if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
     const bonusValue=Math.round(value*bonusPercent)/100;
     const newCash=Number(user.cash_balance)+value;
-    const newBonus=Number(user.bonus_balance)+bonusValue;
 
     await client.query(
       `UPDATE users
-          SET cash_balance=$1,bonus_balance=$2,withdrawal_bonus_lock=FALSE,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$3`,
-      [newCash,newBonus,d.user_id]
+          SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP
+        WHERE id=$2`,
+      [newCash,d.user_id]
     );
+
+    if(bonusValue>0){
+      await grantBonus({
+        client,
+        userId:d.user_id,
+        amount:bonusValue,
+        type:"deposit_bonus",
+        referenceId:id,
+        note:`Bônus de depósito de ${bonusPercent.toFixed(2)}% aplicado sobre R$ ${value.toFixed(2)}.`
+      });
+    }
 
     await client.query(
       `UPDATE deposits
@@ -90,14 +101,6 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
         `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; créditos: R$ ${value.toFixed(2)}; bônus de recarga: R$ ${bonusValue.toFixed(2)}.`
       ]
     );
-
-    if(bonusValue>0){
-      await client.query(
-        `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
-         VALUES($1,'deposit_bonus',$2,$3,$4,$5)`,
-        [d.user_id,bonusValue,newCash+newBonus,id,`Bônus de recarga de ${bonusPercent.toFixed(2)}% aplicado sobre R$ ${value.toFixed(2)}.`]
-      );
-    }
 
     await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
@@ -163,6 +166,7 @@ export async function approveWithdrawal({id,adminId,adminNote=null}) {
     const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[w.user_id]);
     const user=u.rows[0];
     if(Number(user.bonus_balance)>0) throw new Error("O saque permanece bloqueado enquanto houver saldo de bônus.");
+    if(Boolean(user.withdrawal_bonus_lock)) throw new Error("O saque permanece bloqueado até o cumprimento da meta de apostas.");
     if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
     if(Number(user.cash_balance)<Number(w.amount)) throw new Error("Saldo em dinheiro insuficiente.");
     const newCash=Number(user.cash_balance)-Number(w.amount);
@@ -208,6 +212,23 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
     await client.query("BEGIN");
     const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
     const u=r.rows[0]; if(!u) throw new Error("Usuário não encontrado.");
+    if(kind==="bonus" && value>0){
+      const granted=await grantBonus({
+        client,
+        userId,
+        amount:value,
+        type:"admin_bonus_adjustment",
+        note:note||"Bônus promocional concedido pelo administrador."
+      });
+      await client.query(
+        `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+         VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
+        [adminId,userId,JSON.stringify({amount:value,kind,note})]
+      );
+      await client.query("COMMIT");
+      return {userId,kind,amount:value,newBalance:granted.bonusBalance};
+    }
+
     const column=kind==="cash"?"cash_balance":"bonus_balance";
     const next=Number(u[column])+value;
     if(next<0) throw new Error("O saldo não pode ficar negativo.");
