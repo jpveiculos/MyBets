@@ -525,7 +525,7 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 
 
 /* Promoção curta junto ao botão de depósito — sem aumentar o bloco financeiro. */
-.deposit-promo-mini{display:block;margin:8px 0 6px;font-size:.78rem;font-weight:800;line-height:1.2;color:#f5c84b;text-align:center;}
+.deposit-promo-mini{display:block;margin:4px 0 6px;font-size:.74rem;font-weight:800;line-height:1.2;color:#f5c84b;text-align:center;white-space:nowrap;}
 
 .admin-bonus-card{border:1px solid rgba(255,196,64,.28);border-radius:18px;padding:20px;margin-bottom:16px;background:linear-gradient(145deg,rgba(255,196,64,.09),rgba(255,255,255,.025))}
 .admin-bonus-card-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.admin-bonus-card-head h2{margin:4px 0 0}.admin-bonus-badge{font-size:11px;font-weight:800;letter-spacing:.08em;padding:7px 10px;border-radius:999px;background:rgba(53,197,138,.12);color:#35c58a}.admin-bonus-grid{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:18px;align-items:stretch}.admin-bonus-grid label{display:flex;flex-direction:column;gap:8px;font-weight:700}.admin-bonus-grid input{width:100%;box-sizing:border-box}.admin-bonus-rule{display:flex;flex-direction:column;justify-content:center;gap:7px;padding:14px;border-radius:12px;background:rgba(0,0,0,.16);border:1px solid rgba(255,255,255,.08)}.admin-bonus-rule strong{font-size:14px}.admin-bonus-rule span{font-size:13px;line-height:1.45}.admin-bonus-rule small{font-size:12px;opacity:.72;line-height:1.4}@media(max-width:700px){.admin-bonus-grid{grid-template-columns:1fr}.admin-bonus-card{padding:16px}}
