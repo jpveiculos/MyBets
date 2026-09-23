@@ -208,7 +208,13 @@ app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,settings:await getSettings()});
 }));
 app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,setting:await updateSetting(req.params.key,req.body.value)});
+  const editableSettings=new Set([
+    "pix_enabled","pix_key","pix_key_type","pix_receiver_name","pix_city","pix_description",
+    "pix_instructions","audit_log_retention_days"
+  ]);
+  const key=String(req.params.key);
+  if(!editableSettings.has(key)) throw new Error("Essa configuração não pode ser alterada pelo painel administrativo.");
+  res.json({ok:true,setting:await updateSetting(key,req.body.value)});
 }));
 
 const frontendPath=path.join(__dirname,"../frontend");
