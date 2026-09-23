@@ -108,10 +108,23 @@ export async function spinRoulette({userId,betAmount}){
     const newCash=Number((cash-cashUsed+payout).toFixed(2));
     const newBalance=Number((newBonus+newCash).toFixed(2));
 
-    await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
+    const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
     await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newBonus,userId]);
 
-    const spin=await client.query(`INSERT INTO spins(user_id,result,multiplier,bet_amount,payout_amount) VALUES($1,$2,$3,$4,$5) RETURNING id,created_at`,[userId,sector,multiplier,bet,payout]);
+    const spin=await client.query(
+      `INSERT INTO spins(
+         user_id,result,multiplier,bet_amount,payout_amount,
+         bonus_used,cash_used,cash_balance_after,bonus_balance_after,
+         post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
+         withdrawal_bonus_lock_after
+       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+       RETURNING id,created_at`,
+      [
+        userId,sector,multiplier,bet,payout,
+        bonusUsed,cashUsed,newCash,newBonus,wagerState.requirement,
+        wagerState.progress,wagerState.lock
+      ]
+    );
     const net=Number((payout-bet).toFixed(2));
     await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)`,[
       userId,multiplier>0?"roulette_win":"roulette_loss",net,Number((newBalance-reserved).toFixed(2)),spin.rows[0].id,multiplier>0?`Roleta da sorte — ${multiplier}x`:"Roleta da sorte — perda"
@@ -120,7 +133,9 @@ export async function spinRoulette({userId,betAmount}){
 
     return {
       id:spin.rows[0].id,sector,resultType:multiplier>0?"prize":"loss",multiplier,prize:payout,
-      netResult:net,betAmount:bet,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
+      netResult:net,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,
+      postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,
+      withdrawalBonusLock:wagerState.lock,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
     };
   }catch(error){
     try{await client.query("ROLLBACK")}catch{}
