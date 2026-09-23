@@ -282,17 +282,23 @@ async function spin(){
       requestAnimationFrame(frame);
     });
 
-    $("balance").textContent=money(d.user.availableBalance);
-    if(d.spin.resultType==="prize")showWin(d.spin.prize);
-  }catch(e){
-    $("message").textContent=e.message;
-    $("message").classList.add("show");
-    setTimeout(()=>$("message").classList.remove("show"),2200);
-  }finally{
+    // O resultado já foi confirmado pelo servidor e a animação terminou.
+    // Libera imediatamente o botão, sem esperar nenhuma outra atualização de UI.
     spinning=false;
     $("spinButton").disabled=false;
     $("betMinus").disabled=false;
     $("betPlus").disabled=false;
+
+    $("balance").textContent=money(d.user.availableBalance);
+    if(d.spin.resultType==="prize")showWin(d.spin.prize);
+  }catch(e){
+    spinning=false;
+    $("spinButton").disabled=false;
+    $("betMinus").disabled=false;
+    $("betPlus").disabled=false;
+    $("message").textContent=e.message;
+    $("message").classList.add("show");
+    setTimeout(()=>$("message").classList.remove("show"),2200);
   }
 }
 
