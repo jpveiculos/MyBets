@@ -343,7 +343,11 @@ $("userSearch")?.addEventListener("input",e=>{userSearchTerm=e.target.value;rend
 $("transactionSearch")?.addEventListener("click",()=>{transactionFilters={query:$("transactionUserSearch").value.trim(),type:$("transactionType").value,from:$("transactionFrom").value,to:$("transactionTo").value};load()});
 $("transactionClear")?.addEventListener("click",()=>{$("transactionUserSearch").value="";$("transactionType").value="";$("transactionFrom").value="";$("transactionTo").value="";transactionFilters={query:"",type:"",from:"",to:""};load()});
 $("historyClose")?.addEventListener("click",closeHistoryModal);
-$("historyModal")?.addEventListener("click",e=>{if(e.target.id==="historyModal")closeHistoryModal()});
+$("historyModal")?.addEventListener("click",e=>{
+ if(e.target.id==="historyModal"){closeHistoryModal();return}
+ const button=e.target.closest(".history-page");
+ if(button&&!button.disabled)loadHistoryPage(button.dataset.section,Number(button.dataset.page));
+});
 $("enableNotifications").onclick=async()=>{try{await enableNotifications();await updateAppBadge()}catch(err){$("notifyStatus").textContent=err.message||"Não foi possível ativar as notificações."}};
 $("adminLogout").onclick=async()=>{
  const button=$("adminLogout");button.disabled=true;
