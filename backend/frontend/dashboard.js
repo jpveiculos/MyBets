@@ -2,6 +2,7 @@ let financeMode="deposit";
 let pixSettings=null;
 let playerUsername="";
 let playerId="";
+let availableBalance=0;
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro na operação.");return d}
@@ -82,8 +83,14 @@ function updateQr(){
 async function openWithdraw(){
   financeMode="withdraw";$("financeModal").classList.remove("hidden");$("depositPromo").classList.add("hidden");$("financeTitle").textContent="Solicitar saque";
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
+  $("withdrawAvailableBalance").textContent=money(availableBalance);
+  $("withdrawAmount").max=availableBalance>0?availableBalance.toFixed(2):"0.01";
+  $("withdrawMax").disabled=availableBalance<=0;
 }
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
+$("withdrawMax").onclick=()=>{
+  if(availableBalance>0) $("withdrawAmount").value=availableBalance.toFixed(2);
+};
 
 $("copyPix").onclick=async()=>{try{await navigator.clipboard.writeText($("pixCode").value);$("depositMessage").style.color="#35c58a";$("depositMessage").textContent="Código Pix copiado.";setTimeout(()=>$("depositMessage").textContent="",1800)}catch(e){$("pixCode").select()}};
 $("pixDone").onclick=async()=>{
