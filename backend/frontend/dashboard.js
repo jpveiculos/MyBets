@@ -15,8 +15,12 @@ async function load(){
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
     $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
     const hasBonus=Number(a.account.bonus_balance)>0;
-    $("withdrawBtn").disabled=hasBonus;
-    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":"Solicitar saque";
+    const withdrawalLocked=Boolean(a.account.withdrawal_bonus_lock);
+    const remaining=Math.max(0,Number(a.account.post_bonus_wager_requirement||0)-Number(a.account.post_bonus_wager_progress||0));
+    $("withdrawBtn").disabled=hasBonus||withdrawalLocked;
+    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":"Solicitar saque";
+    const hint=$("withdrawHint");
+    if(hint) hint.textContent=hasBonus?"O saque será liberado somente após zerar o bônus e cumprir a meta de apostas.":withdrawalLocked?"Após zerar o bônus, aposte mais "+money(remaining)+" para liberar o saque.":"Saque liberado. Informe o valor e sua chave Pix.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
