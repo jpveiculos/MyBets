@@ -22,6 +22,34 @@ export async function getAccount(userId) {
   return result.rows[0] || null;
 }
 
+export async function grantBonus({client,userId,amount,type="promotional_bonus",note=null,referenceId=null}) {
+  const value=money(amount);
+  if(value<=0) throw new Error("O valor do bônus deve ser maior que zero.");
+
+  const result=await client.query(
+    "SELECT id,cash_balance,bonus_balance,reserved_balance,bonus_origin_amount,post_bonus_wager_requirement,post_bonus_wager_progress FROM users WHERE id=$1 FOR UPDATE",
+    [userId]
+  );
+  const user=result.rows[0];
+  if(!user) throw new Error("Usuário não encontrado.");
+
+  const newBonus=money(Number(user.bonus_balance||0)+value);
+  const newOrigin=money(Number(user.bonus_origin_amount||0)+value);
+  const newRequirement=money(Number(user.post_bonus_wager_requirement||0)+value);
+  const newProgress=money(Math.min(newRequirement,Number(user.post_bonus_wager_progress||0)));
+
+  await client.query(
+    "UPDATE users SET bonus_balance=$1,bonus_origin_amount=$2,post_bonus_wager_requirement=$3,post_bonus_wager_progress=$4,withdrawal_bonus_lock=TRUE,updated_at=CURRENT_TIMESTAMP WHERE id=$5",
+    [newBonus,newOrigin,newRequirement,newProgress,userId]
+  );
+
+  await client.query(
+    "INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)",
+    [userId,type,value,money(Number(user.cash_balance||0)+newBonus-Number(user.reserved_balance||0)),referenceId,note||"Bônus promocional concedido."]
+  );
+
+  return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true};
+}
 export async function applyPostBonusWager({client,user,betAmount,bonusUsed}) {
   const newBonus=Number((Number(user.bonus_balance||0)-Number(bonusUsed||0)).toFixed(2));
   let progress=Number(user.post_bonus_wager_progress||0),lock=Boolean(user.withdrawal_bonus_lock);
