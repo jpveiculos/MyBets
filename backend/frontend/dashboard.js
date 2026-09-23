@@ -45,9 +45,19 @@ function buildPixPayload(){
   return payload+crc16(payload);
 }
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
+function showDepositPromotion(){
+  $("depositPromo").classList.remove("hidden");
+  $("depositArea").classList.add("hidden");
+  $("withdrawArea").classList.add("hidden");
+}
+function showDepositPix(){
+  $("depositPromo").classList.add("hidden");
+  $("depositArea").classList.remove("hidden");
+  $("withdrawArea").classList.add("hidden");
+}
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
-  $("depositPromo").classList.remove("hidden");$("depositArea").classList.add("hidden");$("withdrawArea").classList.add("hidden");$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
+  showDepositPromotion();$("depositMessage").textContent="";$("depositAmount").value="";$("depositPlayer").textContent=playerUsername||"Jogador";$("pixDone").disabled=false;
   try{
     const d=await api("/api/settings/public");pixSettings=d.settings;
     if(String(pixSettings.pix_enabled)!=="true"){ $("depositMessage").textContent="Depósitos via Pix estão temporariamente desativados.";return }
@@ -65,7 +75,7 @@ async function openWithdraw(){
   financeMode="withdraw";$("financeModal").classList.remove("hidden");$("depositPromo").classList.add("hidden");$("financeTitle").textContent="Solicitar saque";
   $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
 }
-$("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=()=>{  $("depositPromo").classList.add("hidden");$("depositArea").classList.remove("hidden");};
+$("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 
 $("copyPix").onclick=async()=>{try{await navigator.clipboard.writeText($("pixCode").value);$("depositMessage").style.color="#35c58a";$("depositMessage").textContent="Código Pix copiado.";setTimeout(()=>$("depositMessage").textContent="",1800)}catch(e){$("pixCode").select()}};
 $("pixDone").onclick=async()=>{
