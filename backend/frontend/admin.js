@@ -117,7 +117,9 @@ function transactionTypeLabel(type){
   "my-dragon_win":"PRÊMIO MY DRAGON",
   "my-dragon_loss":"APOSTA MY DRAGON",
   lucky7_win:"PRÊMIO LUCKY7",
-  lucky7_loss:"APOSTA LUCKY7"
+  lucky7_loss:"APOSTA LUCKY7",
+  withdrawal_reserved:"SAQUE RESERVADO",
+  deposit_bonus:"BÔNUS DE DEPÓSITO"
  };
  return labels[type]||String(type||"MOVIMENTAÇÃO").replace(/_/g," ").toUpperCase();
 }
