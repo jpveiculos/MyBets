@@ -487,3 +487,31 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .home-social-cta-link{min-height:54px;font-size:14px;gap:8px;border-radius:11px}
   .home-social-cta-link svg{width:22px;height:22px}
 }
+
+
+/* ===== HISTÓRICO ADMINISTRATIVO ===== */
+.admin-history-search,.admin-history-toolbar{display:flex;gap:10px;align-items:center;margin:0 0 16px;flex-wrap:wrap}
+.admin-history-search input,.admin-history-toolbar input,.admin-history-toolbar select{min-height:42px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#0b1017;color:#fff;outline:none}
+.admin-history-search input{width:min(360px,100%)}
+.admin-history-toolbar input[type="search"]{flex:1 1 180px}
+.admin-history-toolbar select{flex:1 1 190px}
+.admin-history-toolbar input[type="date"]{flex:0 1 150px}
+.history-modal-card{width:min(980px,calc(100vw - 28px));max-height:calc(100dvh - 28px);overflow:auto}
+.history-section{margin-top:16px;padding:14px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(255,255,255,.025)}
+.history-section h3{margin:0 0 10px;font-size:14px;color:#f0c657;letter-spacing:.04em}
+.history-item{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-top:1px solid rgba(255,255,255,.06)}
+.history-item:first-of-type{border-top:0}
+.history-item b{display:block;color:#fff;font-size:12px}
+.history-item span{display:block;margin-top:3px;color:#aeb5c0;font-size:11px;line-height:1.45}
+.history-item time{flex:0 0 auto;color:#7f8793;font-size:10px;white-space:nowrap}
+.history-bonus{border-left:3px solid #f0c657;padding-left:10px;background:rgba(240,198,87,.05)}
+.history-account{border-left:3px solid #7d8795;padding-left:10px}
+.history-audit{opacity:.88}
+@media(max-width:720px){
+ .admin-history-toolbar{display:grid;grid-template-columns:1fr 1fr}
+ .admin-history-toolbar input,.admin-history-toolbar select,.admin-history-toolbar button{width:100%;min-width:0}
+ .admin-history-toolbar input[type="search"]{grid-column:1 / -1}
+ .history-modal-card{padding:18px 14px}
+ .history-item{display:block}
+ .history-item time{display:block;margin-top:5px}
+}
