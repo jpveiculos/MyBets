@@ -72,7 +72,7 @@ $("authForm")?.addEventListener("submit",async e=>{
       body:JSON.stringify({
         username:$("username").value.trim(),
         password:$("password").value,
-        cpf:$("cpf").value
+        ...(authMode==="register"?{cpf:$("cpf").value}: {})
       })
     });
     const d=await r.json().catch(()=>({}));
