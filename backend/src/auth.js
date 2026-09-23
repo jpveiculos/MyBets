@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { pool } from "./db.js";
+import { grantBonus } from "./finance.js";
 
 const SESSION_DAYS = 30;
 
@@ -167,18 +168,20 @@ export async function register({ username, password, cpf }) {
     if (!Number.isFinite(signupBonus)) throw new Error("Valor do bônus de cadastro inválido.");
 
     const result = await client.query(
-      `INSERT INTO users(username,password_hash,cpf,bonus_balance,bonus_origin_amount,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock)
-       VALUES($1,$2,$3,$4,$4,$4,0,$4 > 0)
-       RETURNING id,username,bonus_balance`,
-      [name, hashPassword(password), normalizedCPF, signupBonus]
+      `INSERT INTO users(username,password_hash,cpf)
+       VALUES($1,$2,$3)
+       RETURNING id,username`,
+      [name, hashPassword(password), normalizedCPF]
     );
 
     if (signupBonus > 0) {
-      await client.query(
-        `INSERT INTO transactions(user_id,type,amount,balance_after,note)
-         VALUES($1,'signup_bonus',$2,$2,$3)`,
-        [result.rows[0].id, signupBonus, "Bônus de cadastro concedido automaticamente."]
-      );
+      await grantBonus({
+        client,
+        userId:result.rows[0].id,
+        amount:signupBonus,
+        type:"signup_bonus",
+        note:"Bônus de cadastro concedido automaticamente."
+      });
     }
 
     await client.query(
@@ -201,7 +204,7 @@ export async function register({ username, password, cpf }) {
     );
 
     await client.query("COMMIT");
-    return result.rows[0];
+    return {id:result.rows[0].id,username:result.rows[0].username,bonus_balance:signupBonus};
   } catch (error) {
     await client.query("ROLLBACK");
     if (error?.code === "23505" && (error?.constraint === "uq_users_cpf" || error?.constraint === "signup_bonus_claims_cpf_key")) {
