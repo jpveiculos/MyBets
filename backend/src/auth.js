@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { pool } from "./db.js";
+import { recordUserRegistration } from "./history.js";
 
 const SESSION_DAYS = 30;
 
@@ -188,6 +189,11 @@ export async function register({ username, password, cpf }) {
     );
 
     await client.query("COMMIT");
+    await recordUserRegistration({
+      userId: result.rows[0].id,
+      username: result.rows[0].username,
+      signupBonus
+    });
     return result.rows[0];
   } catch (error) {
     await client.query("ROLLBACK");
