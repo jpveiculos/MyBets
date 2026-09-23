@@ -12,6 +12,7 @@ let editingDepositId=null;
 let isEditingDeposit=false;
 let currentView="dashboard";
 let userSearchTerm="";
+let cachedUsers=[];
 let transactionFilters={query:"",type:"",from:"",to:""};
 
 function urlBase64ToUint8Array(base64String){
@@ -246,7 +247,7 @@ async function load(){
  if(!adminAuthenticated)return false;
  try{
   const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,d,w,s,t]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString())]);
-  const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[];
+  const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[]; cachedUsers=users;
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
   $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
   renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings);
@@ -292,7 +293,7 @@ async function action(url,method,body){
  try{await api(url,{method,headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});await load();await updateAppBadge()}
  catch(e){$("adminMessage").textContent=e.message}
 }
-$("userSearch")?.addEventListener("input",e=>{userSearchTerm=e.target.value;load()});
+$("userSearch")?.addEventListener("input",e=>{userSearchTerm=e.target.value;renderUsers(cachedUsers)});
 $("transactionSearch")?.addEventListener("click",()=>{transactionFilters={query:$("transactionUserSearch").value.trim(),type:$("transactionType").value,from:$("transactionFrom").value,to:$("transactionTo").value};load()});
 $("transactionClear")?.addEventListener("click",()=>{$("transactionUserSearch").value="";$("transactionType").value="";$("transactionFrom").value="";$("transactionTo").value="";transactionFilters={query:"",type:"",from:"",to:""};load()});
 $("historyClose")?.addEventListener("click",closeHistoryModal);
