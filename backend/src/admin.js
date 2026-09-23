@@ -22,7 +22,7 @@ export async function listDeposits() {
 
 export async function listWithdrawals() {
   const result=await pool.query(
-    `SELECT w.*,u.username,u.cash_balance,u.bonus_balance,u.bonus_wager_progress
+    `SELECT w.*,u.username,u.cpf,u.cash_balance,u.bonus_balance,u.bonus_wager_progress
        FROM withdrawals w
        JOIN users u ON u.id=w.user_id
       ORDER BY w.created_at DESC`
