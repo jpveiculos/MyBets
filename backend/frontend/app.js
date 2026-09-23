@@ -46,8 +46,6 @@ function showAuth(mode="login"){
   const isRegister=mode==="register";
   $("cpfField")?.classList.toggle("hidden", !isRegister);
   $("cpfHelp")?.classList.toggle("hidden", !isRegister);
-  if($("cpfField")) $("cpfField").style.display=isRegister?"block":"none";
-  if($("cpfHelp")) $("cpfHelp").style.display=isRegister?"block":"none";
   $("cpf")?.toggleAttribute("required", isRegister);
   if(!isRegister && $("cpf")) $("cpf").value="";
   $("authMessage").textContent="";
