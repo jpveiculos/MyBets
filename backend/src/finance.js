@@ -13,12 +13,26 @@ export async function getAccount(userId) {
             cash_balance, bonus_balance, reserved_balance,
             (cash_balance + bonus_balance) AS total_balance,
             (cash_balance - reserved_balance + bonus_balance) AS available_balance,
-            bonus_wager_progress
+            bonus_wager_progress, bonus_origin_amount, post_bonus_wager_requirement,
+            post_bonus_wager_progress, withdrawal_bonus_lock
        FROM users
       WHERE id = $1`,
     [userId]
   );
   return result.rows[0] || null;
+}
+
+export async function applyPostBonusWager({client,user,betAmount,bonusUsed}) {
+  const newBonus=Number((Number(user.bonus_balance||0)-Number(bonusUsed||0)).toFixed(2));
+  let progress=Number(user.post_bonus_wager_progress||0),lock=Boolean(user.withdrawal_bonus_lock);
+  const requirement=Number(user.post_bonus_wager_requirement||0);
+  if(lock && newBonus<=0 && requirement>0){
+    const wagerAfterBonus=Number(bonusUsed||0)>0?Math.max(0,Number(betAmount)-Number(bonusUsed)):Number(betAmount);
+    progress=Number(Math.min(requirement,progress+wagerAfterBonus).toFixed(2));
+    if(progress>=requirement)lock=false;
+  }
+  await client.query("UPDATE users SET post_bonus_wager_progress=$1,withdrawal_bonus_lock=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3",[progress,lock,user.id]);
+  return {progress,requirement,lock};
 }
 
 export async function requestDeposit({ userId, amount, playerNote = null }) {
@@ -58,7 +72,7 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
 
     const userResult = await client.query(
       `SELECT id, cash_balance, bonus_balance, reserved_balance,
-              bonus_wager_progress
+              bonus_wager_progress, withdrawal_bonus_lock, post_bonus_wager_progress, post_bonus_wager_requirement
          FROM users
         WHERE id = $1
         FOR UPDATE`,
@@ -75,6 +89,10 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
 
     if (Number(user.bonus_balance) > 0) {
       throw new Error("O saque está bloqueado enquanto houver saldo de bônus.");
+    }
+    if (Boolean(user.withdrawal_bonus_lock)) {
+      const progress=Number(user.post_bonus_wager_progress||0), requirement=Number(user.post_bonus_wager_requirement||0);
+      throw new Error("O saque está bloqueado. Aposte mais R$ "+Math.max(0,requirement-progress).toFixed(2).replace(".",",")+" para liberar.");
     }
 
     await client.query(
