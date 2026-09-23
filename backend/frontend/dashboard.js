@@ -92,11 +92,44 @@ function updateQr(){
   $("pixQr").src=qrUrl(payload);$("pixCode").value=String(pixSettings.pix_key).trim();$("qrCard").classList.remove("hidden");$("pixDone").classList.remove("hidden");
 }
 async function openWithdraw(){
-  financeMode="withdraw";$("financeModal").classList.remove("hidden");$("depositPromo").classList.add("hidden");$("financeTitle").textContent="Solicitar saque";
-  $("depositArea").classList.add("hidden");$("withdrawArea").classList.remove("hidden");$("withdrawMessage").textContent="";$("withdrawForm").reset();
-  $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
-  $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
-  $("withdrawMax").disabled=withdrawableBalance<=0;
+  try{
+    const a=await api("/api/account");
+    availableBalance=Number(a.account.available_balance||0);
+    withdrawableBalance=Number(a.account.withdrawable_balance||0);
+    $("balance").textContent=money(availableBalance);
+    $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
+    $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
+    $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
+    $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
+    $("withdrawMax").disabled=withdrawableBalance<=0;
+    const hasBonus=Number(a.account.bonus_balance||0)>0;
+    const withdrawalLocked=Boolean(a.account.withdrawal_bonus_lock);
+    const depositPrincipal=Math.max(0,Number(a.account.deposit_principal_remaining||0));
+    $("withdrawBtn").disabled=hasBonus||withdrawalLocked||withdrawableBalance<=0;
+    if(hasBonus||withdrawalLocked||withdrawableBalance<=0){
+      $("withdrawMessage").textContent=hasBonus
+        ? "O saque continua bloqueado enquanto houver bônus."
+        : withdrawalLocked
+          ? "O saque continua bloqueado até cumprir a meta pós-bônus."
+          : depositPrincipal>0
+            ? "O saldo depositado ainda não foi totalmente apostado. Ganhos ficam liberados conforme o principal é consumido."
+            : "Ainda não há ganhos disponíveis para saque.";
+    }
+    if(withdrawableBalance<=0) return;
+    financeMode="withdraw";
+    $("financeModal").classList.remove("hidden");
+    $("depositPromo").classList.add("hidden");
+    $("financeTitle").textContent="Solicitar saque";
+    $("depositArea").classList.add("hidden");
+    $("withdrawArea").classList.remove("hidden");
+    $("withdrawMessage").textContent="";
+    $("withdrawForm").reset();
+    $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
+    $("withdrawAmount").max=withdrawableBalance.toFixed(2);
+    $("withdrawMax").disabled=false;
+  }catch(e){
+    alert(e.message);
+  }
 }
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 $("withdrawMax").onclick=()=>{
