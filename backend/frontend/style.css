@@ -507,6 +507,9 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .history-bonus{border-left:3px solid #f0c657;padding-left:10px;background:rgba(240,198,87,.05)}
 .history-account{border-left:3px solid #7d8795;padding-left:10px}
 .history-audit{opacity:.88}
+.history-pagination{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06);color:#8f98a6;font-size:11px;flex-wrap:wrap}
+.history-pagination .row-actions{margin:0;align-items:center}
+.history-pagination .small-btn:disabled{opacity:.4;cursor:not-allowed}
 @media(max-width:720px){
  .admin-history-toolbar{display:grid;grid-template-columns:1fr 1fr}
  .admin-history-toolbar input,.admin-history-toolbar select,.admin-history-toolbar button{width:100%;min-width:0}
