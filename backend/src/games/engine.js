@@ -1,7 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "../db.js";
 import { applyPostBonusWager } from "../finance.js";
-import { applyPostBonusWager } from "../finance.js";
 
 function money(value){const n=Number(value);if(!Number.isFinite(n))throw new Error("Valor financeiro inválido.");return Math.round(n*100)/100;}
 function pickOutcome(table,scale){const ticket=randomInt(scale);let total=0;for(const item of table){total+=item.weight;if(ticket<total)return item;}return null;}
