@@ -149,12 +149,17 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_description','MyBets'),
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
 ('bonus_wager_requirement','0'),
-('signup_bonus_amount','100'),
+('signup_bonus_amount','50'),
+('deposit_bonus_percent','100'),
 ('roulette_min_bet','0.50'),
 ('roulette_max_bet','100.00'),
 ('audit_log_retention_days','30')
 ON CONFLICT (setting_key) DO NOTHING;
 
+UPDATE site_settings SET setting_value='50',updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='signup_bonus_amount';
+UPDATE site_settings SET setting_value='100',updated_at=CURRENT_TIMESTAMP
+ WHERE setting_key='deposit_bonus_percent';
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_enabled' AND NULLIF(TRIM(setting_value),'') IS NULL;
 UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',updated_at=CURRENT_TIMESTAMP
