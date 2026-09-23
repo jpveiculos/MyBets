@@ -8,6 +8,7 @@ import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustBalance, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting, listTransactions } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
+import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
 import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
 import { myDragonConfig, spinMyDragon } from "./games/myDragon.js";
@@ -171,8 +172,18 @@ app.get("/api/admin/notifications/count", requireAdmin, asyncRoute(async (_req,r
   ]);
   res.json({ok:true,count:Number(d.rows[0].count)+Number(w.rows[0].count)});
 }));
-app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (_req,res) => {
-  res.json({ok:true,transactions:await listTransactions()});
+app.get("/api/admin/transactions", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,transactions:await searchTransactionHistory({
+    query:req.query.query,
+    type:req.query.type,
+    from:req.query.from,
+    to:req.query.to,
+    limit:req.query.limit
+  })});
+}));
+
+app.get("/api/admin/users/:id/history", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,history:await getUserHistory(req.params.id)});
 }));
 app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,settings:await getSettings()});
@@ -198,6 +209,15 @@ let server;
 async function start(){
   if(!process.env.DATABASE_URL) throw new Error("DATABASE_URL não configurada.");
   await initDatabase();
+  try {
+    const cleanup = await pruneOldAuditLogs();
+    console.log(`Auditoria: ${cleanup.deleted} registros antigos removidos; retenção de ${cleanup.days} dias.`);
+  } catch (error) {
+    console.error("Falha na limpeza da auditoria:", error);
+  }
+  setInterval(() => {
+    pruneOldAuditLogs().catch(error => console.error("Falha na limpeza da auditoria:", error));
+  }, 24 * 60 * 60 * 1000).unref();
   server=app.listen(PORT,"0.0.0.0",()=>console.log(`MyBets Roulette rodando na porta ${PORT}.`));
 }
 async function shutdown(signal){
