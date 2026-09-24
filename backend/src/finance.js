@@ -137,7 +137,7 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     const availableCash = Number(user.cash_balance) - Number(user.reserved_balance);
     const withdrawableCash = Math.max(0, availableCash - Number(user.deposit_principal_remaining||0));
     if (value > withdrawableCash) {
-      throw new Error("Esse valor inclui a parte do depósito ainda bloqueada. Aposte 50% do valor depositado para liberar essa parte; depois de cumprir as regras do bônus, o saque poderá incluir os 50% liberados e os ganhos gerados nas apostas.");
+      throw new Error("Esse valor inclui a parte do depósito ainda bloqueada. Aposte 100% do valor depositado para liberar essa parte; depois de cumprir as regras do bônus, o saque poderá incluir o valor depositado liberado e os ganhos gerados nas apostas.");
     }
 
     if (Number(user.bonus_balance) > 0) {
