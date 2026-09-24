@@ -235,8 +235,8 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
 
       await client.query(
         `UPDATE users
-            SET cash_balance=$1,deposit_principal_remaining=$2,updated_at=CURRENT_TIMESTAMP
-          WHERE id=$3`,
+            SET cash_balance=$1,deposit_principal_remaining=$2,withdrawal_wager_remaining=$3,updated_at=CURRENT_TIMESTAMP
+          WHERE id=$4`,
         [newCash,newDepositPrincipal,newWagerRemaining,userId]
       );
 
