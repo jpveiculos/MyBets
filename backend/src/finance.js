@@ -177,9 +177,6 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     if (!user) throw new Error("Usuário não encontrado.");
 
     const availableCash = Math.max(0, Number(user.cash_balance) - Number(user.reserved_balance));
-    if (Number(user.play_credits || 0) > 0.001) {
-      throw new Error("Ainda faltam créditos para jogar. O saque será liberado quando os créditos chegarem a 0.");
-    }
     if (value > availableCash) {
       throw new Error("O valor solicitado é maior que o saldo disponível para saque.");
     }
