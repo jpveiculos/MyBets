@@ -30,7 +30,7 @@ async function api(url,options={}){
 async function loadAccount(){
   try{
     const d=await api("/api/account");
-    $("balance").textContent=money(d.account.available_balance);
+    $("balance").textContent=Number(d.account.play_credits||0).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
   }catch{
     location.href="/";
   }
@@ -291,7 +291,7 @@ async function spin(){
     $("betMinus").disabled=false;
     $("betPlus").disabled=false;
 
-    $("balance").textContent=money(d.user.availableBalance);
+    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
   }catch(e){
     spinning=false;
