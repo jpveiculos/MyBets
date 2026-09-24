@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
-import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
+import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, adjustCredits, addCreditsWithDepositBonus, addBonusCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
@@ -156,7 +156,10 @@ app.post("/api/admin/withdrawals/:id/reject", requireAdmin, asyncRoute(async (re
   res.json({ok:true,result:await rejectWithdrawal({id:req.params.id,adminId:req.admin.id,rejectionReason:req.body.rejectionReason,adminNote:req.body.adminNote})});
 }));
 app.post("/api/admin/users/:id/credits", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,result:await adjustCredits({userId:req.params.id,amount:req.body.amount,adminId:req.admin.id,note:req.body.note})});
+  res.json({ok:true,result:await addCreditsWithDepositBonus({userId:req.params.id,amount:req.body.amount,adminId:req.admin.id,note:req.body.note})});
+}));
+app.post("/api/admin/users/:id/bonus-credits", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,result:await addBonusCredits({userId:req.params.id,amount:req.body.amount,adminId:req.admin.id,note:req.body.note})});
 }));
 app.post("/api/admin/users/:id/ban", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await banUser({userId:req.params.id,adminId:req.admin.id,reason:req.body.reason})});
