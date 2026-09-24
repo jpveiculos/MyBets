@@ -185,7 +185,7 @@ async function openUserHistory(userId){
  historyState.userId=Number(userId);
  historyState.pages={transactions:1,deposits:1,withdrawals:1,spins:1,audits:1};
  try{
-  const d=await api("/api/admin/users/"+userId+"/history?pageSize=50&transactionsPage=1&depositsPage=1&withdrawalsPage=1&spinsPage=1&bonusEventsPage=1&auditsPage=1");
+  const d=await api("/api/admin/users/"+userId+"/history?pageSize=50&transactionsPage=1&depositsPage=1&withdrawalsPage=1&spinsPage=1&auditsPage=1");
   openHistoryModal(d.history);
  }catch(e){
   $("adminMessage").textContent=e.message||"Não foi possível carregar o histórico.";
