@@ -29,7 +29,7 @@ export async function grantBonus({client,userId,amount,type="promotional_bonus",
   if(value<=0) throw new Error("O valor do bônus deve ser maior que zero.");
 
   const result=await client.query(
-    "SELECT id,cash_balance,bonus_balance,reserved_balance,bonus_origin_amount,post_bonus_wager_requirement,post_bonus_wager_progress FROM users WHERE id=$1 FOR UPDATE",
+    "SELECT id,cash_balance,bonus_balance,reserved_balance,bonus_origin_amount,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_wager_remaining FROM users WHERE id=$1 FOR UPDATE",
     [userId]
   );
   const user=result.rows[0];
