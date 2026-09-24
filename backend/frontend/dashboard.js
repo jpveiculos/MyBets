@@ -24,7 +24,7 @@ async function load(){
     $("withdrawBtn").disabled=withdrawableBalance<=0;
     $("withdrawBtn").title=withdrawableBalance>0?"Solicitar saque":"Não há saldo disponível para saque";
     const hint=$("withdrawHint");
-    if(hint) hint.textContent="Saque o saldo disponível.";
+    if(hint) hint.textContent="Saque via Pix";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
