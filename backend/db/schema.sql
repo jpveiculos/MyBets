@@ -110,6 +110,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 DELETE FROM site_settings WHERE setting_key='bonus_wager_requirement';
+DELETE FROM site_settings WHERE setting_key='roulette_prizes';
 
 CREATE TABLE IF NOT EXISTS spins (
   id SERIAL PRIMARY KEY,
