@@ -141,14 +141,14 @@ function drawWheel(){
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
-    label.setAttribute("font-size","17");
+    label.setAttribute("font-size","24");
     label.setAttribute("font-family","Arial,Helvetica,sans-serif");
     label.setAttribute("font-weight","900");
     label.setAttribute("text-anchor","middle");
     label.setAttribute("dominant-baseline","middle");
     label.setAttribute("paint-order","stroke");
     label.setAttribute("stroke","#000");
-    label.setAttribute("stroke-width","3");
+    label.setAttribute("stroke-width","4");
     label.setAttribute("class","prize-label");
     // O valor acompanha o eixo da própria fatia: 0° no topo,
     // aumentando no sentido horário junto com a geometria da roleta.
