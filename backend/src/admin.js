@@ -177,10 +177,9 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
-export async function adjustBalance({userId,amount,kind="bonus",note=null,adminId}) {
+export async function adjustCredits({userId,amount,note=null,adminId}) {
   const value=Number(amount);
   if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
-  if(!["cash","bonus","credits"].includes(kind)) throw new Error("Tipo de ajuste inválido.");
 
   const client=await pool.connect();
   try {
@@ -200,10 +199,10 @@ export async function adjustBalance({userId,amount,kind="bonus",note=null,adminI
     await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
        VALUES('admin',$1,'credit_adjustment','user',$2,$3)`,
-      [adminId,userId,JSON.stringify({amount:value,kind:"credits",note})]
+      [adminId,userId,JSON.stringify({amount:value,note})]
     );
     await client.query("COMMIT");
-    return {userId,kind:"credits",amount:value,newCredits:nextCredits};
+    return {userId,amount:value,newCredits:nextCredits};
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
