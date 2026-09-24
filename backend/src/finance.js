@@ -84,6 +84,56 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   return {depositAmount:value,bonusPercent,creditsAdded,newPlayCredits:newCredits};
 }
 
+export async function purchasePlayCredits({userId,amount}) {
+  const value=money(amount);
+  if (value <= 0) throw new Error("Informe um valor válido para comprar créditos.");
+
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result=await client.query(
+      `SELECT id,cash_balance,reserved_balance,play_credits
+         FROM users WHERE id=$1 FOR UPDATE`,
+      [userId]
+    );
+    const user=result.rows[0];
+    if(!user) throw new Error("Usuário não encontrado.");
+
+    const availableCash=Math.max(0,Number(user.cash_balance||0)-Number(user.reserved_balance||0));
+    if(value>availableCash) throw new Error("O valor informado é maior que o saldo disponível para saque.");
+
+    const newCash=money(Number(user.cash_balance||0)-value);
+    const newCredits=money(Number(user.play_credits||0)+value);
+
+    await client.query(
+      `UPDATE users
+          SET cash_balance=$1,play_credits=$2,updated_at=CURRENT_TIMESTAMP
+        WHERE id=$3`,
+      [newCash,newCredits,userId]
+    );
+
+    await client.query(
+      `INSERT INTO transactions(user_id,type,amount,balance_after,note)
+       VALUES($1,'credits_purchase',$2,$3,$4)`,
+      [userId,value,newCash,`Compra de créditos para jogar: R$ ${value.toFixed(2)} convertido em ${value.toFixed(2)} créditos.`]
+    );
+
+    await client.query("COMMIT");
+    return {
+      amount:value,
+      creditsAdded:value,
+      newCashBalance:newCash,
+      newPlayCredits:newCredits,
+      availableCash:money(newCash-Number(user.reserved_balance||0))
+    };
+  } catch(error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
 export async function consumePlayCredits({client,userId,betAmount}) {
   const bet = money(betAmount);
   if (bet <= 0) throw new Error("O valor da aposta deve ser maior que zero.");
