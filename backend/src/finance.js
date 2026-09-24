@@ -15,10 +15,8 @@ export async function getAccount(userId) {
             (cash_balance - reserved_balance + bonus_balance) AS available_balance,
             GREATEST(0, cash_balance - reserved_balance - deposit_principal_remaining) AS withdrawable_balance,
             bonus_wager_progress, bonus_origin_amount, post_bonus_wager_requirement,
-            post_bonus_wager_progress, withdrawal_bonus_lock,
-            GREATEST(0,COALESCE(bonus_balance,0))
-            + GREATEST(0,COALESCE(deposit_principal_remaining,0))
-            + GREATEST(0,COALESCE(post_bonus_wager_requirement,0)-COALESCE(post_bonus_wager_progress,0)) AS withdrawal_unlock_remaining
+            post_bonus_wager_progress, withdrawal_bonus_lock, withdrawal_wager_remaining,
+            COALESCE(withdrawal_wager_remaining,0) AS withdrawal_unlock_remaining
        FROM users
       WHERE id = $1`,
     [userId]
@@ -41,10 +39,11 @@ export async function grantBonus({client,userId,amount,type="promotional_bonus",
   const newOrigin=money(Number(user.bonus_origin_amount||0)+value);
   const newRequirement=money(Number(user.post_bonus_wager_requirement||0)+value);
   const newProgress=money(Math.min(newRequirement,Number(user.post_bonus_wager_progress||0)));
+  const newWagerRemaining=money(Number(user.withdrawal_wager_remaining||0)+(value*2));
 
   await client.query(
-    "UPDATE users SET bonus_balance=$1,bonus_origin_amount=$2,post_bonus_wager_requirement=$3,post_bonus_wager_progress=$4,withdrawal_bonus_lock=TRUE,updated_at=CURRENT_TIMESTAMP WHERE id=$5",
-    [newBonus,newOrigin,newRequirement,newProgress,userId]
+    "UPDATE users SET bonus_balance=$1,bonus_origin_amount=$2,post_bonus_wager_requirement=$3,post_bonus_wager_progress=$4,withdrawal_bonus_lock=TRUE,withdrawal_wager_remaining=$5,updated_at=CURRENT_TIMESTAMP WHERE id=$6",
+    [newBonus,newOrigin,newRequirement,newProgress,newWagerRemaining,userId]
   );
 
   await client.query(
@@ -64,8 +63,14 @@ export async function grantBonus({client,userId,amount,type="promotional_bonus",
     ]
   );
 
-  return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true};
+  return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true,withdrawalWagerRemaining:newWagerRemaining};
 }
+export async function applyWithdrawalWager({client,user,betAmount}) {
+  const remaining=money(Math.max(0,Number(user.withdrawal_wager_remaining||0)-Number(betAmount||0)));
+  await client.query("UPDATE users SET withdrawal_wager_remaining=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[remaining,user.id]);
+  return remaining;
+}
+
 export async function applyDepositPrincipalWager({client,user,cashUsed}) {
   const current=Number(user.deposit_principal_remaining||0);
   const used=Number(cashUsed||0);
@@ -143,11 +148,9 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
       throw new Error("Esse valor inclui a parte do depósito ainda bloqueada. Aposte 100% do valor depositado para liberar essa parte; depois de cumprir as regras do bônus, o saque poderá incluir o valor depositado liberado e os ganhos gerados nas apostas.");
     }
 
-    const unlockRemaining=Number(user.bonus_balance||0)
-      +Number(user.deposit_principal_remaining||0)
-      +Math.max(0,Number(user.post_bonus_wager_requirement||0)-Number(user.post_bonus_wager_progress||0));
+    const unlockRemaining=Number(user.withdrawal_wager_remaining||0);
     if (unlockRemaining>0.001) {
-      throw new Error("O saque será liberado quando os créditos de aposta chegarem a R$ 0,00. Restante: R$ "+unlockRemaining.toFixed(2).replace(".",",")+".");
+      throw new Error("Ainda falta apostar R$ "+unlockRemaining.toFixed(2).replace(".",",")+" para liberar o botão de saque.");
     }
 
     await client.query(
