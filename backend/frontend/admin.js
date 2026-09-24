@@ -279,7 +279,7 @@ function renderSettings(settings){
  const bonus=Number(map.signup_bonus_amount||50);
  const bonusCard=`<section class="admin-bonus-card"><div class="admin-bonus-card-head"><div><span class="eyebrow">PROMOÇÃO DE CADASTRO</span><h2>Bônus do jogador</h2></div><span class="admin-bonus-badge">REGRA ATIVA</span></div><div class="admin-bonus-grid"><label>Valor do bônus de cadastro<input id="signupBonusAmount" type="number" min="0" step="0.01" inputmode="decimal" value="${bonus.toFixed(2)}"></label><div class="admin-bonus-rule"><strong>Regra de saque</strong><span>Depois que o bônus chegar a R$ 0,00, o jogador ainda precisa apostar o mesmo valor do bônus para liberar o saque.</span><small>Ex.: bônus de R$ 50 → meta pós-bônus de R$ 50. Novo depósito não reduz nem libera essa meta; novos bônus somam uma nova exigência.</small></div></div><div class="row-actions"><button class="primary-btn" id="signupBonusSave" type="button">Salvar bônus e regra</button></div><p class="form-message" id="signupBonusMessage"></p></section>`;
  const rows=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("");
- $("settings").innerHTML=bonusCard+`<section class="admin-row admin-roulette-summary"><span><b>Roleta atual</b><small>102 setores • 17 premiados • 85 de perda • 4×2x • 4×3x • 4×4x • 4×5x • 1×10x</small></span></section>`+rows;
+ $("settings").innerHTML=bonusCard+rows;
 }
 function renderPendingEvents(deposits,withdrawals){
  const pendingDeposits=deposits.filter(x=>x.status==="pending");
