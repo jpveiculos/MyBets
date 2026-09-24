@@ -108,6 +108,7 @@ function transactionTypeLabel(type){
   withdrawal_approved:"SAQUE APROVADO",
   withdrawal_released:"SAQUE DEVOLVIDO",
   admin_credit_adjustment:"AJUSTE DE CRÉDITOS",
+  admin_bonus_credit:"BÔNUS DE CRÉDITO",
   roulette_win:"PRÊMIO ROLETA",
   roulette_loss:"APOSTA ROLETA",
   "my-tiger_win":"PRÊMIO MY TIGER",
@@ -251,7 +252,7 @@ function renderPendingEvents(deposits,withdrawals){
   return;
  }
  $("pendingEvents").innerHTML=events.map(x=>x.kind==="deposit"
-  ?`<div class="admin-event admin-event-deposit"><div class="admin-event-icon">↓</div><div class="admin-event-body"><b>Novo depósito #${x.id}</b><span>${esc(x.user)} • ${money(x.amount)} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-deposit" data-id="${x.id}" data-username="${esc(x.user)}" data-amount="${x.amount}">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></div></div>`
+  ?`<div class="admin-event admin-event-deposit"><div class="admin-event-icon">↓</div><div class="admin-event-body"><b>Novo depósito #${x.id}</b><span>${esc(x.user)} • ${money(x.amount)} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn quick-approve-deposit" data-id="${x.id}" data-amount="${x.amount}">Aprovar e creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></div></div>`
   :`<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #${x.id}</b><span>${esc(x.user)} • CPF: ${esc(x.cpf||"Não informado")} • ${money(x.amount)} • Pix: ${esc(x.pix||"—")} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></div></div>`
  ).join("");
 }
@@ -321,6 +322,7 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
   catch(e){msg.textContent=e.message||"Não foi possível salvar."}finally{button.disabled=false}
  });
  document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>openDepositEditor(b.dataset.id,b.dataset.username,b.dataset.amount));
+ document.querySelectorAll(".quick-approve-deposit").forEach(b=>b.onclick=async()=>{if(!confirm("Aprovar este depósito e converter o valor em créditos com o bônus configurado?"))return;await action("/api/admin/deposits/"+b.dataset.id+"/approve","POST",{approvedAmount:Number(b.dataset.amount)});});
  document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
