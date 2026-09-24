@@ -90,7 +90,7 @@ function statusClass(status){return "status-"+String(status||"").toLowerCase()}
 function renderUsers(users){
  const term=userSearchTerm.trim().toLowerCase();
  const filtered=term?users.filter(x=>String(x.username||"").toLowerCase().includes(term)||String(x.id).includes(term)||String(x.cpf||"").includes(term)):users;
- $("users").innerHTML=filtered.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: ${esc(x.cpf||"Não informado")} • Cadastro: ${dateTime(x.created_at)} • Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(x.withdrawable_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn history-user">Histórico</button><button data-id="${x.id}" class="small-btn add-cash">+ créditos</button><button data-id="${x.id}" class="small-btn add-bonus">+ créditos</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário encontrado.</p>';
+ $("users").innerHTML=filtered.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: ${esc(x.cpf||"Não informado")} • Cadastro: ${dateTime(x.created_at)} • Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(x.withdrawable_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn history-user">Histórico</button><button data-id="${x.id}" class="small-btn add-credits">+ créditos</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário encontrado.</p>';
 }
 function renderDeposits(deposits){
  $("deposits").innerHTML=deposits.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${dateTime(x.created_at)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-deposit" data-id="'+x.id+'" data-username="'+esc(x.username)+'" data-amount="'+x.amount+'">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum depósito.</p>';
@@ -274,7 +274,7 @@ async function confirmDeposit(){
  $("depositConfirm").disabled=true;$("depositMessage").textContent="Confirmando e creditando...";
  try{
   await api("/api/admin/deposits/"+editingDepositId+"/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({approvedAmount:value})});
-  $("depositMessage").textContent="Depósito confirmado e saldo creditado.";setTimeout(closeDepositEditor,500);
+  $("depositMessage").textContent="Depósito confirmado e créditos adicionados.";setTimeout(closeDepositEditor,500);
  }catch(e){$("depositMessage").textContent=e.message}finally{$("depositConfirm").disabled=false}
 }
 function showAdminLogin(){
@@ -325,8 +325,8 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".history-user").forEach(b=>b.onclick=()=>openUserHistory(b.dataset.id));
- document.querySelectorAll(".add-cash").forEach(b=>b.onclick=async()=>{const v=prompt("Quantidade de créditos para jogar a adicionar:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"credits"})});
- document.querySelectorAll(".add-bonus").forEach(b=>b.onclick=async()=>{const v=prompt("Quantidade de créditos para jogar a adicionar:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"credits"})});
+ document.querySelectorAll(".add-credits").forEach(b=>b.onclick=async()=>{const v=prompt("Quantidade de créditos para jogar a adicionar:");if(v)await action("/api/admin/users/"+b.dataset.id+"/credits","POST",{amount:Number(v)})});
+ 
  document.querySelectorAll(".ban-user").forEach(b=>b.onclick=async()=>{const reason=prompt("Motivo do banimento:","Banimento administrativo");if(reason===null||!reason.trim())return;if(!confirm("Banir este usuário? O acesso será encerrado imediatamente."))return;await action("/api/admin/users/"+b.dataset.id+"/ban","POST",{reason:reason.trim()})});
  document.querySelectorAll(".unban-user").forEach(b=>b.onclick=async()=>{if(!confirm("Desbanir este usuário?"))return;await action("/api/admin/users/"+b.dataset.id+"/unban","POST",{})});
  document.querySelectorAll(".delete-user").forEach(b=>b.onclick=async()=>{if(!confirm("Excluir este usuário? O histórico financeiro será preservado e a conta ficará permanentemente inacessível."))return;await action("/api/admin/users/"+b.dataset.id+"/delete","POST",{})});
