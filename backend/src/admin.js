@@ -218,6 +218,55 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
     await client.query("BEGIN");
     const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
     const u=r.rows[0]; if(!u) throw new Error("Usuário não encontrado.");
+
+    // "+ saldo" segue a mesma regra financeira de uma recarga aprovada:
+    // o percentual configurado em deposit_bonus_percent é aplicado automaticamente.
+    if(kind==="cash" && value>0){
+      const bonusSetting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='deposit_bonus_percent'");
+      const bonusPercent=Math.max(0,Number(bonusSetting.rows[0]?.setting_value ?? 100));
+      if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
+      const bonusValue=Math.round(value*bonusPercent)/100;
+
+      const newCash=Number(u.cash_balance)+value;
+      const depositPrincipalValue=Math.round(value*50)/100;
+      const newDepositPrincipal=Number(u.deposit_principal_remaining||0)+depositPrincipalValue;
+
+      await client.query(
+        `UPDATE users
+            SET cash_balance=$1,deposit_principal_remaining=$2,updated_at=CURRENT_TIMESTAMP
+          WHERE id=$3`,
+        [newCash,newDepositPrincipal,userId]
+      );
+
+      if(bonusValue>0){
+        await grantBonus({
+          client,
+          userId,
+          amount:bonusValue,
+          type:"deposit_bonus",
+          note:note||`Bônus automático de ${bonusPercent.toFixed(2)}% aplicado ao saldo adicionado pelo administrador.`
+        });
+      }
+
+      await client.query(
+        `INSERT INTO transactions(user_id,type,amount,balance_after,note)
+         VALUES($1,'admin_cash_adjustment',$2,$3,$4)`,
+        [
+          userId,
+          value,
+          newCash+Number(u.bonus_balance)+bonusValue-Number(u.reserved_balance),
+          note||`Saldo adicionado pelo administrador com bônus automático de ${bonusPercent.toFixed(2)}%: R$ ${bonusValue.toFixed(2)}.`
+        ]
+      );
+      await client.query(
+        `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+         VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
+        [adminId,userId,JSON.stringify({amount:value,kind,note,bonusPercent,bonusValue,depositPrincipalPercent:50,depositPrincipalValue})]
+      );
+      await client.query("COMMIT");
+      return {userId,kind,amount:value,newBalance:newCash,bonusPercent,bonusValue,totalCredited:value+bonusValue};
+    }
+
     if(kind==="bonus" && value>0){
       const granted=await grantBonus({
         client,
