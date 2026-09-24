@@ -26,9 +26,9 @@ async function load(){
     $("withdrawBtn").title=unlockRemaining>0.001?"O saque será liberado quando os créditos de aposta chegarem a R$ 0,00.":"Solicitar saque";
     const hint=$("withdrawHint");
     if(hint) hint.textContent=unlockRemaining>0.001
-      ? "Créditos de aposta restantes: "+money(unlockRemaining)+". Esse valor diminui a cada aposta. O saque será liberado quando chegar a R$ 0,00."
+      ? "Ainda falta apostar "+money(unlockRemaining)+" para liberar o botão de saque."
       : withdrawableBalance>0
-        ? "Créditos de aposta: R$ 0,00. Saque liberado."
+        ? "Saque liberado."
         : "Créditos de aposta: R$ 0,00. Ainda não há saldo disponível para saque.";
   }catch(e){location.href="/"}
 }
@@ -99,7 +99,7 @@ async function openWithdraw(){
     $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
     if(unlockRemaining>0.001||withdrawableBalance<=0){
       $("withdrawMessage").textContent=unlockRemaining>0.001
-        ? "Créditos de aposta restantes: "+money(unlockRemaining)+". O saque será liberado quando esse valor chegar a R$ 0,00."
+        ? "Ainda falta apostar "+money(unlockRemaining)+" para liberar o botão de saque."
         : "Ainda não há saldo disponível para saque.";
     }
     if(withdrawableBalance<=0) return;
