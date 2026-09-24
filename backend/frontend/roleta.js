@@ -259,7 +259,7 @@ async function spin(){
     const delta=((target-current)%360+360)%360;
     const from=rotation;
     const destination=rotation+1080+delta;
-    const duration=5000;
+    const duration=3000;
     const start=performance.now();
     const wheel=$("wheel");
 
