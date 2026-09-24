@@ -177,6 +177,41 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
+export async function addCreditsWithDepositBonus({userId,amount,note=null,adminId}) {
+  const value=Number(amount);
+  if(!Number.isFinite(value)||value<=0) throw new Error("Informe um valor de crédito válido.");
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const creditState=await addDepositCredits({client,userId,amount:value,referenceId:null});
+    await client.query(`INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+       VALUES('admin',$1,'credit_deposit_adjustment','user',$2,$3)`,
+      [adminId,userId,JSON.stringify({enteredAmount:value,bonusPercent:creditState.bonusPercent,creditsAdded:creditState.creditsAdded,note})]
+    );
+    await client.query(`UPDATE transactions SET note=$1 WHERE id=(SELECT id FROM transactions WHERE user_id=$2 AND type='deposit_credits' ORDER BY id DESC LIMIT 1)`,
+      [note||("Créditos adicionados pelo administrador com "+creditState.bonusPercent.toFixed(2)+"% de bônus."),userId]
+    );
+    await client.query("COMMIT");
+    return {userId,enteredAmount:value,bonusPercent:creditState.bonusPercent,creditsAdded:creditState.creditsAdded,newCredits:creditState.newPlayCredits};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
+export async function addBonusCredits({userId,amount,note=null,adminId}) {
+  const value=Number(amount);
+  if(!Number.isFinite(value)||value<=0) throw new Error("Informe um valor de bônus válido.");
+  const client=await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const result=await grantBonus({client,userId,amount:value,type:"admin_bonus_credit",referenceId:null,note:note||"Bônus de crédito concedido pelo administrador."});
+    await client.query(`INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
+       VALUES('admin',$1,'bonus_credit_adjustment','user',$2,$3)`,
+      [adminId,userId,JSON.stringify({bonusCredits:value,note})]
+    );
+    await client.query("COMMIT");
+    return {userId,bonusCredits:value,newCredits:result.playCredits};
+  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
+}
+
 export async function adjustCredits({userId,amount,note=null,adminId}) {
   const value=Number(amount);
   if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
