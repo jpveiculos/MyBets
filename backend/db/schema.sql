@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   cpf VARCHAR(11),
   password_hash TEXT NOT NULL,
   cash_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
+  play_credits NUMERIC(12,2) NOT NULL DEFAULT 0,
   bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   reserved_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0,
@@ -208,6 +209,8 @@ UPDATE site_settings SET setting_value='6cb0b574-4fd1-40ad-bfd3-5065b6c6e897',up
 UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_key_type' AND NULLIF(TRIM(setting_value),'') IS NULL;
 
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS play_credits NUMERIC(12,2) NOT NULL DEFAULT 0;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS cpf VARCHAR(11);
 ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0;
