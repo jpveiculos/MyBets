@@ -70,7 +70,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     await client.query(
       `UPDATE users
           SET cash_balance=$1,deposit_principal_remaining=$2,withdrawal_wager_remaining=$3,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$3`,
+        WHERE id=$4`,
       [newCash,newDepositPrincipal,newWagerRemaining,d.user_id]
     );
 
