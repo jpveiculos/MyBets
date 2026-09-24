@@ -65,12 +65,13 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     const depositPrincipalPercent=100;
     const depositPrincipalValue=Math.round(value*depositPrincipalPercent)/100;
     const newDepositPrincipal=Number(user.deposit_principal_remaining||0)+depositPrincipalValue;
+    const newWagerRemaining=Number(user.withdrawal_wager_remaining||0)+depositPrincipalValue;
 
     await client.query(
       `UPDATE users
-          SET cash_balance=$1,deposit_principal_remaining=$2,updated_at=CURRENT_TIMESTAMP
+          SET cash_balance=$1,deposit_principal_remaining=$2,withdrawal_wager_remaining=$3,updated_at=CURRENT_TIMESTAMP
         WHERE id=$3`,
-      [newCash,newDepositPrincipal,d.user_id]
+      [newCash,newDepositPrincipal,newWagerRemaining,d.user_id]
     );
 
     if(bonusValue>0){
@@ -230,12 +231,13 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
       const newCash=Number(u.cash_balance)+value;
       const depositPrincipalValue=Math.round(value*100)/100;
       const newDepositPrincipal=Number(u.deposit_principal_remaining||0)+depositPrincipalValue;
+      const newWagerRemaining=Number(u.withdrawal_wager_remaining||0)+depositPrincipalValue;
 
       await client.query(
         `UPDATE users
             SET cash_balance=$1,deposit_principal_remaining=$2,updated_at=CURRENT_TIMESTAMP
           WHERE id=$3`,
-        [newCash,newDepositPrincipal,userId]
+        [newCash,newDepositPrincipal,newWagerRemaining,userId]
       );
 
       if(bonusValue>0){
