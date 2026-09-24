@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
-import { applyPostBonusWager, applyDepositPrincipalWager } from "./finance.js";
+import { applyPostBonusWager, applyDepositPrincipalWager, applyWithdrawalWager } from "./finance.js";
 
 const TOTAL_SECTORS=80;
 const GROUP_SIZE=5;
@@ -84,6 +84,7 @@ export async function spinRoulette({userId,betAmount}){
 
     const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
     const depositPrincipalAfter=await applyDepositPrincipalWager({client,user,cashUsed});
+    const withdrawalWagerRemaining=await applyWithdrawalWager({client,user,betAmount:bet});
     await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newBonus,userId]);
 
     const spin=await client.query(
@@ -110,7 +111,7 @@ export async function spinRoulette({userId,betAmount}){
       id:spin.rows[0].id,sector,resultType:multiplier>0?"prize":"loss",multiplier,prize:payout,
       netResult:net,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,
       postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,
-      withdrawalBonusLock:wagerState.lock,depositPrincipalAfter,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
+      withdrawalBonusLock:wagerState.lock,depositPrincipalAfter,withdrawalWagerRemaining,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
     };
   }catch(error){
     try{await client.query("ROLLBACK")}catch{}
