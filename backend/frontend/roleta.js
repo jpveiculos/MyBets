@@ -1,14 +1,14 @@
-const TOTAL=96;
-const GROUP_SIZE=6;
+const TOTAL=80;
+const GROUP_SIZE=5;
 const PRIZE_COUNT=TOTAL/GROUP_SIZE;
 const GROUP_ANGLE=360/PRIZE_COUNT;
-// A fatia colorida ocupa metade do grupo; os 5 setores de perda
+// A fatia colorida ocupa metade do grupo; os 4 setores de perda
 // são comprimidos para que a área preta continue exatamente igual à colorida.
 const PRIZE_ANGLE=GROUP_ANGLE/2;
 const LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
 
 const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5,10];
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
 
 let MIN_BET=.50;
 let MAX_BET=100;
@@ -113,7 +113,7 @@ function drawWheel(){
   };
 
   // Visual: cada grupo mostra uma única fatia colorida e uma única
-  // fatia preta sólida. A divisão dos 5 setores de perda continua existindo
+  // fatia preta sólida. A divisão dos 4 setores de perda continua existindo
   // apenas na geometria lógica usada pelo sorteio e pelo ponteiro.
   for(let group=0;group<PRIZE_COUNT;group++){
     const prizeIndex=group*GROUP_SIZE;
