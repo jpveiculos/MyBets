@@ -367,7 +367,7 @@ function bindActions(){
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".history-user").forEach(b=>b.onclick=()=>openUserHistory(b.dataset.id));
- document.querySelectorAll(".add-cash").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo depositado:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
+ document.querySelectorAll(".add-cash").forEach(b=>b.onclick=async()=>{const v=prompt("Valor para adicionar ao saldo. O bônus da promoção será aplicado automaticamente:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"cash"})});
  document.querySelectorAll(".add-bonus").forEach(b=>b.onclick=async()=>{const v=prompt("Valor de bônus para este jogador:");if(v)await action("/api/admin/users/"+b.dataset.id+"/balance","POST",{amount:Number(v),kind:"bonus"})});
  document.querySelectorAll(".ban-user").forEach(b=>b.onclick=async()=>{const reason=prompt("Motivo do banimento:","Banimento administrativo");if(reason===null||!reason.trim())return;if(!confirm("Banir este usuário? O acesso será encerrado imediatamente."))return;await action("/api/admin/users/"+b.dataset.id+"/ban","POST",{reason:reason.trim()})});
  document.querySelectorAll(".unban-user").forEach(b=>b.onclick=async()=>{if(!confirm("Desbanir este usuário?"))return;await action("/api/admin/users/"+b.dataset.id+"/unban","POST",{})});
