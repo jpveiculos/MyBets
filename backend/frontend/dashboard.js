@@ -56,17 +56,31 @@ function buildPixPayload(){
   return payload+crc16(payload);
 }
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
+function showAddCreditsChoice(){
+  $("addCreditsChoice").classList.remove("hidden");
+  $("depositPromo").classList.add("hidden");
+  $("depositArea").classList.add("hidden");
+  $("withdrawArea").classList.add("hidden");
+  $("buyCreditsArea").classList.add("hidden");
+  $("financeTitle").textContent="Adicionar crédito";
+}
 function showDepositPromotion(){
+  $("addCreditsChoice").classList.add("hidden");
   $("depositPromo").classList.remove("hidden");
   $("depositArea").classList.add("hidden");
   $("withdrawArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
 }
 function showDepositPix(){
+  $("addCreditsChoice").classList.add("hidden");
   $("depositPromo").classList.add("hidden");
   $("depositArea").classList.remove("hidden");
   $("withdrawArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
+}
+async function openAddCredits(){
+  financeMode="add-credit";$("financeModal").classList.remove("hidden");
+  showAddCreditsChoice();
 }
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
@@ -124,6 +138,7 @@ async function openBuyCredits(){
     $("buyCreditsAmount").max=buyCreditsAvailable>0?buyCreditsAvailable.toFixed(2):"0.01";
     $("buyCreditsAmount").value="";
     $("buyCreditsMessage").textContent="";
+    $("addCreditsChoice").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("depositArea").classList.add("hidden");
     $("withdrawArea").classList.add("hidden");
@@ -145,7 +160,9 @@ $("buyCreditsConfirm").onclick=async()=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1200);
   }catch(e){m.style.color="#ff5d6c";m.textContent=e.message}
 };
-$("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
+$("addCreditsBtn").onclick=openAddCredits;
+$("usePlatformBalance").onclick=openBuyCredits;
+$("usePixDeposit").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 $("withdrawMax").onclick=()=>{
   if(withdrawableBalance>0) $("withdrawAmount").value=withdrawableBalance.toFixed(2);
 };
@@ -168,6 +185,6 @@ $("withdrawForm").onsubmit=async e=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1800);
   }catch(e){m.textContent=e.message}
 };
-$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden");$("buyCreditsArea").classList.add("hidden")};
+$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden");$("buyCreditsArea").classList.add("hidden");$("addCreditsChoice").classList.add("hidden")};
 $("logout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.href="/"};
 load();
