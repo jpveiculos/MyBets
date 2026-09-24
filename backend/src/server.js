@@ -155,8 +155,8 @@ app.post("/api/admin/withdrawals/:id/approve", requireAdmin, asyncRoute(async (r
 app.post("/api/admin/withdrawals/:id/reject", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await rejectWithdrawal({id:req.params.id,adminId:req.admin.id,rejectionReason:req.body.rejectionReason,adminNote:req.body.adminNote})});
 }));
-app.post("/api/admin/users/:id/balance", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,result:await adjustBalance({userId:req.params.id,amount:req.body.amount,kind:req.body.kind,adminId:req.admin.id,note:req.body.note})});
+app.post("/api/admin/users/:id/credits", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,result:await adjustCredits({userId:req.params.id,amount:req.body.amount,adminId:req.admin.id,note:req.body.note})});
 }));
 app.post("/api/admin/users/:id/ban", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await banUser({userId:req.params.id,adminId:req.admin.id,reason:req.body.reason})});
