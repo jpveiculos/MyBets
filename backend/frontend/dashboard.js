@@ -21,22 +21,15 @@ async function load(){
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const hasBonus=Number(a.account.bonus_balance)>0;
-    const withdrawalLocked=Boolean(a.account.withdrawal_bonus_lock);
-    const remaining=Math.max(0,Number(a.account.post_bonus_wager_requirement||0)-Number(a.account.post_bonus_wager_progress||0));
-    const depositPrincipal=Math.max(0,Number(a.account.deposit_principal_remaining||0));
-    $("withdrawBtn").disabled=hasBonus||withdrawalLocked||withdrawableBalance<=0;
-    $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":depositPrincipal>0?"Aposte o principal de depósito restante para liberar os ganhos.":withdrawableBalance<=0?"Ainda não há ganhos disponíveis para saque.":"Solicitar saque";
+    const unlockRemaining=Math.max(0,Number(a.account.withdrawal_unlock_remaining||0));
+    $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
+    $("withdrawBtn").title=unlockRemaining>0.001?"O saque será liberado quando os créditos de aposta chegarem a R$ 0,00.":"Solicitar saque";
     const hint=$("withdrawHint");
-    if(hint) hint.textContent=hasBonus
-      ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque. Principal do depósito ainda protegido: "+money(depositPrincipal)+". Aposte 100% do valor depositado para liberar essa parte."
-      : withdrawalLocked
-        ? "Bônus zerado. Meta pós-bônus: "+money(a.account.post_bonus_wager_progress||0)+" / "+money(a.account.post_bonus_wager_requirement||0)+". Falta "+money(remaining)+". Principal do depósito ainda protegido: "+money(depositPrincipal)+". Aposte 100% do valor depositado para liberar essa parte."
-        : depositPrincipal>0
-          ? "Principal do depósito ainda protegido: "+money(depositPrincipal)+". É necessário apostar 100% do valor depositado para liberar essa parte para saque."
-          : withdrawableBalance>0
-            ? "Ganhos disponíveis para saque: "+money(withdrawableBalance)+". Informe o valor e sua chave Pix."
-            : "Ainda não há ganhos disponíveis para saque.";
+    if(hint) hint.textContent=unlockRemaining>0.001
+      ? "Créditos de aposta restantes: "+money(unlockRemaining)+". Esse valor diminui a cada aposta. O saque será liberado quando chegar a R$ 0,00."
+      : withdrawableBalance>0
+        ? "Créditos de aposta: R$ 0,00. Saque liberado."
+        : "Créditos de aposta: R$ 0,00. Ainda não há saldo disponível para saque.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
@@ -102,18 +95,12 @@ async function openWithdraw(){
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const hasBonus=Number(a.account.bonus_balance||0)>0;
-    const withdrawalLocked=Boolean(a.account.withdrawal_bonus_lock);
-    const depositPrincipal=Math.max(0,Number(a.account.deposit_principal_remaining||0));
-    $("withdrawBtn").disabled=hasBonus||withdrawalLocked||withdrawableBalance<=0;
-    if(hasBonus||withdrawalLocked||withdrawableBalance<=0){
-      $("withdrawMessage").textContent=hasBonus
-        ? "O saque continua bloqueado enquanto houver bônus."
-        : withdrawalLocked
-          ? "O saque continua bloqueado até cumprir a meta pós-bônus."
-          : depositPrincipal>0
-            ? "O saldo depositado ainda não foi totalmente apostado. Ganhos ficam liberados conforme o principal é consumido."
-            : "Ainda não há ganhos disponíveis para saque.";
+    const unlockRemaining=Math.max(0,Number(a.account.withdrawal_unlock_remaining||0));
+    $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
+    if(unlockRemaining>0.001||withdrawableBalance<=0){
+      $("withdrawMessage").textContent=unlockRemaining>0.001
+        ? "Créditos de aposta restantes: "+money(unlockRemaining)+". O saque será liberado quando esse valor chegar a R$ 0,00."
+        : "Ainda não há saldo disponível para saque.";
     }
     if(withdrawableBalance<=0) return;
     financeMode="withdraw";
