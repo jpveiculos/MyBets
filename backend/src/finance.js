@@ -64,7 +64,11 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   const user = result.rows[0];
   if (!user) throw new Error("Usuário não encontrado.");
 
-  const creditsAdded = money(value * DEPOSIT_CREDIT_MULTIPLIER);
+  const settingsResult = await client.query("SELECT setting_value FROM site_settings WHERE setting_key=$1 LIMIT 1",["deposit_bonus_percent"]);
+  const bonusPercent = Number(settingsResult.rows[0]?.setting_value ?? DEPOSIT_BONUS_PERCENT);
+  if (!Number.isFinite(bonusPercent) || bonusPercent < 0) throw new Error("A porcentagem de bônus de depósito está inválida.");
+  const multiplier = 1 + (bonusPercent / 100);
+  const creditsAdded = money(value * multiplier);
   const newCredits = money(Number(user.play_credits || 0) + creditsAdded);
 
   await client.query(
@@ -75,10 +79,10 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   await client.query(
     `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
      VALUES($1,'deposit_credits',$2,$3,$4,$5)`,
-    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (depósito + 10% de bônus).`]
+    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (depósito + ${bonusPercent.toFixed(2)}% de bônus).`]
   );
 
-  return {depositAmount:value,creditsAdded,newPlayCredits:newCredits};
+  return {depositAmount:value,bonusPercent,creditsAdded,newPlayCredits:newCredits};
 }
 
 export async function consumePlayCredits({client,userId,betAmount}) {
