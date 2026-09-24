@@ -24,6 +24,8 @@ async function load(){
     $("withdrawMax").disabled=withdrawableBalance<=0;
     $("withdrawBtn").disabled=withdrawableBalance<=0;
     $("withdrawBtn").title=withdrawableBalance>0?"Solicitar saque":"Não há saldo disponível para saque";
+    $("buyCreditsBtn").disabled=withdrawableBalance<=0;
+    $("buyCreditsBtn").title=withdrawableBalance>0?"Comprar créditos com o saldo disponível":"Não há saldo disponível para comprar créditos";
     const hint=$("withdrawHint");
     if(hint) hint.textContent="Saque via Pix";
   }catch(e){location.href="/"}
