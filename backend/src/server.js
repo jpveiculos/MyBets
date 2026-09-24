@@ -207,6 +207,9 @@ app.get("/api/admin/users/:id/history", requireAdmin, asyncRoute(async (req,res)
 app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,settings:await getSettings()});
 }));
+app.get("/api/admin/roulette/config", requireAdmin, asyncRoute(async (_req,res) => {
+  res.json({ok:true,roulette:await rouletteConfig()});
+}));
 app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => {
   const editableSettings=new Set([
     "pix_enabled","pix_key","pix_key_type","pix_receiver_name","pix_city","pix_description",
