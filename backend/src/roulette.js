@@ -78,14 +78,11 @@ export async function spinRoulette({userId,betAmount}){
     const cashAfter=payout>0?await addWithdrawableWinnings({client,userId,amount:payout}):Number(user.cash_balance||0);
 
     const spin=await client.query(
-      `INSERT INTO spins(
-         user_id,result,multiplier,bet_amount,payout_amount,
-         bonus_used,cash_used,cash_balance_after,bonus_balance_after,
-         post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-         withdrawal_bonus_lock_after,deposit_principal_after
-       ) VALUES($1,$2,$3,$4,$5,0,$4,$6,0,0,0,FALSE,0)
-       RETURNING id,created_at`,
-      [userId,sector,multiplier,bet,payout,cashAfter]
+      \`INSERT INTO spins(
+         user_id,game_id,result,result_code,multiplier,bet_amount,payout_amount
+       ) VALUES($1,'roulette',$2,$3,$4,$5,$6)
+       RETURNING id,created_at\`,
+      [userId,sector,multiplier>0?'PRIZE':'LOSS',multiplier,bet,payout]
     );
 
     await client.query(
