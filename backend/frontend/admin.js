@@ -251,7 +251,7 @@ function renderRouletteSettings(settings,roulette){
   const dist=roulette.prizeDistribution||{};
   const p=roulette.probability||{};
   if(structure)structure.textContent=`${total} setores: ${loss} de perda e ${prizes} premiados. A fatia preta comprime os setores lógicos de perda e mantém a área visual equivalente à fatia colorida.`;
-  if(probabilities)probabilities.textContent=`2x: ${Number(p[2]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 3x: ${Number(p[3]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 4x: ${Number(p[4]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 5x: ${Number(p[5]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 10x: ${Number(p[10]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`;
+  if(probabilities)probabilities.textContent=`2x: ${Number(p[2]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 3x: ${Number(p[3]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 4x: ${Number(p[4]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 5x: ${Number(p[5]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`;
  }
 }
 function settingLabel(key){
