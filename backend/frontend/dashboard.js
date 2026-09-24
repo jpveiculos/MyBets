@@ -148,7 +148,6 @@ async function openBuyCredits(){
     $("financeModal").classList.remove("hidden");
   }catch(e){alert(e.message)}
 }
-$("buyCreditsBtn").onclick=openBuyCredits;
 $("buyCreditsConfirm").onclick=async()=>{
   const amount=Number($("buyCreditsAmount").value);
   const m=$("buyCreditsMessage");
