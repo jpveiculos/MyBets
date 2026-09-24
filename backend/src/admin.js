@@ -1,5 +1,5 @@
 import { pool } from "./db.js";
-import { grantBonus } from "./finance.js";
+import { grantBonus, addDepositCredits, DEPOSIT_CREDIT_MULTIPLIER } from "./finance.js";
 
 export async function listUsers() {
   const result=await pool.query(
@@ -49,41 +49,12 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
       ? declaredAmount
       : Math.round(Number(approvedAmount)*100)/100;
 
-    if(!Number.isFinite(value) || value<=0) {
-      throw new Error("O valor confirmado do depósito é inválido.");
-    }
+    if(!Number.isFinite(value) || value<=0) throw new Error("O valor confirmado do depósito é inválido.");
 
-    const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[d.user_id]);
-    const user=u.rows[0];
-    if(!user) throw new Error("Usuário não encontrado.");
+    const userResult=await client.query("SELECT id,play_credits FROM users WHERE id=$1 FOR UPDATE",[d.user_id]);
+    if(!userResult.rows[0]) throw new Error("Usuário não encontrado.");
 
-    const bonusSetting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='deposit_bonus_percent'");
-    const bonusPercent=Math.max(0,Number(bonusSetting.rows[0]?.setting_value ?? 100));
-    if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
-    const bonusValue=Math.round(value*bonusPercent)/100;
-    const newCash=Number(user.cash_balance)+value;
-    const depositPrincipalPercent=100;
-    const depositPrincipalValue=Math.round(value*depositPrincipalPercent)/100;
-    const newDepositPrincipal=Number(user.deposit_principal_remaining||0)+depositPrincipalValue;
-    const newWagerRemaining=Number(user.withdrawal_wager_remaining||0)+depositPrincipalValue;
-
-    await client.query(
-      `UPDATE users
-          SET cash_balance=$1,deposit_principal_remaining=$2,withdrawal_wager_remaining=$3,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$4`,
-      [newCash,newDepositPrincipal,newWagerRemaining,d.user_id]
-    );
-
-    if(bonusValue>0){
-      await grantBonus({
-        client,
-        userId:d.user_id,
-        amount:bonusValue,
-        type:"deposit_bonus",
-        referenceId:id,
-        note:`Bônus de depósito de ${bonusPercent.toFixed(2)}% aplicado sobre R$ ${value.toFixed(2)}.`
-      });
-    }
+    const creditState=await addDepositCredits({client,userId:d.user_id,amount:value,referenceId:id});
 
     await client.query(
       `UPDATE deposits
@@ -98,29 +69,27 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     );
 
     await client.query(
-      `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
-       VALUES($1,'deposit_approved',$2,$3,$4,$5)`,
-      [
-        d.user_id,
-        value,
-        newCash+Number(user.bonus_balance),
-        id,
-        `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; créditos: R$ ${value.toFixed(2)}; principal bloqueado para saque: R$ ${depositPrincipalValue.toFixed(2)} (100%); bônus de recarga: R$ ${bonusValue.toFixed(2)}.`
-      ]
-    );
-
-    await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
        VALUES('admin',$1,'deposit_approved','deposit',$2,$3)`,
-      [
-        adminId,
-        id,
-        JSON.stringify({declaredAmount,approvedAmount:value,depositPrincipalPercent,depositPrincipalValue,bonusPercent,bonusValue,adminNote})
-      ]
+      [adminId,id,JSON.stringify({
+        declaredAmount,
+        approvedAmount:value,
+        creditMultiplier:DEPOSIT_CREDIT_MULTIPLIER,
+        creditsAdded:creditState.creditsAdded,
+        adminNote
+      })]
     );
 
     await client.query("COMMIT");
-    return {id,status:"approved",declaredAmount,approvedAmount:value,bonusPercent,bonusValue,totalCredited:value+bonusValue};
+    return {
+      id,
+      status:"approved",
+      declaredAmount,
+      approvedAmount:value,
+      creditMultiplier:DEPOSIT_CREDIT_MULTIPLIER,
+      creditsAdded:creditState.creditsAdded,
+      totalCredits:creditState.newPlayCredits
+    };
   } catch(e){
     await client.query("ROLLBACK");
     throw e;
@@ -128,6 +97,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     client.release();
   }
 }
+
 
 export async function rejectDeposit({id,adminId,adminNote=null}) {
   const client=await pool.connect();
@@ -213,93 +183,48 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
 export async function adjustBalance({userId,amount,kind="cash",note=null,adminId}) {
   const value=Number(amount);
   if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
-  if(!["cash","bonus"].includes(kind)) throw new Error("Tipo de saldo inválido.");
+  if(!["cash","bonus"].includes(kind)) throw new Error("Tipo de ajuste inválido.");
+
   const client=await pool.connect();
   try {
     await client.query("BEGIN");
     const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
-    const u=r.rows[0]; if(!u) throw new Error("Usuário não encontrado.");
+    const u=r.rows[0];
+    if(!u) throw new Error("Usuário não encontrado.");
 
-    // "+ saldo" segue a mesma regra financeira de uma recarga aprovada:
-    // o percentual configurado em deposit_bonus_percent é aplicado automaticamente.
-    if(kind==="cash" && value>0){
-      const bonusSetting=await client.query("SELECT setting_value FROM site_settings WHERE setting_key='deposit_bonus_percent'");
-      const bonusPercent=Math.max(0,Number(bonusSetting.rows[0]?.setting_value ?? 100));
-      if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
-      const bonusValue=Math.round(value*bonusPercent)/100;
-
-      const newCash=Number(u.cash_balance)+value;
-      const depositPrincipalValue=Math.round(value*100)/100;
-      const newDepositPrincipal=Number(u.deposit_principal_remaining||0)+depositPrincipalValue;
-      const newWagerRemaining=Number(u.withdrawal_wager_remaining||0)+depositPrincipalValue;
-
-      await client.query(
-        `UPDATE users
-            SET cash_balance=$1,deposit_principal_remaining=$2,withdrawal_wager_remaining=$3,updated_at=CURRENT_TIMESTAMP
-          WHERE id=$4`,
-        [newCash,newDepositPrincipal,newWagerRemaining,userId]
-      );
-
-      if(bonusValue>0){
-        await grantBonus({
-          client,
-          userId,
-          amount:bonusValue,
-          type:"deposit_bonus",
-          note:note||`Bônus automático de ${bonusPercent.toFixed(2)}% aplicado ao saldo adicionado pelo administrador.`
-        });
-      }
-
+    if(kind==="cash"){
+      const next=Number(u.cash_balance||0)+value;
+      if(next<0) throw new Error("O valor disponível para saque não pode ficar negativo.");
+      await client.query("UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[next,userId]);
       await client.query(
         `INSERT INTO transactions(user_id,type,amount,balance_after,note)
          VALUES($1,'admin_cash_adjustment',$2,$3,$4)`,
-        [
-          userId,
-          value,
-          newCash+Number(u.bonus_balance)+bonusValue-Number(u.reserved_balance),
-          note||`Saldo adicionado pelo administrador com bônus automático de ${bonusPercent.toFixed(2)}%: R$ ${bonusValue.toFixed(2)}.`
-        ]
+        [userId,value,next,note||"Ajuste manual do valor disponível para saque pelo administrador."]
       );
-      await client.query(
-        `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-         VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
-        [adminId,userId,JSON.stringify({amount:value,kind,note,bonusPercent,bonusValue,depositPrincipalPercent:100,depositPrincipalValue})]
-      );
-      await client.query("COMMIT");
-      return {userId,kind,amount:value,newBalance:newCash,bonusPercent,bonusValue,totalCredited:value+bonusValue};
-    }
-
-    if(kind==="bonus" && value>0){
-      const granted=await grantBonus({
-        client,
-        userId,
-        amount:value,
-        type:"admin_bonus_adjustment",
-        note:note||"Bônus promocional concedido pelo administrador."
-      });
       await client.query(
         `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
          VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
         [adminId,userId,JSON.stringify({amount:value,kind,note})]
       );
       await client.query("COMMIT");
-      return {userId,kind,amount:value,newBalance:granted.bonusBalance};
+      return {userId,kind,amount:value,newBalance:next};
     }
 
-    const column=kind==="cash"?"cash_balance":"bonus_balance";
-    const next=Number(u[column])+value;
-    if(next<0) throw new Error("O saldo não pode ficar negativo.");
-    await client.query(`UPDATE users SET ${column}=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2`,[next,userId]);
+    const nextCredits=Number(u.play_credits||0)+value;
+    if(nextCredits<0) throw new Error("Os créditos para jogar não podem ficar negativos.");
+    await client.query("UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[nextCredits,userId]);
     await client.query(
       `INSERT INTO transactions(user_id,type,amount,balance_after,note)
-       VALUES($1,$2,$3,$4,$5)`,
-      [userId,kind==="cash"?"admin_cash_adjustment":"admin_bonus_adjustment",value,next+Number(u[column==="cash_balance"?"bonus_balance":"cash_balance"]),note||"Ajuste manual do administrador"]);
+       VALUES($1,'admin_credit_adjustment',$2,$3,$4)`,
+      [userId,value,nextCredits,note||"Ajuste manual dos créditos para jogar pelo administrador."]
+    );
     await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-       VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
-      [adminId,userId,JSON.stringify({amount:value,kind,note})]);
+       VALUES('admin',$1,'credit_adjustment','user',$2,$3)`,
+      [adminId,userId,JSON.stringify({amount:value,kind,note})]
+    );
     await client.query("COMMIT");
-    return {userId,kind,amount:value,newBalance:next};
+    return {userId,kind,amount:value,newCredits:nextCredits};
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
