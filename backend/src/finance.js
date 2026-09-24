@@ -1,7 +1,8 @@
 import { pool } from "./db.js";
 import { sendAdminPush } from "./push.js";
 
-export const DEPOSIT_CREDIT_MULTIPLIER = 3;
+export const DEPOSIT_BONUS_PERCENT = 10;
+export const DEPOSIT_CREDIT_MULTIPLIER = 1 + (DEPOSIT_BONUS_PERCENT / 100);
 
 function money(value) {
   const n = Number(value);
@@ -74,7 +75,7 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   await client.query(
     `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
      VALUES($1,'deposit_credits',$2,$3,$4,$5)`,
-    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (3x).`]
+    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (depósito + 10% de bônus).`]
   );
 
   return {depositAmount:value,creditsAdded,newPlayCredits:newCredits};
