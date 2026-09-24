@@ -137,7 +137,8 @@ function drawWheel(){
     svg.appendChild(lossPath);
 
     const label=document.createElementNS(ns,"text");
-    const xy=polar(200,200,146,prizeGeometry.center);
+    const labelAngle=prizeGeometry.center+5;
+    const xy=polar(200,200,146,labelAngle);
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
@@ -152,7 +153,7 @@ function drawWheel(){
     label.setAttribute("class","prize-label");
     // O valor acompanha o eixo da própria fatia: 0° no topo,
     // aumentando no sentido horário junto com a geometria da roleta.
-    label.setAttribute("transform",`rotate(${prizeGeometry.center+270} ${xy[0]} ${xy[1]})`);
+    label.setAttribute("transform",`rotate(${labelAngle+270} ${xy[0]} ${xy[1]})`);
     label.textContent=String(multiplier)+"x";
     svg.appendChild(label);
   }
