@@ -2,7 +2,6 @@ import { pool } from "./db.js";
 import { sendAdminPush } from "./push.js";
 
 export const DEPOSIT_BONUS_PERCENT = 10;
-export const DEPOSIT_CREDIT_MULTIPLIER = 1 + (DEPOSIT_BONUS_PERCENT / 100);
 
 function money(value) {
   const n = Number(value);
