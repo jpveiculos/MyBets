@@ -4,6 +4,7 @@ let playerUsername="";
 let playerId="";
 let playCredits=0;
 let withdrawableBalance=0;
+let buyCreditsAvailable=0;
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 async function api(url,options={}){const r=await fetch(url,{credentials:"same-origin",...options});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.message||"Erro na operação.");return d}
@@ -57,11 +58,13 @@ function showDepositPromotion(){
   $("depositPromo").classList.remove("hidden");
   $("depositArea").classList.add("hidden");
   $("withdrawArea").classList.add("hidden");
+  $("buyCreditsArea").classList.add("hidden");
 }
 function showDepositPix(){
   $("depositPromo").classList.add("hidden");
   $("depositArea").classList.remove("hidden");
   $("withdrawArea").classList.add("hidden");
+  $("buyCreditsArea").classList.add("hidden");
 }
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
@@ -101,6 +104,7 @@ async function openWithdraw(){
     $("financeTitle").textContent="Solicitar saque";
     $("depositArea").classList.add("hidden");
     $("withdrawArea").classList.remove("hidden");
+    $("buyCreditsArea").classList.add("hidden");
     $("withdrawMessage").textContent="";
     $("withdrawForm").reset();
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
@@ -110,6 +114,35 @@ async function openWithdraw(){
     alert(e.message);
   }
 }
+async function openBuyCredits(){
+  try{
+    const a=await api("/api/account");
+    buyCreditsAvailable=Number(a.account.withdrawable_balance||0);
+    $("buyCreditsAvailable").textContent=money(buyCreditsAvailable);
+    $("buyCreditsAmount").max=buyCreditsAvailable>0?buyCreditsAvailable.toFixed(2):"0.01";
+    $("buyCreditsAmount").value="";
+    $("buyCreditsMessage").textContent="";
+    $("depositPromo").classList.add("hidden");
+    $("depositArea").classList.add("hidden");
+    $("withdrawArea").classList.add("hidden");
+    $("buyCreditsArea").classList.remove("hidden");
+    $("financeTitle").textContent="Comprar créditos";
+    $("financeModal").classList.remove("hidden");
+  }catch(e){alert(e.message)}
+}
+$("buyCreditsBtn").onclick=openBuyCredits;
+$("buyCreditsConfirm").onclick=async()=>{
+  const amount=Number($("buyCreditsAmount").value);
+  const m=$("buyCreditsMessage");
+  if(!amount||amount<=0){m.textContent="Informe o valor para comprar créditos.";return}
+  if(amount>buyCreditsAvailable){m.textContent="O valor é maior que o saldo disponível.";return}
+  try{
+    const d=await api("/api/credits/purchase",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({amount})});
+    m.style.color="#35c58a";
+    m.textContent=amount.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})+" convertido em "+Number(d.result.creditsAdded).toLocaleString("pt-BR",{maximumFractionDigits:2})+" créditos.";
+    setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1200);
+  }catch(e){m.style.color="#ff5d6c";m.textContent=e.message}
+};
 $("depositBtn").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 $("withdrawMax").onclick=()=>{
   if(withdrawableBalance>0) $("withdrawAmount").value=withdrawableBalance.toFixed(2);
@@ -133,6 +166,6 @@ $("withdrawForm").onsubmit=async e=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1800);
   }catch(e){m.textContent=e.message}
 };
-$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden")};
+$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden");$("buyCreditsArea").classList.add("hidden")};
 $("logout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.href="/"};
 load();
