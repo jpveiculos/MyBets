@@ -1,6 +1,8 @@
 import { pool } from "./db.js";
 import { sendAdminPush } from "./push.js";
 
+export const DEPOSIT_CREDIT_MULTIPLIER = 3;
+
 function money(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) throw new Error("Valor financeiro inválido.");
@@ -10,13 +12,13 @@ function money(value) {
 export async function getAccount(userId) {
   const result = await pool.query(
     `SELECT id, username,
-            cash_balance, bonus_balance, reserved_balance, deposit_principal_remaining,
-            (cash_balance + bonus_balance) AS total_balance,
-            (cash_balance - reserved_balance + bonus_balance) AS available_balance,
-            GREATEST(0, cash_balance - reserved_balance - deposit_principal_remaining) AS withdrawable_balance,
-            bonus_wager_progress, bonus_origin_amount, post_bonus_wager_requirement,
-            post_bonus_wager_progress, withdrawal_bonus_lock, withdrawal_wager_remaining,
-            COALESCE(withdrawal_wager_remaining,0) AS withdrawal_unlock_remaining
+            cash_balance,
+            reserved_balance,
+            play_credits,
+            (cash_balance + play_credits) AS total_balance,
+            play_credits AS available_balance,
+            GREATEST(0, cash_balance - reserved_balance) AS withdrawable_balance,
+            play_credits AS withdrawal_unlock_remaining
        FROM users
       WHERE id = $1`,
     [userId]
@@ -25,79 +27,108 @@ export async function getAccount(userId) {
 }
 
 export async function grantBonus({client,userId,amount,type="promotional_bonus",note=null,referenceId=null}) {
-  const value=money(amount);
-  if(value<=0) throw new Error("O valor do bônus deve ser maior que zero.");
+  const value = money(amount);
+  if (value <= 0) throw new Error("O valor do bônus deve ser maior que zero.");
 
-  const result=await client.query(
-    "SELECT id,cash_balance,bonus_balance,reserved_balance,bonus_origin_amount,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_wager_remaining FROM users WHERE id=$1 FOR UPDATE",
+  const result = await client.query(
+    "SELECT id,play_credits FROM users WHERE id=$1 FOR UPDATE",
     [userId]
   );
-  const user=result.rows[0];
-  if(!user) throw new Error("Usuário não encontrado.");
+  const user = result.rows[0];
+  if (!user) throw new Error("Usuário não encontrado.");
 
-  const newBonus=money(Number(user.bonus_balance||0)+value);
-  const newOrigin=money(Number(user.bonus_origin_amount||0)+value);
-  const newRequirement=money(Number(user.post_bonus_wager_requirement||0)+value);
-  const newProgress=money(Math.min(newRequirement,Number(user.post_bonus_wager_progress||0)));
-  const newWagerRemaining=money(Number(user.withdrawal_wager_remaining||0)+(value*2));
+  const newCredits = money(Number(user.play_credits || 0) + value);
 
   await client.query(
-    "UPDATE users SET bonus_balance=$1,bonus_origin_amount=$2,post_bonus_wager_requirement=$3,post_bonus_wager_progress=$4,withdrawal_bonus_lock=TRUE,withdrawal_wager_remaining=$5,updated_at=CURRENT_TIMESTAMP WHERE id=$6",
-    [newBonus,newOrigin,newRequirement,newProgress,newWagerRemaining,userId]
+    "UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
+    [newCredits,userId]
   );
 
   await client.query(
     "INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)",
-    [userId,type,value,money(Number(user.cash_balance||0)+newBonus-Number(user.reserved_balance||0)),referenceId,note||"Bônus promocional concedido."]
+    [userId,type,value,newCredits,referenceId,note||"Créditos promocionais concedidos."]
+  );
+
+  return {bonusValue:value,playCredits:newCredits};
+}
+
+export async function addDepositCredits({client,userId,amount,referenceId=null}) {
+  const value = money(amount);
+  if (value <= 0) throw new Error("O valor do depósito deve ser maior que zero.");
+
+  const result = await client.query(
+    "SELECT id,play_credits FROM users WHERE id=$1 FOR UPDATE",
+    [userId]
+  );
+  const user = result.rows[0];
+  if (!user) throw new Error("Usuário não encontrado.");
+
+  const creditsAdded = money(value * DEPOSIT_CREDIT_MULTIPLIER);
+  const newCredits = money(Number(user.play_credits || 0) + creditsAdded);
+
+  await client.query(
+    "UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
+    [newCredits,userId]
   );
 
   await client.query(
-    `INSERT INTO bonus_events(
-       user_id,type,amount,bonus_balance_after,bonus_origin_amount_after,
-       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-       withdrawal_bonus_lock_after,reference_id,note
-     ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-    [
-      userId,type,value,newBonus,newOrigin,newRequirement,newProgress,
-      true,referenceId,note||"Bônus promocional concedido."
-    ]
+    `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
+     VALUES($1,'deposit_credits',$2,$3,$4,$5)`,
+    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (3x).`]
   );
 
-  return {bonusValue:value,bonusBalance:newBonus,bonusOriginAmount:newOrigin,postBonusWagerRequirement:newRequirement,postBonusWagerProgress:newProgress,withdrawalBonusLock:true,withdrawalWagerRemaining:newWagerRemaining};
-}
-export async function applyWithdrawalWager({client,user,betAmount}) {
-  const remaining=money(Math.max(0,Number(user.withdrawal_wager_remaining||0)-Number(betAmount||0)));
-  await client.query("UPDATE users SET withdrawal_wager_remaining=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[remaining,user.id]);
-  return remaining;
+  return {depositAmount:value,creditsAdded,newPlayCredits:newCredits};
 }
 
-export async function applyDepositPrincipalWager({client,user,cashUsed}) {
-  const current=Number(user.deposit_principal_remaining||0);
-  const used=Number(cashUsed||0);
-  const remaining=Number(Math.max(0,current-used).toFixed(2));
+export async function consumePlayCredits({client,userId,betAmount}) {
+  const bet = money(betAmount);
+  if (bet <= 0) throw new Error("O valor da aposta deve ser maior que zero.");
+
+  const result = await client.query(
+    "SELECT id,play_credits FROM users WHERE id=$1 FOR UPDATE",
+    [userId]
+  );
+  const user = result.rows[0];
+  if (!user) throw new Error("Usuário não encontrado.");
+
+  const credits = money(user.play_credits || 0);
+  if (credits < bet) throw new Error("Créditos para jogar insuficientes.");
+
+  const remaining = money(credits - bet);
+
   await client.query(
-    "UPDATE users SET deposit_principal_remaining=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
-    [remaining,user.id]
+    "UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
+    [remaining,userId]
   );
+
   return remaining;
 }
 
-export async function applyPostBonusWager({client,user,betAmount,bonusUsed}) {
-  const newBonus=Number((Number(user.bonus_balance||0)-Number(bonusUsed||0)).toFixed(2));
-  let progress=Number(user.post_bonus_wager_progress||0),lock=Boolean(user.withdrawal_bonus_lock);
-  const requirement=Number(user.post_bonus_wager_requirement||0);
-  if(lock && newBonus<=0 && requirement>0){
-    const wagerAfterBonus=Number(bonusUsed||0)>0?Math.max(0,Number(betAmount)-Number(bonusUsed)):Number(betAmount);
-    progress=Number(Math.min(requirement,progress+wagerAfterBonus).toFixed(2));
-    if(progress>=requirement)lock=false;
-  }
-  await client.query("UPDATE users SET post_bonus_wager_progress=$1,withdrawal_bonus_lock=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3",[progress,lock,user.id]);
-  return {progress,requirement,lock};
+export async function addWithdrawableWinnings({client,userId,amount}) {
+  const value = money(amount);
+  if (value <= 0) return 0;
+
+  const result = await client.query(
+    "SELECT id,cash_balance FROM users WHERE id=$1 FOR UPDATE",
+    [userId]
+  );
+  const user = result.rows[0];
+  if (!user) throw new Error("Usuário não encontrado.");
+
+  const newCash = money(Number(user.cash_balance || 0) + value);
+
+  await client.query(
+    "UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",
+    [newCash,userId]
+  );
+
+  return newCash;
 }
 
 export async function requestDeposit({ userId, amount, playerNote = null }) {
   const value = money(amount);
   if (value <= 0) throw new Error("O valor do depósito deve ser maior que zero.");
+
   const enabled = await pool.query("SELECT setting_value FROM site_settings WHERE setting_key='pix_enabled'");
   if (String(enabled.rows[0]?.setting_value || "true") !== "true") throw new Error("Depósitos via Pix estão desativados.");
 
@@ -108,10 +139,10 @@ export async function requestDeposit({ userId, amount, playerNote = null }) {
     [userId, value, playerNote]
   );
 
-  const deposit=result.rows[0];
-  const player=await pool.query("SELECT username FROM users WHERE id=$1",[userId]);
-  const username=player.rows[0]?.username||`ID #${userId}`;
-  const pending=await pool.query("SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending')::int + (SELECT COUNT(*) FROM withdrawals WHERE status='pending')::int AS count");
+  const deposit = result.rows[0];
+  const player = await pool.query("SELECT username FROM users WHERE id=$1",[userId]);
+  const username = player.rows[0]?.username || `ID #${userId}`;
+  const pending = await pool.query("SELECT (SELECT COUNT(*) FROM deposits WHERE status='pending')::int + (SELECT COUNT(*) FROM withdrawals WHERE status='pending')::int AS count");
   try {
     await sendAdminPush({title:"MyBets • Novo depósito",body:`Jogador ${username} • depósito #${deposit.id} aguardando conferência.`,tag:"new-deposit",unreadCount:Number(pending.rows[0].count)});
   } catch (error) {
@@ -131,8 +162,7 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     await client.query("BEGIN");
 
     const userResult = await client.query(
-      `SELECT id, cash_balance, bonus_balance, reserved_balance, deposit_principal_remaining,
-              bonus_wager_progress, withdrawal_bonus_lock, post_bonus_wager_progress, post_bonus_wager_requirement
+      `SELECT id, cash_balance, reserved_balance, play_credits
          FROM users
         WHERE id = $1
         FOR UPDATE`,
@@ -142,15 +172,12 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     const user = userResult.rows[0];
     if (!user) throw new Error("Usuário não encontrado.");
 
-    const availableCash = Number(user.cash_balance) - Number(user.reserved_balance);
-    const withdrawableCash = Math.max(0, availableCash - Number(user.deposit_principal_remaining||0));
-    if (value > withdrawableCash) {
-      throw new Error("Esse valor inclui a parte do depósito ainda bloqueada. Aposte 100% do valor depositado para liberar essa parte; depois de cumprir as regras do bônus, o saque poderá incluir o valor depositado liberado e os ganhos gerados nas apostas.");
+    const availableCash = Math.max(0, Number(user.cash_balance) - Number(user.reserved_balance));
+    if (Number(user.play_credits || 0) > 0.001) {
+      throw new Error("Ainda faltam créditos para jogar. O saque será liberado quando os créditos chegarem a 0.");
     }
-
-    const unlockRemaining=Number(user.withdrawal_wager_remaining||0);
-    if (unlockRemaining>0.001) {
-      throw new Error("Ainda falta apostar R$ "+unlockRemaining.toFixed(2).replace(".",",")+" para liberar o botão de saque.");
+    if (value > availableCash) {
+      throw new Error("O valor solicitado é maior que o saldo disponível para saque.");
     }
 
     await client.query(
@@ -176,9 +203,9 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
       [
         userId,
         value,
-        Number(user.cash_balance) + Number(user.bonus_balance) - Number(user.reserved_balance) - value,
+        availableCash - value,
         withdrawal.rows[0].id,
-        "Saldo reservado para saque"
+        "Valor reservado para saque"
       ]
     );
 
@@ -197,7 +224,6 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
     client.release();
   }
 }
-
 
 export async function getTransactions(userId) {
   const result = await pool.query(
