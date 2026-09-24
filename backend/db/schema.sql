@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
   post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0,
   post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
   withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE,
+  withdrawal_wager_remaining NUMERIC(12,2) NOT NULL DEFAULT 0,
   is_banned BOOLEAN NOT NULL DEFAULT FALSE,
   banned_at TIMESTAMP,
   banned_reason TEXT,
@@ -213,6 +214,8 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_wager_remaining NUMERIC(12,2) NOT NULL DEFAULT 0;
+UPDATE users SET withdrawal_wager_remaining=GREATEST(0,COALESCE(bonus_balance,0)+COALESCE(deposit_principal_remaining,0)+GREATEST(0,COALESCE(post_bonus_wager_requirement,0)-COALESCE(post_bonus_wager_progress,0))) WHERE withdrawal_wager_remaining=0;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0;
 UPDATE users u
    SET deposit_principal_remaining=GREATEST(
