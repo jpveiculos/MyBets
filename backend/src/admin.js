@@ -212,34 +212,6 @@ export async function addBonusCredits({userId,amount,note=null,adminId}) {
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
-export async function adjustCredits({userId,amount,note=null,adminId}) {
-  const value=Number(amount);
-  if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
-
-  const client=await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
-    const u=r.rows[0];
-    if(!u) throw new Error("Usuário não encontrado.");
-
-    const nextCredits=Number(u.play_credits||0)+value;
-    if(nextCredits<0) throw new Error("Os créditos para jogar não podem ficar negativos.");
-    await client.query("UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[nextCredits,userId]);
-    await client.query(
-      `INSERT INTO transactions(user_id,type,amount,balance_after,note)
-       VALUES($1,'admin_credit_adjustment',$2,$3,$4)`,
-      [userId,value,nextCredits,note||"Ajuste manual dos créditos para jogar pelo administrador."]
-    );
-    await client.query(
-      `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-       VALUES('admin',$1,'credit_adjustment','user',$2,$3)`,
-      [adminId,userId,JSON.stringify({amount:value,note})]
-    );
-    await client.query("COMMIT");
-    return {userId,amount:value,newCredits:nextCredits};
-  } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
-}
 
 export async function getSettings() {
   const r=await pool.query("SELECT setting_key,setting_value,updated_at FROM site_settings ORDER BY setting_key");
