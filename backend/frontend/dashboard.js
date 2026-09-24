@@ -2,7 +2,7 @@ let financeMode="deposit";
 let pixSettings=null;
 let playerUsername="";
 let playerId="";
-let availableBalance=0;
+let playCredits=0;
 let withdrawableBalance=0;
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -12,24 +12,24 @@ async function load(){
     const a=await api("/api/account");
     playerUsername=a.account.username;
     playerId=String(a.account.id);
-    availableBalance=Number(a.account.available_balance||0);
+    playCredits=Number(a.account.play_credits||0);
     withdrawableBalance=Number(a.account.withdrawable_balance||0);
     $("welcome").textContent="Olá, "+playerUsername;
-    $("balance").textContent=money(availableBalance);
+    $("playCredits").textContent=playCredits.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
+    $("balance").textContent=money(withdrawableBalance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
-    $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const unlockRemaining=Math.max(0,Number(a.account.withdrawal_unlock_remaining||0));
+    const unlockRemaining=Math.max(0,Number(a.account.play_credits||0));
     $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
-    $("withdrawBtn").title=unlockRemaining>0.001?"O saque será liberado quando os créditos de aposta chegarem a R$ 0,00.":"Solicitar saque";
+    $("withdrawBtn").title=unlockRemaining>0.001?"O saque será liberado quando os créditos para jogar chegarem a 0.":"Solicitar saque";
     const hint=$("withdrawHint");
     if(hint) hint.textContent=unlockRemaining>0.001
-      ? "Ainda falta apostar "+money(unlockRemaining)+" para liberar o botão de saque."
+      ? "Ainda faltam "+unlockRemaining.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2})+" créditos para liberar o botão de saque."
       : withdrawableBalance>0
         ? "Saque liberado."
-        : "Créditos de aposta: R$ 0,00. Ainda não há saldo disponível para saque.";
+        : "Os créditos para jogar estão em 0. Ainda não há saldo disponível para saque.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
@@ -87,19 +87,19 @@ function updateQr(){
 async function openWithdraw(){
   try{
     const a=await api("/api/account");
-    availableBalance=Number(a.account.available_balance||0);
+    playCredits=Number(a.account.play_credits||0);
     withdrawableBalance=Number(a.account.withdrawable_balance||0);
-    $("balance").textContent=money(availableBalance);
+    $("playCredits").textContent=playCredits.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
+    $("balance").textContent=money(withdrawableBalance);
     $("reserved").textContent="Reservado: "+money(a.account.reserved_balance);
-    $("bonus").textContent="Bônus: "+money(a.account.bonus_balance);
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const unlockRemaining=Math.max(0,Number(a.account.withdrawal_unlock_remaining||0));
+    const unlockRemaining=Math.max(0,Number(a.account.play_credits||0));
     $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
     if(unlockRemaining>0.001||withdrawableBalance<=0){
       $("withdrawMessage").textContent=unlockRemaining>0.001
-        ? "Ainda falta apostar "+money(unlockRemaining)+" para liberar o botão de saque."
+        ? "Ainda faltam "+unlockRemaining.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2})+" créditos para liberar o botão de saque."
         : "Ainda não há saldo disponível para saque.";
     }
     if(withdrawableBalance<=0) return;
