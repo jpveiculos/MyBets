@@ -34,30 +34,8 @@ async function getConfig(){
 }
 
 function sortearSetor(){
-  const draw=randomInt(DRAW_DENOMINATOR);
-
-  // 16 setores de prêmio e 80 setores de perda.
-  if(draw>=PRIZE_SECTORS){
-    return LOSS_INDEXES[randomInt(LOSS_INDEXES.length)];
-  }
-
-  const weightedGroups=Object.entries(PRIZE_WEIGHTS).map(([multiplier,weight])=>({
-    multiplier:Number(multiplier),weight
-  }));
-  const totalWeight=weightedGroups.reduce((sum,item)=>sum+item.weight,0);
-  let pick=(randomInt(1000000)/1000000)*totalWeight;
-  let selected=weightedGroups[weightedGroups.length-1].multiplier;
-
-  for(const group of weightedGroups){
-    if(pick<group.weight){
-      selected=group.multiplier;
-      break;
-    }
-    pick-=group.weight;
-  }
-
-  const matching=PRIZE_INDEXES.filter((_,index)=>Number(DEFAULT_PRIZES[index])===selected);
-  return matching[randomInt(matching.length)];
+  // Cada um dos 96 setores tem exatamente a mesma probabilidade: 1/96.
+  return randomInt(DRAW_DENOMINATOR);
 }
 
 export async function rouletteConfig(){
@@ -72,7 +50,7 @@ export async function rouletteConfig(){
     maxBet,
     prizes,
     prizeDistribution:{2:4,3:4,4:4,5:4},
-    probability:{2:4.64135,3:4.64135,4:4.21941,5:3.16456}
+    probability:{2:4.166667,3:4.166667,4:4.166667,5:4.166667}
   };
 }
 
