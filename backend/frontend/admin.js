@@ -105,6 +105,7 @@ function transactionTypeLabel(type){
  const labels={
   signup_bonus:"CRÉDITOS DE CADASTRO",
   deposit_credits:"DEPÓSITO CONVERTIDO EM CRÉDITOS",
+  credits_purchase:"COMPRA DE CRÉDITOS",
   withdrawal_approved:"SAQUE APROVADO",
   withdrawal_released:"SAQUE DEVOLVIDO",
   admin_credit_adjustment:"AJUSTE DE CRÉDITOS",
