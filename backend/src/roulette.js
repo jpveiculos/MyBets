@@ -72,7 +72,7 @@ export async function rouletteConfig(){
     maxBet,
     prizes,
     prizeDistribution:{2:4,3:4,4:4,5:4,10:1},
-    probability:{2:4.314,3:4.314,4:3.922,5:3.922,10:.196}
+    probability:{2:4.583333,3:4.583333,4:4.166667,5:3.125,10:.208333}
   };
 }
 
