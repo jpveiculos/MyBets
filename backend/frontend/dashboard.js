@@ -29,11 +29,11 @@ async function load(){
     $("withdrawBtn").title=hasBonus?"O saque fica bloqueado enquanto houver saldo de bônus.":withdrawalLocked?"Aposte o valor restante para liberar o saque.":depositPrincipal>0?"Aposte o principal de depósito restante para liberar os ganhos.":withdrawableBalance<=0?"Ainda não há ganhos disponíveis para saque.":"Solicitar saque";
     const hint=$("withdrawHint");
     if(hint) hint.textContent=hasBonus
-      ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque."
+      ? "Bônus atual: "+money(a.account.bonus_balance)+". Após zerar, ainda falta apostar "+money(remaining)+" para liberar o saque. Principal do depósito ainda protegido: "+money(depositPrincipal)+". Aposte 100% do valor depositado para liberar essa parte."
       : withdrawalLocked
-        ? "Bônus zerado. Meta pós-bônus: "+money(a.account.post_bonus_wager_progress||0)+" / "+money(a.account.post_bonus_wager_requirement||0)+". Falta "+money(remaining)+"."
+        ? "Bônus zerado. Meta pós-bônus: "+money(a.account.post_bonus_wager_progress||0)+" / "+money(a.account.post_bonus_wager_requirement||0)+". Falta "+money(remaining)+". Principal do depósito ainda protegido: "+money(depositPrincipal)+". Aposte 100% do valor depositado para liberar essa parte."
         : depositPrincipal>0
-          ? "Principal de depósito protegido: "+money(depositPrincipal)+". Aposte esse valor para liberar os ganhos para saque."
+          ? "Principal do depósito ainda protegido: "+money(depositPrincipal)+". É necessário apostar 100% do valor depositado para liberar essa parte para saque."
           : withdrawableBalance>0
             ? "Ganhos disponíveis para saque: "+money(withdrawableBalance)+". Informe o valor e sua chave Pix."
             : "Ainda não há ganhos disponíveis para saque.";
