@@ -239,12 +239,20 @@ async function openUserHistory(userId){
 function closeHistoryModal(){
  $("historyModal").classList.add("hidden");$("historyModal").setAttribute("aria-hidden","true");$("historyContent").innerHTML="";historyState={userId:null,pages:{},loading:false};resumeAutoRefresh();
 }
-function renderRouletteSettings(settings){
+function renderRouletteSettings(settings,roulette){
  const minField=$("rouletteMinBet"),maxField=$("rouletteMaxBet");
  if(!minField||!maxField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
  maxField.value=map.roulette_max_bet??"100.00";
+ const structure=$("rouletteStructure"),probabilities=$("rouletteProbabilities");
+ if(roulette){
+  const total=Number(roulette.totalSectors)||0,prizes=Number(roulette.prizeSectors)||0,loss=Number(roulette.lossSectors)||0;
+  const dist=roulette.prizeDistribution||{};
+  const p=roulette.probability||{};
+  if(structure)structure.textContent=`${total} setores: ${loss} de perda e ${prizes} premiados. A fatia preta comprime os setores lógicos de perda e mantém a área visual equivalente à fatia colorida.`;
+  if(probabilities)probabilities.textContent=`2x: ${Number(p[2]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 3x: ${Number(p[3]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 4x: ${Number(p[4]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 5x: ${Number(p[5]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 10x: ${Number(p[10]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`;
+ }
 }
 function settingLabel(key){
  const labels={
@@ -331,11 +339,11 @@ $("adminLogin")?.addEventListener("submit",adminLogin);
 async function load(){
  if(!adminAuthenticated)return false;
  try{
-  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,d,w,s,t]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString())]);
-  const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[]; cachedUsers=users;
+  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,d,w,s,t,rq]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString()),api("/api/admin/roulette/config")]);
+  const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[],roulette=rq.roulette||null; cachedUsers=users;
   const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
   $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
-  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings);
+  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings,roulette);
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
    if(notifyReady&&"Notification"in window&&Notification.permission==="granted"){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification("MyBets • Novo evento",{body:`${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`,tag:"new-admin-event",data:{url:"/admin.html"},renotify:true})}catch(error){console.warn("Notificação local:",error)}}
