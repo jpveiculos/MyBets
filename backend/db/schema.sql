@@ -5,15 +5,7 @@ CREATE TABLE IF NOT EXISTS users (
   password_hash TEXT NOT NULL,
   cash_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   play_credits NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
   reserved_balance NUMERIC(12,2) NOT NULL DEFAULT 0,
-  deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0,
-  withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE,
-  withdrawal_wager_remaining NUMERIC(12,2) NOT NULL DEFAULT 0,
   is_banned BOOLEAN NOT NULL DEFAULT FALSE,
   banned_at TIMESTAMP,
   banned_reason TEXT,
@@ -111,9 +103,6 @@ CREATE TABLE IF NOT EXISTS site_settings (
   setting_value TEXT NOT NULL,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-DELETE FROM site_settings WHERE setting_key='bonus_wager_requirement';
-DELETE FROM site_settings WHERE setting_key='deposit_bonus_percent';
-DELETE FROM site_settings WHERE setting_key='roulette_prizes';
 
 CREATE TABLE IF NOT EXISTS spins (
   id SERIAL PRIMARY KEY,
@@ -124,14 +113,6 @@ CREATE TABLE IF NOT EXISTS spins (
   multiplier NUMERIC(8,2) NOT NULL,
   bet_amount NUMERIC(12,2) NOT NULL,
   payout_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_used NUMERIC(12,2) NOT NULL DEFAULT 0,
-  cash_used NUMERIC(12,2) NOT NULL DEFAULT 0,
-  cash_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE,
-  deposit_principal_after NUMERIC(12,2) NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -143,33 +124,8 @@ CREATE INDEX IF NOT EXISTS idx_deposits_status_created ON deposits(status, creat
 CREATE INDEX IF NOT EXISTS idx_withdrawals_status_created ON withdrawals(status, created_at DESC);
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS game_id VARCHAR(40) NOT NULL DEFAULT 'roulette';
 ALTER TABLE spins ADD COLUMN IF NOT EXISTS result_code VARCHAR(80);
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS bonus_used NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS cash_used NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS cash_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE spins ADD COLUMN IF NOT EXISTS deposit_principal_after NUMERIC(12,2) NOT NULL DEFAULT 0;
 CREATE INDEX IF NOT EXISTS idx_spins_user_game_created ON spins(user_id, game_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_spins_user_created ON spins(user_id, created_at DESC);
-
-CREATE TABLE IF NOT EXISTS bonus_events (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-  type VARCHAR(40) NOT NULL,
-  amount NUMERIC(12,2) NOT NULL,
-  bonus_balance_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  bonus_origin_amount_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_requirement_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  post_bonus_wager_progress_after NUMERIC(12,2) NOT NULL DEFAULT 0,
-  withdrawal_bonus_lock_after BOOLEAN NOT NULL DEFAULT TRUE,
-  reference_id INTEGER,
-  note TEXT,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE INDEX IF NOT EXISTS idx_bonus_events_user_created ON bonus_events(user_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS admin_push_subscriptions (
   id SERIAL PRIMARY KEY,
@@ -193,12 +149,11 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_description','MyBets'),
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
 ('signup_bonus_amount','50'),
+('deposit_bonus_percent','10'),
 ('roulette_min_bet','0.50'),
 ('roulette_max_bet','100.00'),
 ('audit_log_retention_days','30')
 ON CONFLICT (setting_key) DO NOTHING;
-
-DELETE FROM site_settings WHERE setting_key='bonus_wager_requirement';
 
 UPDATE site_settings SET setting_value='true',updated_at=CURRENT_TIMESTAMP
  WHERE setting_key='pix_enabled' AND NULLIF(TRIM(setting_value),'') IS NULL;
@@ -211,26 +166,6 @@ UPDATE site_settings SET setting_value='aleatoria',updated_at=CURRENT_TIMESTAMP
 ALTER TABLE users ADD COLUMN IF NOT EXISTS play_credits NUMERIC(12,2) NOT NULL DEFAULT 0;
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS cpf VARCHAR(11);
-ALTER TABLE users ADD COLUMN IF NOT EXISTS bonus_origin_amount NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_requirement NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS post_bonus_wager_progress NUMERIC(12,2) NOT NULL DEFAULT 0;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_bonus_lock BOOLEAN NOT NULL DEFAULT FALSE;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS withdrawal_wager_remaining NUMERIC(12,2) NOT NULL DEFAULT 0;
-UPDATE users SET withdrawal_wager_remaining=GREATEST(0,COALESCE(bonus_balance,0)+COALESCE(deposit_principal_remaining,0)+GREATEST(0,COALESCE(post_bonus_wager_requirement,0)-COALESCE(post_bonus_wager_progress,0))) WHERE withdrawal_wager_remaining=0;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS deposit_principal_remaining NUMERIC(12,2) NOT NULL DEFAULT 0;
-UPDATE users u
-   SET deposit_principal_remaining=GREATEST(
-     0,
-     COALESCE((SELECT SUM(COALESCE(d.approved_amount,d.amount)) FROM deposits d WHERE d.user_id=u.id AND d.status='approved'),0)
-     - COALESCE((SELECT SUM(s.cash_used) FROM spins s WHERE s.user_id=u.id),0)
-   );
-UPDATE users
-   SET bonus_origin_amount=CASE WHEN COALESCE(bonus_origin_amount,0)>0 THEN bonus_origin_amount ELSE COALESCE(bonus_balance,0) END,
-       post_bonus_wager_requirement=CASE WHEN COALESCE(post_bonus_wager_requirement,0)>0 THEN post_bonus_wager_requirement ELSE COALESCE(bonus_balance,0) END,
-       post_bonus_wager_progress=CASE WHEN COALESCE(bonus_balance,0)<=0 AND COALESCE(withdrawal_bonus_lock,FALSE)=FALSE THEN GREATEST(COALESCE(post_bonus_wager_progress,0),COALESCE(post_bonus_wager_requirement,0)) ELSE COALESCE(post_bonus_wager_progress,0) END,
-       withdrawal_bonus_lock=CASE WHEN COALESCE(bonus_balance,0)>0 THEN TRUE ELSE COALESCE(withdrawal_bonus_lock,FALSE) END
- WHERE TRUE;
-UPDATE users SET bonus_origin_amount=COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance), post_bonus_wager_requirement=CASE WHEN post_bonus_wager_requirement=0 AND COALESCE(bonus_balance,0)>0 THEN COALESCE(NULLIF(bonus_origin_amount,0),bonus_balance) ELSE post_bonus_wager_requirement END, withdrawal_bonus_lock=CASE WHEN COALESCE(bonus_balance,0)>0 THEN TRUE ELSE withdrawal_bonus_lock END WHERE COALESCE(bonus_balance,0)>0;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_users_cpf ON users(cpf) WHERE cpf IS NOT NULL;
 
 CREATE TABLE IF NOT EXISTS signup_bonus_claims (
@@ -240,37 +175,6 @@ CREATE TABLE IF NOT EXISTS signup_bonus_claims (
   bonus_amount NUMERIC(12,2) NOT NULL DEFAULT 0,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-INSERT INTO signup_bonus_claims(cpf,user_id,bonus_amount)
-SELECT u.cpf,u.id,COALESCE(u.bonus_balance,0)
-  FROM users u
- WHERE u.cpf IS NOT NULL
-   AND NULLIF(TRIM(u.cpf),'') IS NOT NULL
-ON CONFLICT (cpf) DO NOTHING;
-
-INSERT INTO bonus_events(
-  user_id,type,amount,bonus_balance_after,bonus_origin_amount_after,
-  post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-  withdrawal_bonus_lock_after,note,created_at
-)
-SELECT c.user_id,
-       'signup_bonus',
-       c.bonus_amount,
-       c.bonus_amount,
-       c.bonus_amount,
-       c.bonus_amount,
-       0,
-       TRUE,
-       'Registro histórico do bônus de cadastro.',
-       c.created_at
-  FROM signup_bonus_claims c
- WHERE c.bonus_amount > 0
-   AND NOT EXISTS (
-     SELECT 1 FROM bonus_events b
-      WHERE b.user_id=c.user_id
-        AND b.type='signup_bonus'
-        AND b.reference_id IS NULL
-   );
 
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FALSE;
