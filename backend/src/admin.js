@@ -62,7 +62,9 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
     if(!Number.isFinite(bonusPercent)) throw new Error("Percentual de bônus de depósito inválido.");
     const bonusValue=Math.round(value*bonusPercent)/100;
     const newCash=Number(user.cash_balance)+value;
-    const newDepositPrincipal=Number(user.deposit_principal_remaining||0)+value;
+    const depositPrincipalPercent=50;
+    const depositPrincipalValue=Math.round(value*depositPrincipalPercent)/100;
+    const newDepositPrincipal=Number(user.deposit_principal_remaining||0)+depositPrincipalValue;
 
     await client.query(
       `UPDATE users
@@ -102,7 +104,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
         value,
         newCash+Number(user.bonus_balance),
         id,
-        `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; créditos: R$ ${value.toFixed(2)}; bônus de recarga: R$ ${bonusValue.toFixed(2)}.`
+        `Depósito conferido e aprovado pelo administrador. Valor informado: R$ ${declaredAmount.toFixed(2)}; créditos: R$ ${value.toFixed(2)}; principal bloqueado para saque: R$ ${depositPrincipalValue.toFixed(2)} (50%); bônus de recarga: R$ ${bonusValue.toFixed(2)}.`
       ]
     );
 
@@ -112,7 +114,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
       [
         adminId,
         id,
-        JSON.stringify({declaredAmount,approvedAmount:value,bonusPercent,bonusValue,adminNote})
+        JSON.stringify({declaredAmount,approvedAmount:value,depositPrincipalPercent,depositPrincipalValue,bonusPercent,bonusValue,adminNote})
       ]
     );
 
