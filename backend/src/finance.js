@@ -15,7 +15,10 @@ export async function getAccount(userId) {
             (cash_balance - reserved_balance + bonus_balance) AS available_balance,
             GREATEST(0, cash_balance - reserved_balance - deposit_principal_remaining) AS withdrawable_balance,
             bonus_wager_progress, bonus_origin_amount, post_bonus_wager_requirement,
-            post_bonus_wager_progress, withdrawal_bonus_lock
+            post_bonus_wager_progress, withdrawal_bonus_lock,
+            GREATEST(0,COALESCE(bonus_balance,0))
+            + GREATEST(0,COALESCE(deposit_principal_remaining,0))
+            + GREATEST(0,COALESCE(post_bonus_wager_requirement,0)-COALESCE(post_bonus_wager_progress,0)) AS withdrawal_unlock_remaining
        FROM users
       WHERE id = $1`,
     [userId]
@@ -140,12 +143,11 @@ export async function requestWithdrawal({ userId, amount, pixKey, playerNote = n
       throw new Error("Esse valor inclui a parte do depósito ainda bloqueada. Aposte 100% do valor depositado para liberar essa parte; depois de cumprir as regras do bônus, o saque poderá incluir o valor depositado liberado e os ganhos gerados nas apostas.");
     }
 
-    if (Number(user.bonus_balance) > 0) {
-      throw new Error("O saque está bloqueado enquanto houver saldo de bônus.");
-    }
-    if (Boolean(user.withdrawal_bonus_lock)) {
-      const progress=Number(user.post_bonus_wager_progress||0), requirement=Number(user.post_bonus_wager_requirement||0);
-      throw new Error("O saque está bloqueado. Aposte mais R$ "+Math.max(0,requirement-progress).toFixed(2).replace(".",",")+" para liberar.");
+    const unlockRemaining=Number(user.bonus_balance||0)
+      +Number(user.deposit_principal_remaining||0)
+      +Math.max(0,Number(user.post_bonus_wager_requirement||0)-Number(user.post_bonus_wager_progress||0));
+    if (unlockRemaining>0.001) {
+      throw new Error("O saque será liberado quando os créditos de aposta chegarem a R$ 0,00. Restante: R$ "+unlockRemaining.toFixed(2).replace(".",",")+".");
     }
 
     await client.query(
