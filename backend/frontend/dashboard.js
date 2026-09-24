@@ -21,15 +21,10 @@ async function load(){
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const unlockRemaining=Math.max(0,Number(a.account.play_credits||0));
-    $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
-    $("withdrawBtn").title=unlockRemaining>0.001?"O saque será liberado quando os créditos para jogar chegarem a 0.":"Solicitar saque";
+    $("withdrawBtn").disabled=withdrawableBalance<=0;
+    $("withdrawBtn").title=withdrawableBalance>0?"Solicitar saque":"Não há saldo disponível para saque";
     const hint=$("withdrawHint");
-    if(hint) hint.textContent=unlockRemaining>0.001
-      ? "Ainda faltam "+unlockRemaining.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2})+" créditos para liberar o botão de saque."
-      : withdrawableBalance>0
-        ? "Saque liberado."
-        : "Os créditos para jogar estão em 0. Ainda não há saldo disponível para saque.";
+    if(hint) hint.textContent="Saque o saldo disponível.";
   }catch(e){location.href="/"}
 }
 function normalizePixText(value,max){
@@ -95,14 +90,11 @@ async function openWithdraw(){
     $("withdrawAvailableBalance").textContent=money(withdrawableBalance);
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
-    const unlockRemaining=Math.max(0,Number(a.account.play_credits||0));
-    $("withdrawBtn").disabled=unlockRemaining>0.001||withdrawableBalance<=0;
-    if(unlockRemaining>0.001||withdrawableBalance<=0){
-      $("withdrawMessage").textContent=unlockRemaining>0.001
-        ? "Ainda faltam "+unlockRemaining.toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2})+" créditos para liberar o botão de saque."
-        : "Ainda não há saldo disponível para saque.";
+    $("withdrawBtn").disabled=withdrawableBalance<=0;
+    if(withdrawableBalance<=0){
+      $("withdrawMessage").textContent="Ainda não há saldo disponível para saque.";
+      return;
     }
-    if(withdrawableBalance<=0) return;
     financeMode="withdraw";
     $("financeModal").classList.remove("hidden");
     $("depositPromo").classList.add("hidden");
