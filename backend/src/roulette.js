@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
-import { applyPostBonusWager, applyDepositPrincipalWager, applyWithdrawalWager } from "./finance.js";
+import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
 const TOTAL_SECTORS=80;
 const GROUP_SIZE=5;
@@ -61,31 +61,21 @@ export async function spinRoulette({userId,betAmount}){
   const client=await pool.connect();
   try{
     await client.query("BEGIN");
-    const r=await client.query(`SELECT id,username,cash_balance,bonus_balance,reserved_balance,deposit_principal_remaining,bonus_wager_progress,post_bonus_wager_requirement,post_bonus_wager_progress,withdrawal_bonus_lock,withdrawal_wager_remaining
-      FROM users WHERE id=$1 FOR UPDATE`,[userId]);
+    const r=await client.query(
+      "SELECT id,username,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 FOR UPDATE",
+      [userId]
+    );
     if(!r.rows.length)throw new Error("Usuário não encontrado.");
     const user=r.rows[0];
-    const cash=Number(user.cash_balance||0);
-    const bonus=Number(user.bonus_balance||0);
-    const reserved=Number(user.reserved_balance||0);
-    const available=Number((cash+bonus-reserved).toFixed(2));
-    if(available<bet)throw new Error("Saldo disponível insuficiente.");
+    if(Number(user.play_credits||0)<bet)throw new Error("Créditos para jogar insuficientes.");
 
     const sector=sortearSetor();
     const position=PRIZE_INDEXES.indexOf(sector);
     const multiplier=position>=0?Number(prizes[position]):0;
     const payout=multiplier>0?Number((bet*multiplier).toFixed(2)):0;
 
-    const bonusUsed=Math.min(bonus,bet);
-    const cashUsed=bet-bonusUsed;
-    const newBonus=Number((bonus-bonusUsed).toFixed(2));
-    const newCash=Number((cash-cashUsed+payout).toFixed(2));
-    const newBalance=Number((newBonus+newCash).toFixed(2));
-
-    const wagerState=await applyPostBonusWager({client,user,betAmount:bet,bonusUsed});
-    const depositPrincipalAfter=await applyDepositPrincipalWager({client,user,cashUsed});
-    const withdrawalWagerRemaining=await applyWithdrawalWager({client,user,betAmount:bet});
-    await client.query(`UPDATE users SET cash_balance=$1,bonus_balance=$2,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[newCash,newBonus,userId]);
+    const creditsAfter=await consumePlayCredits({client,userId,betAmount:bet});
+    const cashAfter=payout>0?await addWithdrawableWinnings({client,userId,amount:payout}):Number(user.cash_balance||0);
 
     const spin=await client.query(
       `INSERT INTO spins(
@@ -93,25 +83,38 @@ export async function spinRoulette({userId,betAmount}){
          bonus_used,cash_used,cash_balance_after,bonus_balance_after,
          post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
          withdrawal_bonus_lock_after,deposit_principal_after
-       ) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+       ) VALUES($1,$2,$3,$4,$5,0,$4,$6,0,0,0,FALSE,0)
        RETURNING id,created_at`,
+      [userId,sector,multiplier,bet,payout,cashAfter]
+    );
+
+    await client.query(
+      "INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)",
       [
-        userId,sector,multiplier,bet,payout,
-        bonusUsed,cashUsed,newCash,newBonus,wagerState.requirement,
-        wagerState.progress,wagerState.lock,depositPrincipalAfter
+        userId,
+        multiplier>0?"roulette_win":"roulette_loss",
+        payout,
+        Number((cashAfter-Number(user.reserved_balance||0)).toFixed(2)),
+        spin.rows[0].id,
+        multiplier>0?`Roleta — ${multiplier}x`:"Roleta — perda"
       ]
     );
-    const net=Number((payout-bet).toFixed(2));
-    await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note) VALUES($1,$2,$3,$4,$5,$6)`,[
-      userId,multiplier>0?"roulette_win":"roulette_loss",net,Number((newBalance-reserved).toFixed(2)),spin.rows[0].id,multiplier>0?`Roleta da sorte — ${multiplier}x`:"Roleta da sorte — perda"
-    ]);
+
     await client.query("COMMIT");
 
     return {
-      id:spin.rows[0].id,sector,resultType:multiplier>0?"prize":"loss",multiplier,prize:payout,
-      netResult:net,betAmount:bet,bonusUsed,cashUsed,bonusBalanceAfter:newBonus,
-      postBonusWagerRequirement:wagerState.requirement,postBonusWagerProgress:wagerState.progress,
-      withdrawalBonusLock:wagerState.lock,depositPrincipalAfter,withdrawalWagerRemaining,totalSectors:TOTAL_SECTORS,prizeSectors:PRIZE_INDEXES,prizes
+      id:spin.rows[0].id,
+      sector,
+      resultType:multiplier>0?"prize":"loss",
+      multiplier,
+      prize:payout,
+      netResult:Number((payout-bet).toFixed(2)),
+      betAmount:bet,
+      playCreditsAfter:creditsAfter,
+      withdrawableBalanceAfter:cashAfter,
+      totalSectors:TOTAL_SECTORS,
+      prizeSectors:PRIZE_INDEXES,
+      prizes
     };
   }catch(error){
     try{await client.query("ROLLBACK")}catch{}
