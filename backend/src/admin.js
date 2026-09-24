@@ -1,5 +1,5 @@
 import { pool } from "./db.js";
-import { grantBonus, addDepositCredits, DEPOSIT_CREDIT_MULTIPLIER } from "./finance.js";
+import { grantBonus, addDepositCredits, DEPOSIT_BONUS_PERCENT } from "./finance.js";
 
 export async function listUsers() {
   const result=await pool.query(
@@ -72,7 +72,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
       [adminId,id,JSON.stringify({
         declaredAmount,
         approvedAmount:value,
-        creditMultiplier:DEPOSIT_CREDIT_MULTIPLIER,
+        bonusPercent:creditState.bonusPercent,
         creditsAdded:creditState.creditsAdded,
         adminNote
       })]
