@@ -116,6 +116,7 @@ async function openWithdraw(){
     }
     financeMode="withdraw";
     $("financeModal").classList.remove("hidden");
+    $("addCreditsChoice").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("financeTitle").textContent="Solicitar saque";
     $("depositArea").classList.add("hidden");
