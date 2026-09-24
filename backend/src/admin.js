@@ -3,9 +3,9 @@ import { grantBonus, addDepositCredits, DEPOSIT_CREDIT_MULTIPLIER } from "./fina
 
 export async function listUsers() {
   const result=await pool.query(
-    `SELECT id,username,cpf,cash_balance,bonus_balance,reserved_balance,deposit_principal_remaining,
-            GREATEST(0,cash_balance-reserved_balance-deposit_principal_remaining) AS withdrawable_balance,
-            (cash_balance+bonus_balance) AS total_balance,
+    `SELECT id,username,cpf,cash_balance,play_credits,reserved_balance,
+            GREATEST(0,cash_balance-reserved_balance) AS withdrawable_balance,
+            (cash_balance+play_credits) AS total_balance,
             is_banned,banned_at,banned_reason,is_deleted,
             created_at,updated_at
        FROM users WHERE COALESCE(is_deleted,FALSE)=FALSE ORDER BY id DESC`
@@ -24,9 +24,7 @@ export async function listDeposits() {
 
 export async function listWithdrawals() {
   const result=await pool.query(
-    `SELECT w.*,u.username,u.cpf,u.cash_balance,u.bonus_balance,u.bonus_wager_progress,
-            u.bonus_origin_amount,u.post_bonus_wager_requirement,u.post_bonus_wager_progress,
-            u.withdrawal_bonus_lock
+    `SELECT w.*,u.username,u.cpf,u.cash_balance,u.play_credits,u.reserved_balance
        FROM withdrawals w
        JOIN users u ON u.id=w.user_id
       ORDER BY w.created_at DESC`
@@ -142,8 +140,7 @@ export async function approveWithdrawal({id,adminId,adminNote=null}) {
     if(w.status!=="pending") throw new Error("Este saque já foi processado.");
     const u=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[w.user_id]);
     const user=u.rows[0];
-    if(Number(user.bonus_balance)>0) throw new Error("O saque permanece bloqueado enquanto houver saldo de bônus.");
-    if(Boolean(user.withdrawal_bonus_lock)) throw new Error("O saque permanece bloqueado até o cumprimento da meta de apostas.");
+    if(Number(user.play_credits||0)>0.001) throw new Error("O saque permanece bloqueado enquanto houver créditos para jogar.");
     if(Number(user.reserved_balance)<Number(w.amount)) throw new Error("Reserva de saldo inconsistente.");
     if(Number(user.cash_balance)<Number(w.amount)) throw new Error("Saldo em dinheiro insuficiente.");
     const newCash=Number(user.cash_balance)-Number(w.amount);
@@ -152,7 +149,7 @@ export async function approveWithdrawal({id,adminId,adminNote=null}) {
     await client.query(`UPDATE withdrawals SET status='approved',admin_note=$1,approved_by=$2,approved_at=CURRENT_TIMESTAMP,paid_by=$2,paid_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$3`,[adminNote,adminId,id]);
     await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
        VALUES($1,'withdrawal_approved',$2,$3,$4,$5)`,
-      [w.user_id,-Number(w.amount),newCash+Number(user.bonus_balance)-newReserved,id,"Saque aprovado e reserva consumida"]);
+      [w.user_id,-Number(w.amount),newCash-newReserved,id,"Saque aprovado e reserva consumida"]);
     await client.query("COMMIT");
     return {id,status:"approved"};
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
@@ -174,7 +171,7 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
     await client.query(`UPDATE withdrawals SET status='rejected',admin_note=$1,rejection_reason=$2,rejected_by=$3,rejected_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=$4`,[adminNote,rejectionReason,adminId,id]);
     await client.query(`INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
        VALUES($1,'withdrawal_released',$2,$3,$4,$5)`,
-      [w.user_id,Number(w.amount),Number(user.cash_balance)+Number(user.bonus_balance)-newReserved,id,"Saque rejeitado; reserva liberada"]);
+      [w.user_id,Number(w.amount),Number(user.cash_balance)-newReserved,id,"Saque rejeitado; reserva liberada"]);
     await client.query("COMMIT");
     return {id,status:"rejected"};
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
