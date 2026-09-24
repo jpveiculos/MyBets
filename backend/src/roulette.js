@@ -2,8 +2,8 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { applyPostBonusWager, applyDepositPrincipalWager } from "./finance.js";
 
-const TOTAL_SECTORS=96;
-const GROUP_SIZE=6;
+const TOTAL_SECTORS=80;
+const GROUP_SIZE=5;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
@@ -11,9 +11,6 @@ const LOSS_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP
 
 // Configuração fixa da roleta: 4x 2, 4x 3, 4x 4 e 4x 5 em 16 grupos de prêmio.
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
-
-// Pesos relativos entre os 17 setores premiados. O 10x continua com peso mínimo.
-const PRIZE_WEIGHTS={2:5.5,3:5.5,4:5,5:3.75};
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
@@ -34,7 +31,7 @@ async function getConfig(){
 }
 
 function sortearSetor(){
-  // Cada um dos 96 setores tem exatamente a mesma probabilidade: 1/96.
+  // Cada um dos 80 setores tem exatamente a mesma probabilidade: 1/80.
   return randomInt(DRAW_DENOMINATOR);
 }
 
@@ -50,7 +47,7 @@ export async function rouletteConfig(){
     maxBet,
     prizes,
     prizeDistribution:{2:4,3:4,4:4,5:4},
-    probability:{2:4.166667,3:4.166667,4:4.166667,5:4.166667}
+    probability:{2:5,3:5,4:5,5:5}
   };
 }
 
