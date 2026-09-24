@@ -102,6 +102,20 @@ function drawWheel(){
     defs.appendChild(g);
   });
 
+  const outerMetallic=document.createElementNS(ns,"linearGradient");
+  outerMetallic.setAttribute("id","outer-metallic-gold");
+  outerMetallic.setAttribute("x1","0%");
+  outerMetallic.setAttribute("y1","0%");
+  outerMetallic.setAttribute("x2","100%");
+  outerMetallic.setAttribute("y2","100%");
+  [["0%","#fff1a3"],["18%","#d99a17"],["38%","#8f5a00"],["50%","#ffe27a"],["66%","#b87408"],["84%","#fff0a0"],["100%","#9a6100"]].forEach(([offset,color])=>{
+    const s=document.createElementNS(ns,"stop");
+    s.setAttribute("offset",offset);
+    s.setAttribute("stop-color",color);
+    outerMetallic.appendChild(s);
+  });
+  defs.appendChild(outerMetallic);
+
   svg.appendChild(defs);
 
   const colors={
@@ -160,11 +174,21 @@ function drawWheel(){
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
-  ring.setAttribute("r","199");
+  ring.setAttribute("r","198.5");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","#f4c83f");
-  ring.setAttribute("stroke-width","3");
+  ring.setAttribute("stroke","url(#outer-metallic-gold)");
+  ring.setAttribute("stroke-width","5");
   svg.appendChild(ring);
+
+  const ringHighlight=document.createElementNS(ns,"circle");
+  ringHighlight.setAttribute("cx","200");
+  ringHighlight.setAttribute("cy","200");
+  ringHighlight.setAttribute("r","196.7");
+  ringHighlight.setAttribute("fill","none");
+  ringHighlight.setAttribute("stroke","#fff3b0");
+  ringHighlight.setAttribute("stroke-width","1");
+  ringHighlight.setAttribute("opacity","0.72");
+  svg.appendChild(ringHighlight);
 }
 
 function updatePrizeValues(){
