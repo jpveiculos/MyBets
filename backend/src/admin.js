@@ -1,5 +1,5 @@
 import { pool } from "./db.js";
-import { grantBonus, addDepositCredits, DEPOSIT_BONUS_PERCENT } from "./finance.js";
+import { grantBonus, addDepositCredits } from "./finance.js";
 
 export async function listUsers() {
   const result=await pool.query(
@@ -84,7 +84,7 @@ export async function approveDeposit({id,adminId,approvedAmount,adminNote=null})
       status:"approved",
       declaredAmount,
       approvedAmount:value,
-      creditMultiplier:DEPOSIT_CREDIT_MULTIPLIER,
+      bonusPercent:creditState.bonusPercent,
       creditsAdded:creditState.creditsAdded,
       totalCredits:creditState.newPlayCredits
     };
@@ -177,10 +177,10 @@ export async function rejectWithdrawal({id,adminId,rejectionReason=null,adminNot
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
-export async function adjustBalance({userId,amount,kind="cash",note=null,adminId}) {
+export async function adjustBalance({userId,amount,kind="bonus",note=null,adminId}) {
   const value=Number(amount);
   if(!Number.isFinite(value)||value===0) throw new Error("Valor inválido.");
-  if(!["cash","bonus"].includes(kind)) throw new Error("Tipo de ajuste inválido.");
+  if(!["cash","bonus","credits"].includes(kind)) throw new Error("Tipo de ajuste inválido.");
 
   const client=await pool.connect();
   try {
@@ -188,24 +188,6 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
     const r=await client.query("SELECT * FROM users WHERE id=$1 FOR UPDATE",[userId]);
     const u=r.rows[0];
     if(!u) throw new Error("Usuário não encontrado.");
-
-    if(kind==="cash"){
-      const next=Number(u.cash_balance||0)+value;
-      if(next<0) throw new Error("O valor disponível para saque não pode ficar negativo.");
-      await client.query("UPDATE users SET cash_balance=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[next,userId]);
-      await client.query(
-        `INSERT INTO transactions(user_id,type,amount,balance_after,note)
-         VALUES($1,'admin_cash_adjustment',$2,$3,$4)`,
-        [userId,value,next,note||"Ajuste manual do valor disponível para saque pelo administrador."]
-      );
-      await client.query(
-        `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-         VALUES('admin',$1,'balance_adjustment','user',$2,$3)`,
-        [adminId,userId,JSON.stringify({amount:value,kind,note})]
-      );
-      await client.query("COMMIT");
-      return {userId,kind,amount:value,newBalance:next};
-    }
 
     const nextCredits=Number(u.play_credits||0)+value;
     if(nextCredits<0) throw new Error("Os créditos para jogar não podem ficar negativos.");
@@ -218,10 +200,10 @@ export async function adjustBalance({userId,amount,kind="cash",note=null,adminId
     await client.query(
       `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
        VALUES('admin',$1,'credit_adjustment','user',$2,$3)`,
-      [adminId,userId,JSON.stringify({amount:value,kind,note})]
+      [adminId,userId,JSON.stringify({amount:value,kind:"credits",note})]
     );
     await client.query("COMMIT");
-    return {userId,kind,amount:value,newCredits:nextCredits};
+    return {userId,kind:"credits",amount:value,newCredits:nextCredits};
   } catch(e){await client.query("ROLLBACK");throw e} finally{client.release()}
 }
 
