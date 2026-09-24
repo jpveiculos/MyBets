@@ -5,12 +5,12 @@ let config=null,account=null,bet=1,spinning=false;
 
 function updatePlayability(message=null){
   if(!config)return;
-  const available=Number(account?.available_balance||0);
+  const available=Number(account?.play_credits||0);
   const insufficient=available<Number(bet);
   $("spin").disabled=Boolean(spinning||insufficient);
   if(insufficient&&!spinning){
     $("result").className="result";
-    $("result").textContent=message||"Saldo insuficiente. A máquina foi parada.";
+    $("result").textContent=message||"Créditos para jogar insuficientes. A máquina foi parada.";
   }
 }
 
@@ -18,7 +18,7 @@ async function refreshAccount(){
   try{
     const a=await api("/api/account");
     account=a.account;
-    $("balance").textContent="R$ "+money(account.available_balance);
+    $("balance").textContent=money(account.play_credits);
     updatePlayability();
     return account;
   }catch{return null;}
@@ -41,5 +41,5 @@ async function spin(){
     updatePlayability("Saldo insuficiente. A máquina foi parada.");
     return;
   }
-  spinning=true;$("spin").disabled=true;$("minus").disabled=true;$("plus").disabled=true;$("result").className="result";$("result").textContent="Girando...";await animate();try{const d=await api("/api/games/"+GAME.id+"/spin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({betAmount:bet})});account=d.user;account.available_balance=account.availableBalance;$("balance").textContent="R$ "+money(account.availableBalance);draw(d.spin.grid);if(d.spin.won){document.querySelectorAll('.reel[data-id="'+CSS.escape(d.spin.winningSymbol)+'"]').forEach(x=>x.classList.add("win"));$("result").className="result win";$("result").textContent="PRÊMIO: R$ "+money(d.spin.prize)+" · "+d.spin.multiplier+"x"}else{$("result").textContent="Não foi dessa vez."}}catch(e){const latest=await refreshAccount();$("result").textContent=latest&&Number(latest.available_balance||0)<Number(bet)?"Saldo insuficiente. A máquina foi parada.":(e.message||"Erro ao jogar.")}finally{spinning=false;$("minus").disabled=false;$("plus").disabled=false;updatePlayability()}}
+  spinning=true;$("spin").disabled=true;$("minus").disabled=true;$("plus").disabled=true;$("result").className="result";$("result").textContent="Girando...";await animate();try{const d=await api("/api/games/"+GAME.id+"/spin",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({betAmount:bet})});account=d.user;account.play_credits=account.playCredits;$("balance").textContent=money(account.play_credits);draw(d.spin.grid);if(d.spin.won){document.querySelectorAll('.reel[data-id="'+CSS.escape(d.spin.winningSymbol)+'"]').forEach(x=>x.classList.add("win"));$("result").className="result win";$("result").textContent="PRÊMIO: R$ "+money(d.spin.prize)+" · "+d.spin.multiplier+"x"}else{$("result").textContent="Não foi dessa vez."}}catch(e){const latest=await refreshAccount();$("result").textContent=latest&&Number(latest.play_credits||0)<Number(bet)?"Créditos para jogar insuficientes. A máquina foi parada.":(e.message||"Erro ao jogar.")}finally{spinning=false;$("minus").disabled=false;$("plus").disabled=false;updatePlayability()}}
 $("minus").onclick=()=>changeBet(-1);$("plus").onclick=()=>changeBet(1);$("spin").onclick=spin;load();
