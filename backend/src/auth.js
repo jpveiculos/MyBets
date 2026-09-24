@@ -204,7 +204,7 @@ export async function register({ username, password, cpf }) {
     );
 
     await client.query("COMMIT");
-    return {id:result.rows[0].id,username:result.rows[0].username,bonus_balance:signupBonus};
+    return {id:result.rows[0].id,username:result.rows[0].username,play_credits:signupBonus};
   } catch (error) {
     await client.query("ROLLBACK");
     if (error?.code === "23505" && (error?.constraint === "uq_users_cpf" || error?.constraint === "signup_bonus_claims_cpf_key")) {
