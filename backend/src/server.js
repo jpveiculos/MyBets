@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
-import { getAccount, requestDeposit, requestWithdrawal, getTransactions } from "./finance.js";
+import { getAccount, requestDeposit, requestWithdrawal, purchasePlayCredits, getTransactions } from "./finance.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, addCreditsWithDepositBonus, addBonusCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
@@ -114,6 +114,12 @@ app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
 app.post("/api/deposits", requireUser, asyncRoute(async (req,res) => {
   const deposit=await requestDeposit({userId:req.user.id,amount:req.body.amount,playerNote:req.body.playerNote});
   res.status(201).json({ok:true,deposit});
+}));
+
+app.post("/api/credits/purchase", requireUser, asyncRoute(async (req,res) => {
+  const result=await purchasePlayCredits({userId:req.user.id,amount:req.body.amount});
+  const account=await getAccount(req.user.id);
+  res.json({ok:true,result,account});
 }));
 
 app.post("/api/withdrawals", requireUser, asyncRoute(async (req,res) => {
