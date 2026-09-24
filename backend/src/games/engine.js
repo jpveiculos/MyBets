@@ -49,13 +49,10 @@ export async function spinGame(config,args){
 
   const grid=buildGrid(config,outcome),resultCode=outcome?outcome.symbol:"LOSS";
   const spin=await client.query(
-    `INSERT INTO spins(
-       user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount,
-       bonus_used,cash_used,cash_balance_after,bonus_balance_after,
-       post_bonus_wager_requirement_after,post_bonus_wager_progress_after,
-       withdrawal_bonus_lock_after,deposit_principal_after
-     ) VALUES($1,$2,$3,0,$4,$5,$6,0,$7,$8,0,0,0,FALSE,0)
-     RETURNING id,created_at`,
+    \`INSERT INTO spins(
+       user_id,game_id,result_code,result,multiplier,bet_amount,payout_amount
+     ) VALUES($1,$2,$3,0,$4,$5,$6)
+     RETURNING id,created_at\`,
     [args.userId,config.id,resultCode,multiplier,bet,payout,bet,cashAfter]
   );
 
