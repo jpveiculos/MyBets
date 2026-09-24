@@ -31,7 +31,7 @@
 </section>
 
 <section class="feature-grid player-finance-grid">
-  <article class="feature-card action-card"><strong>💠 Depósito</strong><span>Faça o Pix pelo QR Code e avise quando concluir.</span><small class="deposit-promo-mini">🔥 Deposite qualquer valor e ganhe bônus</small><button class="action-btn deposit-btn" id="depositBtn">Depositar</button></article>
+  <article class="feature-card action-card"><strong>💠 Depósito</strong><span>Faça o Pix pelo QR Code e avise quando concluir.</span><small class="deposit-promo-mini">🔥 Deposite qualquer valor e ganhe bônus</small><button class="action-btn deposit-btn" id="addCreditsBtn">Adicionar crédito</button></article>
   <article class="feature-card action-card"><strong>↗ Saque</strong><span id="withdrawHint">Saque via Pix</span><button class="action-btn withdraw-btn" id="withdrawBtn" disabled>Sacar</button></article>
 </section></section>
 
@@ -41,7 +41,22 @@
 <a href="/dashboard.html" class="active"><span>👤</span><b>Área do jogador</b></a>
 </nav>
 <div class="modal-backdrop hidden" id="financeModal"><section class="finance-modal"><button class="modal-close" id="closeFinance" aria-label="Fechar">×</button>
-<div id="depositPromo">  <div class="deposit-promo-badge">🔥 PROMOÇÃO DE DEPÓSITO</div>  <h2 class="deposit-promo-title">DEPOSITE QUALQUER VALOR<br><span>E GANHE BÔNUS</span></h2>  <p class="deposit-promo-lead">Seu depósito será convertido em créditos para jogar com 10% de bônus.</p>  <div class="deposit-promo-example"><div><strong>R$ 10</strong><small>depósito</small></div><b>+</b><div><strong>10%</strong><small>bônus</small></div><i>=</i><div><strong>11</strong><small>créditos para jogar</small></div></div>  <div class="deposit-promo-note">O bônus é creditado junto com a aprovação do depósito pelo administrador.</div>  <button type="button" class="primary-btn full deposit-promo-proceed" id="depositPromoProceed">PROSSEGUIR PARA O PIX →</button></div><div id="depositArea" class="hidden">
+<div id="addCreditsChoice" class="hidden">
+  <header class="deposit-modal-head">
+    <h2>Adicionar crédito</h2>
+    <p>Escolha como deseja adicionar créditos para jogar.</p>
+  </header>
+  <div class="credit-choice-grid">
+    <button type="button" class="credit-choice" id="usePlatformBalance">
+      <strong>Usar saldo da plataforma</strong>
+      <span>Converter seu saldo disponível em créditos para continuar jogando.</span>
+    </button>
+    <button type="button" class="credit-choice" id="usePixDeposit">
+      <strong>Fazer novo depósito via Pix</strong>
+      <span>Faça um novo depósito e receba os créditos com o bônus configurado.</span>
+    </button>
+  </div>
+</div><div id="depositPromo">  <div class="deposit-promo-badge">🔥 PROMOÇÃO DE DEPÓSITO</div>  <h2 class="deposit-promo-title">DEPOSITE QUALQUER VALOR<br><span>E GANHE BÔNUS</span></h2>  <p class="deposit-promo-lead">Seu depósito será convertido em créditos para jogar com 10% de bônus.</p>  <div class="deposit-promo-example"><div><strong>R$ 10</strong><small>depósito</small></div><b>+</b><div><strong>10%</strong><small>bônus</small></div><i>=</i><div><strong>11</strong><small>créditos para jogar</small></div></div>  <div class="deposit-promo-note">O bônus é creditado junto com a aprovação do depósito pelo administrador.</div>  <button type="button" class="primary-btn full deposit-promo-proceed" id="depositPromoProceed">PROSSEGUIR PARA O PIX →</button></div><div id="depositArea" class="hidden">
   <header class="deposit-modal-head">
     <h2 id="financeTitle">Depósito <span>via Pix</span></h2>
     <p>Faça o Pix e solicite a conferência.</p>
