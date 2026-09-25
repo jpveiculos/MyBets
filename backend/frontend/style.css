@@ -572,3 +572,35 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 
 
 .credit-choice-grid{display:grid;gap:14px;margin-top:22px}.credit-choice{width:100%;text-align:left;background:#11151d;border:1px solid rgba(255,204,64,.35);border-radius:16px;padding:20px;color:#fff;cursor:pointer}.credit-choice strong{display:block;font-size:18px;margin-bottom:7px}.credit-choice span{display:block;color:#aeb4c2;line-height:1.45;font-size:14px}.credit-choice:hover{border-color:rgba(255,204,64,.8);transform:translateY(-1px)}
+/* ===== ÁREA DO JOGADOR — CABEÇALHO COMPACTO ===== */
+.dash-head{display:grid;grid-template-columns:minmax(220px,.72fr) minmax(420px,1.28fr);align-items:end;gap:18px;margin:20px 0 18px}
+.dash-welcome{min-width:0}.dash-head .eyebrow{font-size:11px}.dash-head h1{font-size:clamp(34px,4vw,48px);margin:10px 0 0;line-height:1}
+.dash-balances{display:grid;grid-template-columns:1fr 1fr;gap:10px;min-width:0}
+.compact-balance{min-width:0;min-height:82px;padding:13px 15px;border-radius:17px;display:flex;align-items:center;gap:12px;background:linear-gradient(145deg,#151b25,#0d1118);border:1px solid rgba(245,197,66,.28);box-shadow:0 10px 26px rgba(0,0,0,.22)}
+.compact-balance .balance-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:13px;background:rgba(245,197,66,.09);font-size:25px}
+.compact-balance small{display:block;color:#aeb5c0;font-size:12px;margin:0 0 3px}
+.compact-balance strong{display:block;font-size:27px;line-height:1.05;margin:0;color:#fff}
+.compact-balance span{display:block;color:#858d9b;font-size:10px;margin-top:4px}
+.credits-balance{border-color:rgba(245,197,66,.32)}
+.withdraw-balance{border-color:rgba(245,197,66,.32)}
+@media(max-width:800px){
+  .landing{padding:14px 16px 42px}
+  .dash-head{display:block;margin:14px 0 12px}
+  .dash-welcome{margin-bottom:12px}
+  .dash-head h1{font-size:38px;margin:7px 0 0}
+  .dash-balances{grid-template-columns:1fr 1fr;gap:8px}
+  .compact-balance{min-height:68px;padding:10px 9px;gap:8px;border-radius:14px}
+  .compact-balance .balance-icon{width:34px;height:34px;flex-basis:34px;border-radius:10px;font-size:19px}
+  .compact-balance small{font-size:10px;line-height:1.15}
+  .compact-balance strong{font-size:20px}
+  .compact-balance span{font-size:9px;margin-top:2px}
+}
+@media(max-width:430px){
+  .landing{padding-left:14px;padding-right:14px}
+  .dash-balances{gap:7px}
+  .compact-balance{padding:9px 7px;gap:7px}
+  .compact-balance .balance-icon{width:31px;height:31px;flex-basis:31px;font-size:17px}
+  .compact-balance strong{font-size:18px}
+  .compact-balance small{font-size:9px}
+  .compact-balance span{font-size:8px}
+}
