@@ -54,31 +54,18 @@ function buildPixPayload(){
   return payload+crc16(payload);
 }
 function qrUrl(payload){return "https://quickchart.io/qr?size=360&margin=2&ecLevel=M&text="+encodeURIComponent(payload)}
-function showAddCreditsChoice(){
-  $("addCreditsChoice").classList.remove("hidden");
-  $("depositPromo").classList.add("hidden");
-  $("depositArea").classList.add("hidden");
-  $("withdrawArea").classList.add("hidden");
-  $("buyCreditsArea").classList.add("hidden");
-  $("financeTitle").textContent="Adicionar crédito";
-}
 function showDepositPromotion(){
-  $("addCreditsChoice").classList.add("hidden");
-  $("depositPromo").classList.remove("hidden");
+    $("depositPromo").classList.remove("hidden");
   $("depositArea").classList.add("hidden");
   $("withdrawArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
 }
 function showDepositPix(){
-  $("addCreditsChoice").classList.add("hidden");
+  ;
   $("depositPromo").classList.add("hidden");
   $("depositArea").classList.remove("hidden");
   $("withdrawArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
-}
-async function openAddCredits(){
-  // O botão "Depositar" abre diretamente o fluxo Pix.
-  await openDeposit();
 }
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
@@ -161,9 +148,9 @@ $("buyCreditsConfirm").onclick=async()=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1200);
   }catch(e){m.style.color="#ff5d6c";m.textContent=e.message}
 };
-$("addCreditsBtn").onclick=openAddCredits;
+$("addCreditsBtn").onclick=openDeposit;
 $("platformCreditsBtn").onclick=openBuyCredits;
-$("usePixDeposit").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=async()=>{showDepositPix();$("financeTitle").textContent="Depósito via Pix";};
+$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=async()=>{showDepositPix();$("financeTitle").textContent="Depósito via Pix";};
 $("withdrawMax").onclick=()=>{
   if(withdrawableBalance>0) $("withdrawAmount").value=withdrawableBalance.toFixed(2);
 };
