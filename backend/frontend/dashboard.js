@@ -163,7 +163,6 @@ $("buyCreditsConfirm").onclick=async()=>{
 };
 $("addCreditsBtn").onclick=openAddCredits;
 $("platformCreditsBtn").onclick=openBuyCredits;
-$("usePlatformBalance").onclick=openBuyCredits;
 $("usePixDeposit").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=async()=>{showDepositPix();$("financeTitle").textContent="Depósito via Pix";};
 $("withdrawMax").onclick=()=>{
   if(withdrawableBalance>0) $("withdrawAmount").value=withdrawableBalance.toFixed(2);
