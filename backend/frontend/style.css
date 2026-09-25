@@ -701,3 +701,26 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .finance-item-copy small{font-size:7.5px}
   .finance-arrow{width:124px;height:50px;font-size:13px}
 }
+
+/* Corrige o aviso de bônus para nunca invadir o botão */
+@media(max-width:720px){
+  .deposit-action .finance-item-copy{min-width:0;overflow:hidden}
+  .deposit-action .finance-item-copy small{
+    display:block;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:8px;
+    line-height:1.1;
+    margin-top:3px;
+  }
+  .deposit-action .finance-arrow{position:relative;z-index:2}
+}
+@media(max-width:430px){
+  .deposit-action .finance-item-copy small{
+    font-size:7px;
+    max-width:100%;
+  }
+}
