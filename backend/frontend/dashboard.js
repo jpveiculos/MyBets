@@ -162,6 +162,7 @@ $("buyCreditsConfirm").onclick=async()=>{
   }catch(e){m.style.color="#ff5d6c";m.textContent=e.message}
 };
 $("addCreditsBtn").onclick=openAddCredits;
+$("platformCreditsBtn").onclick=openBuyCredits;
 $("usePlatformBalance").onclick=openBuyCredits;
 $("usePixDeposit").onclick=openDeposit;$("withdrawBtn").onclick=openWithdraw;$("depositPromoProceed").onclick=showDepositPix;
 $("withdrawMax").onclick=()=>{
