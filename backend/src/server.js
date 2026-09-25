@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestDeposit, requestWithdrawal, purchasePlayCredits, getTransactions } from "./finance.js";
+import { createMercadoPagoDeposit, handleMercadoPagoWebhook, isMercadoPagoConfigured } from "./mercadopago.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, addCreditsWithDepositBonus, addBonusCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
@@ -44,7 +45,16 @@ app.get("/api/health", asyncRoute(async (_req,res) => {
 }));
 
 app.get("/api/settings/public", asyncRoute(async (_req,res) => {
-  res.json({ok:true,settings:await getPublicSettings()});
+  res.json({ok:true,settings:{...await getPublicSettings(),mercadopago_enabled:isMercadoPagoConfigured()}});
+}));
+
+app.post("/api/webhooks/mercadopago", asyncRoute(async (req,res) => {
+  const result=await handleMercadoPagoWebhook({
+    signature:req.get("x-signature"),
+    requestId:req.get("x-request-id"),
+    dataId:req.query["data.id"] || req.body?.data?.id
+  });
+  res.status(200).json({ok:true,result});
 }));
 
 app.post("/api/auth/register", asyncRoute(async (req,res) => {
@@ -114,6 +124,11 @@ app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
 app.post("/api/deposits", requireUser, asyncRoute(async (req,res) => {
   const deposit=await requestDeposit({userId:req.user.id,amount:req.body.amount,playerNote:req.body.playerNote});
   res.status(201).json({ok:true,deposit});
+}));
+
+app.post("/api/payments/mercadopago/create", requireUser, asyncRoute(async (req,res) => {
+  const payment=await createMercadoPagoDeposit({userId:req.user.id,amount:req.body.amount});
+  res.status(201).json({ok:true,payment});
 }));
 
 app.post("/api/credits/purchase", requireUser, asyncRoute(async (req,res) => {
