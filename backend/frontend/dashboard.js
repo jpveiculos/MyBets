@@ -146,6 +146,9 @@ async function openBuyCredits(){
     $("financeModal").classList.remove("hidden");
   }catch(e){alert(e.message)}
 }
+$("buyCreditsMax").onclick=()=>{
+  if(buyCreditsAvailable>0) $("buyCreditsAmount").value=buyCreditsAvailable.toFixed(2);
+};
 $("buyCreditsConfirm").onclick=async()=>{
   const amount=Number($("buyCreditsAmount").value);
   const m=$("buyCreditsMessage");
