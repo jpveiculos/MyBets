@@ -109,7 +109,7 @@ export async function searchTransactionHistory({ query="", type="", from="", to=
             t.reference_id,t.note,t.created_at,s.bet_amount
        FROM transactions t
        JOIN users u ON u.id=t.user_id
-       LEFT JOIN spins s ON s.id::text=t.reference_id AND s.user_id=t.user_id
+       LEFT JOIN spins s ON s.id=t.reference_id AND s.user_id=t.user_id
       ${where.length ? "WHERE " + where.join(" AND ") : ""}
       ORDER BY t.created_at DESC,t.id DESC LIMIT $${values.length}`,
     values
