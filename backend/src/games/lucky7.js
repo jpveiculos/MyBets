@@ -1,4 +1,4 @@
 import { publicGameConfig, spinGame } from "./engine.js";
-export const lucky7={id:"lucky7",name:"My Lucky 7",rows:1,columns:3,minBet:1,maxBet:100,scale:40000000,rtpBps:2073,symbols:[{id:"seven",label:"7️⃣",multiplier:10},{id:"star",label:"⭐",multiplier:5},{id:"bell",label:"🔔",multiplier:4},{id:"cherry",label:"🍒",multiplier:3}],outcomes:[{symbol:"seven",label:"7️⃣",multiplier:10,weight:36870},{symbol:"star",label:"⭐",multiplier:5,weight:257670},{symbol:"bell",label:"🔔",multiplier:4,weight:552150},{symbol:"cherry",label:"🍒",multiplier:3,weight:1474890}]};
+export const lucky7={id:"lucky7",name:"My Lucky 7",rows:1,columns:3,minBet:1,maxBet:100,scale:40000000,rtpBps:3571,symbols:[{id:"seven",label:"7️⃣",multiplier:10},{id:"star",label:"⭐",multiplier:5},{id:"bell",label:"🔔",multiplier:4},{id:"cherry",label:"🍒",multiplier:3}],outcomes:[{symbol:"seven",label:"7️⃣",multiplier:10,weight:63536},{symbol:"star",label:"⭐",multiplier:5,weight:443956},{symbol:"bell",label:"🔔",multiplier:4,weight:951336},{symbol:"cherry",label:"🍒",multiplier:3,weight:2541172}]};
 export const lucky7Config=()=>publicGameConfig(lucky7);
 export const spinLucky7=args=>spinGame(lucky7,args);
