@@ -181,3 +181,20 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS is_banned BOOLEAN NOT NULL DEFAULT FA
 ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_at TIMESTAMP;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS banned_reason TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN NOT NULL DEFAULT FALSE;
+
+
+-- Mercado Pago / pagamentos automáticos
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS payment_provider VARCHAR(30) NOT NULL DEFAULT 'manual_pix';
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_order_id VARCHAR(80);
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_checkout_url TEXT;
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_status VARCHAR(40);
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_status_detail VARCHAR(80);
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_paid_amount NUMERIC(12,2);
+ALTER TABLE deposits ADD COLUMN IF NOT EXISTS mercadopago_updated_at TIMESTAMP;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_deposits_mercadopago_order
+  ON deposits(mercadopago_order_id)
+  WHERE mercadopago_order_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS idx_deposits_payment_provider
+  ON deposits(payment_provider, mercadopago_status, created_at DESC);
