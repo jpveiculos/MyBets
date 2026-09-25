@@ -77,8 +77,8 @@ function showDepositPix(){
   $("buyCreditsArea").classList.add("hidden");
 }
 async function openAddCredits(){
-  financeMode="add-credit";$("financeModal").classList.remove("hidden");
-  showAddCreditsChoice();
+  // O botão "Depositar" abre diretamente o fluxo Pix.
+  await openDeposit();
 }
 async function openDeposit(){
   financeMode="deposit";$("financeModal").classList.remove("hidden");
