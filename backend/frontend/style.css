@@ -685,3 +685,19 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
  .finance-item-copy small{font-size:8px}
  .finance-arrow{width:126px;height:52px;font-size:13px}
 }
+
+/* Ajuste mobile: títulos das ações financeiras em uma única linha */
+@media(max-width:720px){
+  .finance-item-copy{min-width:0}
+  .finance-item-copy strong{font-size:17px;white-space:nowrap;line-height:1.05}
+  .finance-item-copy span{font-size:10.5px;white-space:nowrap}
+  .finance-item-copy small{font-size:8.5px;white-space:nowrap}
+}
+@media(max-width:430px){
+  .player-finance-item{grid-template-columns:58px minmax(0,1fr) 124px;gap:8px}
+  .finance-item-icon{width:56px;height:60px;font-size:27px}
+  .finance-item-copy strong{font-size:14px;letter-spacing:-.15px}
+  .finance-item-copy span{font-size:9px}
+  .finance-item-copy small{font-size:7.5px}
+  .finance-arrow{width:124px;height:50px;font-size:13px}
+}
