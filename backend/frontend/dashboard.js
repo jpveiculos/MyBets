@@ -101,7 +101,6 @@ async function openWithdraw(){
     }
     financeMode="withdraw";
     $("financeModal").classList.remove("hidden");
-    $("addCreditsChoice").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("financeTitle").textContent="Solicitar saque";
     $("depositArea").classList.add("hidden");
@@ -124,7 +123,6 @@ async function openBuyCredits(){
     $("buyCreditsAmount").max=buyCreditsAvailable>0?buyCreditsAvailable.toFixed(2):"0.01";
     $("buyCreditsAmount").value="";
     $("buyCreditsMessage").textContent="";
-    $("addCreditsChoice").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("depositArea").classList.add("hidden");
     $("withdrawArea").classList.add("hidden");
@@ -173,6 +171,6 @@ $("withdrawForm").onsubmit=async e=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1800);
   }catch(e){m.textContent=e.message}
 };
-$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden");$("buyCreditsArea").classList.add("hidden");$("addCreditsChoice").classList.add("hidden")};
+$("closeFinance").onclick=()=>{$("financeModal").classList.add("hidden");$("buyCreditsArea").classList.add("hidden")};
 $("logout").onclick=async()=>{await api("/api/auth/logout",{method:"POST"});location.href="/"};
 load();
