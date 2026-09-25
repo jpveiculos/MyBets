@@ -39,7 +39,7 @@
 <section class="player-finance-list" aria-label="Operações financeiras">
   <article class="player-finance-item deposit-action">
     <div class="finance-item-icon deposit-icon">💠</div>
-    <div class="finance-item-copy"><strong>Depósito</strong><span>Adicione créditos via Pix.</span><small>🎁 Faça um depósito e ganhe bônus.</small></div>
+    <div class="finance-item-copy"><strong>Depósito</strong><span>Adicione créditos automaticamente.</span><small>💳 Pague pelo Mercado Pago e receba os créditos após a confirmação.</small></div>
     <button class="finance-arrow deposit-btn" id="addCreditsBtn" aria-label="Depositar">Depositar&nbsp; ›</button>
   </article>
   <article class="player-finance-item platform-credit-action">
@@ -56,25 +56,16 @@
 <a href="/dashboard.html" class="active"><span>👤</span><b>Área do jogador</b></a>
 </nav>
 <div class="modal-backdrop hidden" id="financeModal"><section class="finance-modal"><button class="modal-close" id="closeFinance" aria-label="Fechar">×</button>
- <div id="depositPromo">  <div class="deposit-promo-badge">🔥 PROMOÇÃO DE DEPÓSITO</div>  <h2 class="deposit-promo-title">DEPOSITE QUALQUER VALOR<br><span>E GANHE BÔNUS</span></h2>  <p class="deposit-promo-lead">Seu depósito será convertido em créditos para jogar com 10% de bônus.</p>  <div class="deposit-promo-example"><div><strong>R$ 50</strong><small>depósito</small></div><b>+</b><div><strong>10%</strong><small>bônus</small></div><i>=</i><div><strong>55</strong><small>créditos para jogar</small></div></div>  <div class="deposit-promo-note">O bônus é creditado junto com a aprovação do depósito pelo administrador.</div>  <button type="button" class="primary-btn full deposit-promo-proceed" id="depositPromoProceed">PROSSEGUIR PARA O PIX →</button></div><div id="depositArea" class="hidden">
-  <header class="deposit-modal-head">
-    <h2 id="financeTitle">Depósito <span>via Pix</span></h2>
-    <p>Faça o Pix e solicite a conferência.</p>
-  </header>
-  <div class="deposit-player-id">
-    <div><span>Identificação do jogador</span><strong id="depositPlayer"></strong></div>
-  </div>
-  <div id="qrCard" class="qr-card">
-    <img id="pixQr" alt="QR Code Pix">
-    <strong>Escaneie o QR Code</strong>
-    <small id="pixReceiver"></small>
-    <div class="pix-code-label">Chave Pix</div><div class="pix-code-row"><input id="pixCode" readonly><button type="button" class="small-btn" id="copyPix">Copiar</button></div>
-  </div>
+ <div id="depositPromo">
+  <div class="deposit-promo-badge">🔥 PROMOÇÃO DE DEPÓSITO</div>
+  <h2 class="deposit-promo-title">DEPOSITE QUALQUER VALOR<br><span>E GANHE BÔNUS</span></h2>
+  <p class="deposit-promo-lead">Seu pagamento será convertido automaticamente em créditos para jogar, com o bônus configurado no sistema.</p>
   <div class="pix-amount-wrap"><label>Valor do depósito<input id="depositAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></label></div>
-  <button type="button" class="primary-btn full" id="pixDone">✓ JÁ FIZ O PIX — SOLICITAR CONFERÊNCIA</button>
+  <div class="deposit-player-id"><div><span>Jogador</span><strong id="depositPlayer"></strong></div></div>
+  <button type="button" class="primary-btn full" id="mercadoPagoPay">PAGAR COM MERCADO PAGO →</button>
   <p class="form-message" id="depositMessage"></p>
-</div>
-<div id="buyCreditsArea" class="hidden"><header class="deposit-modal-head"><h2>Usar saldo da plataforma</h2><p>Converta seu saldo disponível em créditos para jogar.</p></header><div class="withdraw-balance-card"><div><span>Saldo disponível</span><strong id="buyCreditsAvailable">R$ 0,00</strong></div><button type="button" class="small-btn withdraw-max-btn" id="buyCreditsMax">USAR TUDO</button></div><p class="withdraw-balance-help">Use seu saldo disponível para comprar créditos e continuar jogando. Você também pode usar todo o saldo disponível.</p><label>Valor para comprar<input id="buyCreditsAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></label><button type="button" class="primary-btn full" id="buyCreditsConfirm">Comprar créditos</button><p class="form-message" id="buyCreditsMessage"></p></div><div id="withdrawArea" class="hidden">
+  <div class="deposit-promo-note">Após o pagamento ser confirmado pelo Mercado Pago, os créditos são adicionados automaticamente. Não é necessário enviar comprovante.</div>
+</div><div id="buyCreditsArea" class="hidden"><header class="deposit-modal-head"><h2>Usar saldo da plataforma</h2><p>Converta seu saldo disponível em créditos para jogar.</p></header><div class="withdraw-balance-card"><div><span>Saldo disponível</span><strong id="buyCreditsAvailable">R$ 0,00</strong></div><button type="button" class="small-btn withdraw-max-btn" id="buyCreditsMax">USAR TUDO</button></div><p class="withdraw-balance-help">Use seu saldo disponível para comprar créditos e continuar jogando. Você também pode usar todo o saldo disponível.</p><label>Valor para comprar<input id="buyCreditsAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00"></label><button type="button" class="primary-btn full" id="buyCreditsConfirm">Comprar créditos</button><p class="form-message" id="buyCreditsMessage"></p></div><div id="withdrawArea" class="hidden">
   <div class="withdraw-balance-card">
     <div><span>Saldo disponível para saque</span><strong id="withdrawAvailableBalance">R$ 0,00</strong></div>
     <button type="button" class="small-btn withdraw-max-btn" id="withdrawMax">SACAR TUDO</button>
