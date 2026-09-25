@@ -123,7 +123,13 @@ function transactionTypeLabel(type){
  return labels[type]||String(type||"MOVIMENTAÇÃO").replace(/_/g," ").toUpperCase();
 }
 function renderTransactions(transactions){
- $("transactions").innerHTML=transactions.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${esc(transactionTypeLabel(x.type))} • ${money(x.amount)} • ${dateTime(x.created_at)}</small><small>Saldo após: ${money(x.balance_after)}${x.note?" • "+esc(x.note):""}</small></span></div>`).join("")||'<p class="muted">Nenhuma movimentação encontrada.</p>';
+ $("transactions").innerHTML=transactions.map(x=>{
+  const isGame=Number.isFinite(Number(x.bet_amount));
+  const betCredits=isGame?Number(x.bet_amount).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2}):"";
+  const main=isGame?`${esc(transactionTypeLabel(x.type))} • Créditos apostados: ${betCredits} • ${dateTime(x.created_at)}`:`${esc(transactionTypeLabel(x.type))} • ${money(x.amount)} • ${dateTime(x.created_at)}`;
+  const result=isGame?`Saldo após: ${money(x.balance_after)}${Number(x.amount)>0?" • Prêmio: "+money(x.amount):""}`: `Saldo após: ${money(x.balance_after)}${x.note?" • "+esc(x.note):""}`;
+  return `<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>${main}</small><small>${result}</small></span></div>`;
+ }).join("")||'<p class="muted">Nenhuma movimentação encontrada.</p>';
 }
 function historyRow(title,detail,date,kind=""){
  return `<div class="history-item ${kind}"><div><b>${esc(title)}</b><span>${esc(detail||"")}</span></div><time>${dateTime(date)}</time></div>`;
@@ -155,7 +161,12 @@ function openHistoryModal(history){
   <strong>Créditos para jogar:</strong> ${Number(u.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} •
   <strong>Saldo para saque:</strong> ${money(u.withdrawable_balance)} •
   <strong>Reservado:</strong> ${money(u.reserved_balance)}`;
- const txHtml=history.transactions.length?history.transactions.map(x=>historyRow(transactionTypeLabel(x.type),`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`,x.created_at)).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
+ const txHtml=history.transactions.length?history.transactions.map(x=>{
+  const isGame=Number.isFinite(Number(x.bet_amount));
+  const betCredits=isGame?Number(x.bet_amount).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2}):"";
+  const detail=isGame?`Créditos apostados: ${betCredits} • Saldo após: ${money(x.balance_after)}${Number(x.amount)>0?" • Prêmio: "+money(x.amount):""}`:`${money(x.amount)} • Saldo após: ${money(x.balance_after)}${x.note?" • "+x.note:""}`;
+  return historyRow(transactionTypeLabel(x.type),detail,x.created_at);
+ }).join(""):'<p class="muted">Nenhuma movimentação financeira.</p>';
  const depositHtml=history.deposits.length?history.deposits.map(x=>historyRow("DEPÓSITO "+statusLabel(x.status),`Solicitado: ${money(x.amount)}${x.approved_amount!=null?" • Valor confirmado: "+money(x.approved_amount):""}`,x.created_at)).join(""):'<p class="muted">Nenhum depósito registrado.</p>';
  const withdrawalHtml=history.withdrawals.length?history.withdrawals.map(x=>historyRow("SAQUE "+statusLabel(x.status),`Valor: ${money(x.amount)}${x.rejection_reason?" • Motivo: "+x.rejection_reason:""}`,x.created_at)).join(""):'<p class="muted">Nenhum saque registrado.</p>';
  const spinsHtml=history.spins.length?history.spins.map(x=>historyRow(`${String(x.game_id||"jogo").toUpperCase()} • ${Number(x.payout_amount)>0?"PRÊMIO":"APOSTA"}`,`Aposta: ${money(x.bet_amount)} • Resultado: ${esc(x.result_code||x.result)} • Multiplicador: ${esc(x.multiplier)}x • Pagamento: ${money(x.payout_amount)}`,x.created_at)).join(""):'<p class="muted">Nenhuma jogada registrada.</p>';
