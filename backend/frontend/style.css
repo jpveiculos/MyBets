@@ -624,3 +624,37 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
   .finance-card .action-btn{grid-column:2;grid-row:1 / span 2;width:auto;min-width:122px;margin:0;min-height:42px}
   .deposit-action .action-btn{grid-row:1 / span 3}
 }
+
+/* ===== ÁREA DO JOGADOR — AÇÕES COMPACTAS NO MODELO APP ===== */
+.player-finance-list{display:grid;gap:10px;margin:10px 0 0}
+.player-finance-item{min-height:92px;padding:11px 12px;display:grid;grid-template-columns:76px minmax(0,1fr) 54px;align-items:center;gap:13px;border-radius:18px;background:linear-gradient(145deg,#101a27,#091019);border:1px solid rgba(95,150,210,.35);box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.finance-item-icon{width:76px;height:68px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#12243a,#0a111c);border:1px solid rgba(255,255,255,.12);font-size:38px;box-shadow:inset 0 0 20px rgba(0,0,0,.28)}
+.finance-item-copy{min-width:0;display:flex;flex-direction:column;gap:3px}
+.finance-item-copy strong{font-size:21px;line-height:1.1;color:#f5f6f8}
+.finance-item-copy span{font-size:13px;line-height:1.25;color:#aeb5c0}
+.finance-item-copy small{font-size:10px;line-height:1.2;color:#f5c542;font-weight:850;margin-top:2px}
+.finance-arrow{width:54px;height:54px;border:0;border-radius:12px;display:grid;place-items:center;font-size:39px;line-height:1;color:#111;font-weight:300;padding:0;cursor:pointer}
+.finance-arrow:disabled{opacity:.42;filter:grayscale(.65);cursor:not-allowed}
+.deposit-action{border-color:rgba(83,157,220,.42)}
+.deposit-action .finance-arrow{background:linear-gradient(180deg,#ffd94d,#eab52d)}
+.platform-credit-action{border-color:rgba(78,153,204,.34)}
+.platform-credit-action .finance-arrow{background:linear-gradient(180deg,#ffd94d,#eab52d)}
+.withdraw-action{border-color:rgba(36,164,137,.38)}
+.withdraw-action .finance-arrow{background:linear-gradient(180deg,#ffd94d,#eab52d)}
+@media(max-width:720px){
+  .player-finance-list{gap:8px;margin-top:8px}
+  .player-finance-item{min-height:88px;padding:10px;grid-template-columns:68px minmax(0,1fr) 50px;gap:10px;border-radius:17px}
+  .finance-item-icon{width:68px;height:66px;font-size:34px}
+  .finance-item-copy strong{font-size:18px}
+  .finance-item-copy span{font-size:11px}
+  .finance-item-copy small{font-size:9px}
+  .finance-arrow{width:50px;height:50px;font-size:36px;border-radius:11px}
+}
+@media(max-width:430px){
+  .player-finance-item{grid-template-columns:62px minmax(0,1fr) 48px;padding:9px;min-height:80px}
+  .finance-item-icon{width:62px;height:60px;font-size:30px}
+  .finance-item-copy strong{font-size:16px}
+  .finance-item-copy span{font-size:10px}
+  .finance-item-copy small{font-size:8px}
+  .finance-arrow{width:48px;height:48px;font-size:34px}
+}
