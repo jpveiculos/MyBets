@@ -36,10 +36,22 @@
   </div>
 </section>
 
-<section class="feature-grid player-finance-grid">
-  <article class="feature-card action-card finance-card deposit-action"><strong>💠 Depósito</strong><span>Adicione créditos via Pix.</span><small class="deposit-promo-mini">🔥 Deposite qualquer valor e ganhe bônus</small><button class="action-btn deposit-btn" id="addCreditsBtn">Adicionar Créditos</button></article>
-  <article class="feature-card action-card finance-card platform-credit-action"><strong>🪙 Crédito da plataforma</strong><span>Use seu saldo disponível para adicionar créditos.</span><button class="action-btn platform-btn" id="platformCreditsBtn">Usar meu saldo</button></article>
-  <article class="feature-card action-card finance-card withdraw-action"><strong>↗ Saque</strong><span id="withdrawHint">Saque via Pix</span><button class="action-btn withdraw-btn" id="withdrawBtn" disabled>Sacar</button></article>
+<section class="player-finance-list" aria-label="Operações financeiras">
+  <article class="player-finance-item deposit-action">
+    <div class="finance-item-icon deposit-icon">💠</div>
+    <div class="finance-item-copy"><strong>Depositar</strong><span>Faça um depósito via Pix</span><small>🎁 Deposite qualquer valor e ganhe bônus</small></div>
+    <button class="finance-arrow deposit-btn" id="addCreditsBtn" aria-label="Depositar">›</button>
+  </article>
+  <article class="player-finance-item platform-credit-action">
+    <div class="finance-item-icon platform-icon">🪙</div>
+    <div class="finance-item-copy"><strong>Crédito da plataforma</strong><span>Use seu saldo para adicionar créditos</span></div>
+    <button class="finance-arrow platform-btn" id="platformCreditsBtn" aria-label="Usar saldo">›</button>
+  </article>
+  <article class="player-finance-item withdraw-action">
+    <div class="finance-item-icon withdraw-icon">💳</div>
+    <div class="finance-item-copy"><strong>Sacar</strong><span id="withdrawHint">Saque seu saldo via Pix</span></div>
+    <button class="finance-arrow withdraw-btn" id="withdrawBtn" aria-label="Sacar" disabled>›</button>
+  </article>
 </section></section>
 
 </main></div>
