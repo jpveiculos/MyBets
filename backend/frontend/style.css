@@ -571,7 +571,6 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 }
 
 
-.credit-choice-grid{display:grid;gap:14px;margin-top:22px}.credit-choice{width:100%;text-align:left;background:#11151d;border:1px solid rgba(255,204,64,.35);border-radius:16px;padding:20px;color:#fff;cursor:pointer}.credit-choice strong{display:block;font-size:18px;margin-bottom:7px}.credit-choice span{display:block;color:#aeb4c2;line-height:1.45;font-size:14px}.credit-choice:hover{border-color:rgba(255,204,64,.8);transform:translateY(-1px)}
 /* ===== ÁREA DO JOGADOR — CABEÇALHO COMPACTO ===== */
 .dash-head{display:grid;grid-template-columns:minmax(220px,.72fr) minmax(420px,1.28fr);align-items:end;gap:18px;margin:20px 0 18px}
 .dash-welcome{min-width:0}.dash-head .eyebrow{font-size:11px}.dash-head h1{font-size:clamp(34px,4vw,48px);margin:10px 0 0;line-height:1}
