@@ -150,7 +150,6 @@ INSERT INTO site_settings(setting_key, setting_value) VALUES
 ('pix_instructions','Após realizar o Pix, informe o valor enviado e solicite a conferência. O saldo será liberado somente após a conferência do administrador.'),
 ('signup_bonus_amount','50'),
 ('deposit_bonus_percent','10'),
-('roulette_min_bet','0.50'),
 ('roulette_max_bet','100.00'),
 ('audit_log_retention_days','30')
 ON CONFLICT (setting_key) DO NOTHING;
