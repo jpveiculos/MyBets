@@ -103,30 +103,29 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
       },
       body: JSON.stringify({
         type: "online",
-        processing_mode: "manual",
+        processing_mode: "automatic",
         total_amount: value.toFixed(2),
         external_reference: externalReference,
         description: `Créditos MyBets #${deposit.id}`,
-        items: [{
-          external_code: `MYBETS-CREDITS-${deposit.id}`,
-          title: "Créditos para jogar",
-          description: `Créditos MyBets #${deposit.id}`,
-          quantity: 1,
-          unit_price: value.toFixed(2)
-        }],
-        config: {
-          online: {
-            success_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=approved&deposit=${deposit.id}`,
-            failure_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=failed&deposit=${deposit.id}`,
-            pending_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=pending&deposit=${deposit.id}`,
-            auto_return: "approved"
-          }
+        payer: {
+          email: `usuario-${user.id}@mybets.app.br`
+        },
+        transactions: {
+          payments: [{
+            amount: value.toFixed(2),
+            payment_method: {
+              id: "pix",
+              type: "bank_transfer"
+            }
+          }]
         }
       })
     });
 
-    if (!order?.id || !order?.checkout_url) {
-      throw new Error("O Mercado Pago não retornou uma URL de checkout válida.");
+    const payment = order?.transactions?.payments?.[0];
+    const paymentMethod = payment?.payment_method;
+    if (!order?.id || !paymentMethod?.qr_code) {
+      throw new Error("O Mercado Pago não retornou o QR Code Pix.");
     }
 
     await pool.query(
@@ -138,7 +137,7 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
               mercadopago_updated_at=CURRENT_TIMESTAMP,
               updated_at=CURRENT_TIMESTAMP
         WHERE id=$5`,
-      [String(order.id), String(order.checkout_url), order.status || "created",
+      [String(order.id), String(paymentMethod.ticket_url || ""), order.status || "created",
        order.status_detail || "created", deposit.id]
     );
 
@@ -146,8 +145,10 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
       id: deposit.id,
       amount: value,
       status: "pending",
-      checkoutUrl: order.checkout_url,
-      orderId: order.id
+      orderId: order.id,
+      qrCode: paymentMethod.qr_code,
+      qrCodeBase64: paymentMethod.qr_code_base64 || "",
+      ticketUrl: paymentMethod.ticket_url || ""
     };
   } catch (error) {
     await pool.query(
