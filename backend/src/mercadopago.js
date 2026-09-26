@@ -45,23 +45,31 @@ async function mpRequest(path, options = {}) {
 
 function verifyWebhookSignature({ signature, requestId, dataId }) {
   if (!WEBHOOK_SECRET) throw new Error("MERCADOPAGO_WEBHOOK_SECRET não configurado.");
-  if (!signature || !requestId || !dataId) return false;
+  const cleanSignature = String(signature || "").trim();
+  const cleanRequestId = String(requestId || "").trim();
+  const cleanDataId = String(dataId || "").trim().toLowerCase();
+  if (!cleanSignature || !cleanRequestId || !cleanDataId) return false;
 
   let ts = "";
   const receivedSignatures = [];
-  for (const part of String(signature).split(",")) {
-    const [key, ...rest] = part.split("=");
+  for (const part of cleanSignature.split(",")) {
+    const [rawKey, ...rest] = part.split("=");
+    const key = String(rawKey || "").trim();
     const value = rest.join("=").trim();
-    if (key?.trim() === "ts") ts = value;
-    if (key?.trim() === "v1" && value) receivedSignatures.push(value);
+    if (key === "ts") ts = value;
+    if (key === "v1" && value) receivedSignatures.push(value.toLowerCase());
   }
   if (!ts || receivedSignatures.length === 0) return false;
 
-  const manifest = `id:${String(dataId).toLowerCase()};request-id:${requestId};ts:${ts};`;
+  // Manifesto exigido pelo Mercado Pago para Orders:
+  // id:<data.id em minúsculas>;request-id:<x-request-id>;ts:<timestamp>;
+  const manifest = `id:${cleanDataId};request-id:${cleanRequestId};ts:${ts};`;
   const expected = crypto.createHmac("sha256", WEBHOOK_SECRET).update(manifest).digest("hex");
+
   return receivedSignatures.some(received => {
-    const a = Buffer.from(received, "utf8");
-    const b = Buffer.from(expected, "utf8");
+    if (!/^[0-9a-f]{64}$/.test(received)) return false;
+    const a = Buffer.from(received, "hex");
+    const b = Buffer.from(expected, "hex");
     return a.length === b.length && crypto.timingSafeEqual(a, b);
   });
 }
@@ -156,6 +164,82 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
 
 async function getOrder(orderId) {
   return mpRequest(`/v1/orders/${encodeURIComponent(orderId)}`, { method: "GET" });
+}
+
+async function syncDepositFromMercadoPago({ deposit, order }) {
+  if (!deposit || !order) return { ignored: true };
+
+  if (String(order.id) !== String(deposit.mercadopago_order_id)) {
+    return { ignored: true, reason: "order_mismatch" };
+  }
+
+  await pool.query(
+    `UPDATE deposits
+        SET mercadopago_status=$1,
+            mercadopago_status_detail=$2,
+            mercadopago_paid_amount=$3,
+            mercadopago_updated_at=CURRENT_TIMESTAMP,
+            updated_at=CURRENT_TIMESTAMP
+      WHERE id=$4`,
+    [order.status || null, order.status_detail || null,
+     money(order.total_paid_amount || 0), deposit.id]
+  );
+
+  if (order.status === "processed" && order.status_detail === "accredited") {
+    return await creditApprovedDeposit({ order, deposit });
+  }
+
+  if (["failed","canceled","expired"].includes(order.status)) {
+    await pool.query(
+      `UPDATE deposits SET status='rejected',updated_at=CURRENT_TIMESTAMP
+        WHERE id=$1 AND status='pending'`,
+      [deposit.id]
+    );
+  }
+
+  return {
+    received: true,
+    depositId: deposit.id,
+    orderStatus: order.status,
+    orderStatusDetail: order.status_detail,
+    paidAmount: money(order.total_paid_amount || 0)
+  };
+}
+
+export async function syncMercadoPagoDeposit({ depositId, userId }) {
+  const params = userId
+    ? [depositId, userId]
+    : [depositId];
+
+  const result = await pool.query(
+    userId
+      ? `SELECT * FROM deposits
+           WHERE id=$1 AND user_id=$2 AND payment_provider='mercadopago'
+           LIMIT 1`
+      : `SELECT * FROM deposits
+           WHERE id=$1 AND payment_provider='mercadopago'
+           LIMIT 1`,
+    params
+  );
+  const deposit = result.rows[0];
+  if (!deposit) {
+    const error = new Error("Depósito não encontrado.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  if (!deposit.mercadopago_order_id) {
+    return { depositId: deposit.id, status: deposit.status, orderStatus: null };
+  }
+
+  const order = await getOrder(deposit.mercadopago_order_id);
+  const synced = await syncDepositFromMercadoPago({ deposit, order });
+
+  return {
+    depositId: deposit.id,
+    depositStatus: (await pool.query("SELECT status FROM deposits WHERE id=$1", [deposit.id])).rows[0]?.status || deposit.status,
+    ...synced
+  };
 }
 
 async function creditApprovedDeposit({ order, deposit }) {
@@ -261,31 +345,7 @@ export async function handleMercadoPagoWebhook({ signature, requestId, dataId })
   const deposit = depositResult.rows[0];
   if (!deposit) return { ignored: true };
 
-  await pool.query(
-    `UPDATE deposits
-        SET mercadopago_status=$1,
-            mercadopago_status_detail=$2,
-            mercadopago_paid_amount=$3,
-            mercadopago_updated_at=CURRENT_TIMESTAMP,
-            updated_at=CURRENT_TIMESTAMP
-      WHERE id=$4`,
-    [order.status || null, order.status_detail || null,
-     money(order.total_paid_amount || 0), deposit.id]
-  );
-
-  if (order.status === "processed" && order.status_detail === "accredited") {
-    return await creditApprovedDeposit({ order, deposit });
-  }
-
-  if (["failed","canceled","expired","refunded"].includes(order.status)) {
-    await pool.query(
-      `UPDATE deposits SET status=$1,updated_at=CURRENT_TIMESTAMP
-        WHERE id=$2 AND status='pending'`,
-      [order.status === "refunded" ? "refunded" : "rejected", deposit.id]
-    );
-  }
-
-  return { received: true, orderStatus: order.status, orderStatusDetail: order.status_detail };
+  return await syncDepositFromMercadoPago({ deposit, order });
 }
 
 export function isMercadoPagoConfigured() {
