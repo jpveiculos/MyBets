@@ -104,7 +104,26 @@ async function createMercadoPagoPayment(){
     return;
   }
 
-  const button=$("mercadoPagoPay");
+  
+$("pixCopyButton").onclick=async()=>{
+  const value=$("pixPaymentCopy").value.trim();
+  if(!value)return;
+  try{
+    await navigator.clipboard.writeText(value);
+    $("pixCopyButton").textContent="Copiado";
+    setTimeout(()=>$("pixCopyButton").textContent="Copiar",1500);
+  }catch(e){
+    const input=$("pixPaymentCopy");
+    input.focus();
+    input.select();
+    input.setSelectionRange(0,input.value.length);
+    try{document.execCommand("copy")}catch{}
+    $("pixCopyButton").textContent="Copiado";
+    setTimeout(()=>$("pixCopyButton").textContent="Copiar",1500);
+  }
+};
+
+const button=$("mercadoPagoPay");
   button.disabled=true;
   m.style.color="";
   m.textContent="Preparando o pagamento seguro…";
