@@ -17,6 +17,7 @@ export async function listDeposits() {
   const result=await pool.query(
     `SELECT d.*,u.username FROM deposits d
        JOIN users u ON u.id=d.user_id
+      WHERE COALESCE(d.payment_provider,'manual_pix') <> 'mercadopago'
       ORDER BY d.created_at DESC`
   );
   return result.rows;
