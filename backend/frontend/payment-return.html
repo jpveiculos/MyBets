@@ -31,17 +31,14 @@ const status=document.getElementById("status");
 const back=document.getElementById("back");
 
 function finish(result){
-  try{
-    if(window.opener){
-      window.opener.postMessage({type:"mybets-mercadopago-result",result},location.origin);
-    }
-  }catch{}
-  setTimeout(()=>{
-    try{window.close()}catch{}
-    if(!window.closed){
-      back.classList.remove("hidden");
-    }
-  },250);
+  const target="/dashboard.html?payment="+encodeURIComponent(
+    result?.depositStatus==="approved" ? "approved" :
+    result?.depositStatus==="rejected" ? "failed" : (payment||"pending")
+  )+"&deposit="+encodeURIComponent(depositId);
+
+  // Retorno automático: substitui a página do Checkout pela área do jogador.
+  // Não depende de window.close(), que alguns navegadores bloqueiam.
+  setTimeout(()=>{location.replace(target)},250);
 }
 
 async function check(){
