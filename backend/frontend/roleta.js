@@ -234,7 +234,7 @@ function changeBet(delta=.50){
 const WHEEL_OFFSET=-1;
 
 function targetForSector(sector){
-  return WHEEL_OFFSET-sectorGeometry(sector).center;
+  return -sectorGeometry(sector).center;
 }
 
 function showWin(amount){
