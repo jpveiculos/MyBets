@@ -231,8 +231,10 @@ function changeBet(delta=.50){
   updatePrizeValues();
 }
 
+const WHEEL_OFFSET=-1;
+
 function targetForSector(sector){
-  return -sectorGeometry(sector).center;
+  return WHEEL_OFFSET-sectorGeometry(sector).center;
 }
 
 function showWin(amount){
@@ -276,8 +278,8 @@ async function loadConfig(){
   drawWheel();
   updatePrizeValues();
 
-  // Estado inicial: primeiro prêmio centralizado exatamente em 0°, sob o ponteiro no topo.
-  rotation=0;
+  // Estado inicial: a roda fica 1° no sentido anti-horário, mantendo o primeiro prêmio centralizado sob o ponteiro.
+  rotation=WHEEL_OFFSET;
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
 
