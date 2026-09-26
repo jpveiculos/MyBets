@@ -90,10 +90,7 @@ function renderUsers(users){
  const filtered=term?users.filter(x=>String(x.username||"").toLowerCase().includes(term)||String(x.id).includes(term)||String(x.cpf||"").includes(term)):users;
  $("users").innerHTML=filtered.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: ${esc(x.cpf||"Não informado")} • Cadastro: ${dateTime(x.created_at)} • Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(x.withdrawable_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn history-user">Histórico</button><button data-id="${x.id}" class="small-btn add-bonus-credits">+ bônus de crédito</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário encontrado.</p>';
 }
-function renderDeposits(deposits){
- $("deposits").innerHTML=deposits.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>Informado: ${money(x.amount)} • ${dateTime(x.created_at)}</small><span class="admin-status ${statusClass(x.status)}">${statusLabel(x.status)}${x.approved_amount!=null?" • Creditado: "+money(x.approved_amount):""}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-deposit" data-id="'+x.id+'" data-username="'+esc(x.username)+'" data-amount="'+x.amount+'">Conferir / creditar</button><button class="small-btn reject-deposit" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`).join("")||'<p class="muted">Nenhum depósito.</p>';
-}
-function renderWithdrawals(withdrawals){
+function renderWithdrawalsfunction renderWithdrawals(withdrawals){
  $("withdrawals").innerHTML=withdrawals.map(x=>{
   const status=x.status==="pending"?"AGUARDANDO ANÁLISE":statusLabel(x.status).toUpperCase();
   return `<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: <strong>${esc(x.cpf||"Não informado")}</strong></small><small>Valor: ${money(x.amount)} • Chave Pix: ${esc(x.pix_key)} • ${dateTime(x.created_at)}</small><small>Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(Math.max(0,Number(x.cash_balance||0)-Number(x.reserved_balance||0)))}</small><span class="admin-status ${statusClass(x.status)}">${status}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`;
@@ -249,46 +246,14 @@ const bonusCard=`<section class="admin-bonus-card"><div class="admin-bonus-card-
  const rows=visible.map(x=>`<div class="admin-row"><span><b>${esc(settingLabel(x.setting_key))}</b><small>${esc(settingValue(x.setting_key,x.setting_value))}</small></span><button class="small-btn edit-setting" data-key="${esc(x.setting_key)}" data-value="${esc(x.setting_value)}">Editar</button></div>`).join("");
  $("settings").innerHTML=depositBonusCard+bonusCard+rows;
 }
-function renderPendingEvents(deposits,withdrawals){
- const pendingDeposits=deposits.filter(x=>x.status==="pending");
+function renderPendingEvents(withdrawals){
  const pendingWithdrawals=withdrawals.filter(x=>x.status==="pending");
- const events=[
-  ...pendingDeposits.map(x=>({kind:"deposit",date:x.created_at,id:x.id,user:x.username,amount:x.amount})),
-  ...pendingWithdrawals.map(x=>({kind:"withdrawal",date:x.created_at,id:x.id,user:x.username,cpf:x.cpf,amount:x.amount,pix:x.pix_key}))
- ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+ const events=pendingWithdrawals.map(x=>({kind:"withdrawal",date:x.created_at,id:x.id,user:x.username,cpf:x.cpf,amount:x.amount,pix:x.pix_key})).sort((a,b)=>new Date(b.date)-new Date(a.date));
  $("eventsCount").textContent=events.length+" pendente"+(events.length===1?"":"s");
- if(!events.length){
-  $("pendingEvents").innerHTML='<div class="admin-empty-events"><strong>Nenhum evento novo</strong><span>Tudo resolvido por enquanto.</span></div>';
-  return;
- }
- $("pendingEvents").innerHTML=events.map(x=>x.kind==="deposit"
-  ?`<div class="admin-event admin-event-deposit"><div class="admin-event-icon">↓</div><div class="admin-event-body"><b>Novo depósito #${x.id}</b><span>${esc(x.user)} • ${money(x.amount)} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn quick-approve-deposit" data-id="${x.id}" data-amount="${x.amount}">Aprovar e creditar</button><button class="small-btn reject-deposit" data-id="${x.id}">Rejeitar</button></div></div>`
-  :`<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #${x.id}</b><span>${esc(x.user)} • CPF: ${esc(x.cpf||"Não informado")} • ${money(x.amount)} • Pix: ${esc(x.pix||"—")} • ${dateTime(x.date)}</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="${x.id}">Aprovar</button><button class="small-btn reject-withdrawal" data-id="${x.id}">Rejeitar</button></div></div>`
- ).join("");
+ if(!events.length){$("pendingEvents").innerHTML='<div class="admin-empty-events"><strong>Nenhum evento novo</strong><span>Tudo resolvido por enquanto.</span></div>';return;}
+ $("pendingEvents").innerHTML=events.map(x=>'<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #'+x.id+'</b><span>'+esc(x.user)+' • CPF: '+esc(x.cpf||"Não informado")+' • '+money(x.amount)+' • Pix: '+esc(x.pix||"—")+' • '+dateTime(x.date)+'</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button></div></div>').join("");
 }
-function openDepositEditor(id,username,amount){
- pauseAutoRefresh();editingDepositId=id;
- $("depositTitle").textContent="Confirmar depósito #"+id;
- $("depositInfo").textContent="Jogador: "+username;
- $("depositDeclared").value=money(amount);
- $("depositApproved").value=Number(amount).toFixed(2);
- $("depositMessage").textContent="";
- $("depositModal").classList.remove("hidden");$("depositModal").setAttribute("aria-hidden","false");
- setTimeout(()=>{$("depositApproved").focus();$("depositApproved").select()},50);
-}
-function closeDepositEditor(){
- editingDepositId=null;$("depositModal").classList.add("hidden");$("depositModal").setAttribute("aria-hidden","true");$("depositMessage").textContent="";resumeAutoRefresh();load();
-}
-async function confirmDeposit(){
- if(!editingDepositId)return;
- const field=$("depositApproved"),value=Number(String(field.value).replace(",","."));if(!Number.isFinite(value)||value<=0){$("depositMessage").textContent="Informe um valor válido.";field.focus();return}
- $("depositConfirm").disabled=true;$("depositMessage").textContent="Confirmando e creditando...";
- try{
-  await api("/api/admin/deposits/"+editingDepositId+"/approve",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({approvedAmount:value})});
-  $("depositMessage").textContent="Depósito confirmado e créditos adicionados.";setTimeout(closeDepositEditor,500);
- }catch(e){$("depositMessage").textContent=e.message}finally{$("depositConfirm").disabled=false}
-}
-function showAdminLogin(){
+function showAdminLoginfunction showAdminLogin(){
  adminAuthenticated=false;pauseAutoRefresh();$("loginPanel").classList.remove("hidden");$("loginPanel").setAttribute("aria-hidden","false");$("adminUser").focus();
 }
 async function verifyAdminSession(){
@@ -307,11 +272,11 @@ $("adminLogin")?.addEventListener("submit",adminLogin);
 async function load(){
  if(!adminAuthenticated)return false;
  try{
-  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,d,w,s,t,rq]=await Promise.all([api("/api/admin/users"),api("/api/admin/deposits"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString()),api("/api/admin/roulette/config")]);
-  const deposits=Array.isArray(d.deposits)?d.deposits:[],withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[],roulette=rq.roulette||null; cachedUsers=users;
-  const pendingDeposits=deposits.filter(x=>x.status==="pending"),pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingDeposits.length+pendingWithdrawals.length;
-  $("depositsCount").textContent=pendingDeposits.length;$("withdrawalsCount").textContent=pendingWithdrawals.length;
-  renderPendingEvents(deposits,withdrawals);renderUsers(users);renderDeposits(deposits);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings,roulette);
+  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,w,s,t,rq]=await Promise.all([api("/api/admin/users"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString()),api("/api/admin/roulette/config")]);
+  const withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[],roulette=rq.roulette||null; cachedUsers=users;
+  const pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingWithdrawals.length;
+  $("withdrawalsCount").textContent=pendingWithdrawals.length;
+  renderPendingEvents(withdrawals);renderUsers(users);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings,roulette);
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
    if(notifyReady&&"Notification"in window&&Notification.permission==="granted"){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification("MyBets • Novo evento",{body:`${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`,tag:"new-admin-event",data:{url:"/admin.html"},renotify:true})}catch(error){console.warn("Notificação local:",error)}}
@@ -331,9 +296,6 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
   try{await api("/api/admin/settings/signup_bonus_amount",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({value:value.toFixed(2)})});msg.textContent="Créditos salvos. A nova quantidade vale para os próximos cadastros.";await load();}
   catch(e){msg.textContent=e.message||"Não foi possível salvar."}finally{button.disabled=false}
  });
- document.querySelectorAll(".approve-deposit").forEach(b=>b.onclick=()=>openDepositEditor(b.dataset.id,b.dataset.username,b.dataset.amount));
- document.querySelectorAll(".quick-approve-deposit").forEach(b=>b.onclick=async()=>{if(!confirm("Aprovar este depósito e converter o valor em créditos com o bônus configurado?"))return;await action("/api/admin/deposits/"+b.dataset.id+"/approve","POST",{approvedAmount:Number(b.dataset.amount)});});
- document.querySelectorAll(".reject-deposit").forEach(b=>b.onclick=()=>action("/api/admin/deposits/"+b.dataset.id+"/reject","POST",{}));
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".history-user").forEach(b=>b.onclick=()=>openUserHistory(b.dataset.id));
@@ -379,16 +341,13 @@ $("adminLogout").onclick=async()=>{
  try{await api("/api/auth/admin-logout",{method:"POST"})}catch(error){$("adminMessage").textContent=error.message||"Não foi possível sair.";button.disabled=false;return}
  adminAuthenticated=false;if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}window.location.replace("/");
 };
-$("depositClose").onclick=closeDepositEditor;$("depositCancel").onclick=closeDepositEditor;$("depositConfirm").onclick=confirmDeposit;
-$("depositModal").addEventListener("click",e=>{if(e.target.id==="depositModal")closeDepositEditor()});
-$("depositApproved").addEventListener("input",()=>{$("depositMessage").textContent=""});
 bindNavigation();
 registerServiceWorker();
 if("Notification"in window&&Notification.permission==="granted")$("notifyStatus").textContent=isAdminHomeScreenApp()?"Permissão já concedida. Toque em ATIVAR NOTIFICAÇÕES para concluir o cadastro deste dispositivo.":"Abra o MyBets pelo ícone da Tela de Início para usar notificações.";
 (async()=>{
  if(await verifyAdminSession()){
   const hash=location.hash.replace("#","");
-  const initialView=["users","deposits","withdrawals","transactions","settings","roulette"].includes(hash)?hash:"dashboard";
+  const initialView=["users","withdrawals","transactions","settings","roulette"].includes(hash)?hash:"dashboard";
   openView(initialView);
   await load();await updateAppBadge();setInterval(()=>{if(adminAuthenticated)updateAppBadge()},5000);resumeAutoRefresh();
  }
