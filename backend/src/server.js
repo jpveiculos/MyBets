@@ -211,7 +211,8 @@ app.post("/api/admin/push/unsubscribe", requireAdmin, asyncRoute(async (req,res)
 }));
 app.get("/api/admin/notifications/count", requireAdmin, asyncRoute(async (_req,res) => {
   const [d,w]=await Promise.all([
-    pool.query("SELECT COUNT(*)::int AS count FROM deposits WHERE status='pending'"),
+    pool.query("SELECT COUNT(*)::int AS count FROM deposits
+     WHERE status='pending' AND COALESCE(payment_provider,'manual_pix') <> 'mercadopago'"),
     pool.query("SELECT COUNT(*)::int AS count FROM withdrawals WHERE status='pending'")
   ]);
   res.json({ok:true,count:Number(d.rows[0].count)+Number(w.rows[0].count)});
