@@ -116,9 +116,9 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
         }],
         config: {
           online: {
-            success_url: `${PUBLIC_BASE_URL}/dashboard.html?payment=approved&deposit=${deposit.id}`,
-            failure_url: `${PUBLIC_BASE_URL}/dashboard.html?payment=failed&deposit=${deposit.id}`,
-            pending_url: `${PUBLIC_BASE_URL}/dashboard.html?payment=pending&deposit=${deposit.id}`,
+            success_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=approved&deposit=${deposit.id}`,
+            failure_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=failed&deposit=${deposit.id}`,
+            pending_url: `${PUBLIC_BASE_URL}/payment-return.html?payment=pending&deposit=${deposit.id}`,
             auto_return: "approved"
           }
         }
