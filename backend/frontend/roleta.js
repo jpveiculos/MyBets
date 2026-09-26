@@ -231,7 +231,7 @@ function changeBet(delta=.50){
   updatePrizeValues();
 }
 
-const WHEEL_OFFSET=-1;
+const WHEEL_OFFSET=0;
 
 function targetForSector(sector){
   return -sectorGeometry(sector).center;
@@ -278,7 +278,7 @@ async function loadConfig(){
   drawWheel();
   updatePrizeValues();
 
-  // Estado inicial: a roda fica 1° no sentido anti-horário, mantendo o primeiro prêmio centralizado sob o ponteiro.
+  // Estado inicial: o centro da primeira fatia de prêmio fica exatamente sob o ponteiro.
   rotation=WHEEL_OFFSET;
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
