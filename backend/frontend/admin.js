@@ -90,7 +90,7 @@ function renderUsers(users){
  const filtered=term?users.filter(x=>String(x.username||"").toLowerCase().includes(term)||String(x.id).includes(term)||String(x.cpf||"").includes(term)):users;
  $("users").innerHTML=filtered.map(x=>`<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: ${esc(x.cpf||"Não informado")} • Cadastro: ${dateTime(x.created_at)} • Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(x.withdrawable_balance)} • Reserva: ${money(x.reserved_balance)} • Status: ${x.is_banned?"BANIDO":"ATIVO"}</small></span><span class="row-actions"><button data-id="${x.id}" class="small-btn history-user">Histórico</button><button data-id="${x.id}" class="small-btn add-bonus-credits">+ bônus de crédito</button>${x.is_banned?'<button data-id="'+x.id+'" class="small-btn unban-user">Desbanir</button>':'<button data-id="'+x.id+'" class="small-btn ban-user">Banir</button>'}<button data-id="${x.id}" class="small-btn delete-user">Excluir</button></span></div>`).join("")||'<p class="muted">Nenhum usuário encontrado.</p>';
 }
-function renderWithdrawalsfunction renderWithdrawals(withdrawals){
+function renderWithdrawals(withdrawals){
  $("withdrawals").innerHTML=withdrawals.map(x=>{
   const status=x.status==="pending"?"AGUARDANDO ANÁLISE":statusLabel(x.status).toUpperCase();
   return `<div class="admin-row"><span><b>#${x.id} • ${esc(x.username)}</b><small>CPF: <strong>${esc(x.cpf||"Não informado")}</strong></small><small>Valor: ${money(x.amount)} • Chave Pix: ${esc(x.pix_key)} • ${dateTime(x.created_at)}</small><small>Créditos para jogar: ${Number(x.play_credits||0).toLocaleString("pt-BR",{maximumFractionDigits:2})} • Saldo para saque: ${money(Math.max(0,Number(x.cash_balance||0)-Number(x.reserved_balance||0)))}</small><span class="admin-status ${statusClass(x.status)}">${status}</span></span><span class="row-actions">${x.status==="pending"?'<button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button>':""}</span></div>`;
@@ -253,7 +253,7 @@ function renderPendingEvents(withdrawals){
  if(!events.length){$("pendingEvents").innerHTML='<div class="admin-empty-events"><strong>Nenhum evento novo</strong><span>Tudo resolvido por enquanto.</span></div>';return;}
  $("pendingEvents").innerHTML=events.map(x=>'<div class="admin-event admin-event-withdrawal"><div class="admin-event-icon">↑</div><div class="admin-event-body"><b>Novo saque #'+x.id+'</b><span>'+esc(x.user)+' • CPF: '+esc(x.cpf||"Não informado")+' • '+money(x.amount)+' • Pix: '+esc(x.pix||"—")+' • '+dateTime(x.date)+'</span></div><div class="row-actions"><button class="small-btn approve-withdrawal" data-id="'+x.id+'">Aprovar</button><button class="small-btn reject-withdrawal" data-id="'+x.id+'">Rejeitar</button></div></div>').join("");
 }
-function showAdminLoginfunction showAdminLogin(){
+function showAdminLogin(){
  adminAuthenticated=false;pauseAutoRefresh();$("loginPanel").classList.remove("hidden");$("loginPanel").setAttribute("aria-hidden","false");$("adminUser").focus();
 }
 async function verifyAdminSession(){
