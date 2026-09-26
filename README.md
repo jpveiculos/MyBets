@@ -5,8 +5,6 @@ Projeto da plataforma MyBets.
 ## Estrutura
 - Roleta
 - My Tiger
-- My Dragon
-- My Lucky 7
 - Conta do jogador e saldo virtual
 - Depósitos manuais via Pix/QR Code
 - Saques manuais com reserva e regras de liberação
