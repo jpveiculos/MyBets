@@ -2,8 +2,8 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=80;
-const GROUP_SIZE=5;
+const TOTAL_SECTORS=96;
+const GROUP_SIZE=6;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
@@ -31,7 +31,7 @@ async function getConfig(){
 }
 
 function sortearSetor(){
-  // Cada um dos 80 setores tem exatamente a mesma probabilidade: 1/80.
+  // Cada um dos 96 setores tem exatamente a mesma probabilidade: 1/96.
   return randomInt(DRAW_DENOMINATOR);
 }
 
