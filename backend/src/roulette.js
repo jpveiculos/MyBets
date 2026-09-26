@@ -7,9 +7,7 @@ const GROUP_SIZE=6;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
-const LOSS_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE!==0);
 
-// Configuração fixa da roleta: 4x 2, 4x 3, 4x 4 e 4x 5 em 16 grupos de prêmio.
 const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
 
 const DEFAULT_MIN_BET=.50;
