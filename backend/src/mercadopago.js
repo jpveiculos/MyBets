@@ -348,6 +348,37 @@ export async function handleMercadoPagoWebhook({ signature, requestId, dataId })
   return await syncDepositFromMercadoPago({ deposit, order });
 }
 
+
+export async function reconcilePendingMercadoPagoDeposits() {
+  const result = await pool.query(
+    `SELECT * FROM deposits
+       WHERE status='pending'
+         AND payment_provider='mercadopago'
+         AND mercadopago_order_id IS NOT NULL
+       ORDER BY created_at ASC
+       LIMIT 50`
+  );
+
+  const summary = { checked: 0, approved: 0, rejected: 0, pending: 0, errors: 0 };
+
+  for (const deposit of result.rows) {
+    summary.checked += 1;
+    try {
+      const order = await getOrder(deposit.mercadopago_order_id);
+      const synced = await syncDepositFromMercadoPago({ deposit, order });
+
+      if (synced?.approved || synced?.alreadyApproved) summary.approved += 1;
+      else if (["failed", "canceled", "expired"].includes(order?.status)) summary.rejected += 1;
+      else summary.pending += 1;
+    } catch (error) {
+      summary.errors += 1;
+      console.error(`Falha ao sincronizar depósito Mercado Pago #${deposit.id}:`, error);
+    }
+  }
+
+  return summary;
+}
+
 export function isMercadoPagoConfigured() {
   return Boolean(ACCESS_TOKEN && WEBHOOK_SECRET);
 }
