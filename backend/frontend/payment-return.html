@@ -31,10 +31,7 @@ const status=document.getElementById("status");
 const back=document.getElementById("back");
 
 function finish(result){
-  const target="/dashboard.html?payment="+encodeURIComponent(
-    result?.depositStatus==="approved" ? "approved" :
-    result?.depositStatus==="rejected" ? "failed" : (payment||"pending")
-  )+"&deposit="+encodeURIComponent(depositId);
+  const target="/dashboard.html";
 
   // Retorno automático: substitui a página do Checkout pela área do jogador.
   // Não depende de window.close(), que alguns navegadores bloqueiam.
