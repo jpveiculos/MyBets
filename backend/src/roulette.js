@@ -23,9 +23,9 @@ async function getSetting(key,fallback){
 
 async function getConfig(){
   const prizes=[...DEFAULT_PRIZES];
-  const minRaw=Number(await getSetting("roulette_min_bet",String(DEFAULT_MIN_BET)));
+  // A aposta mínima é fixa em R$ 0,50 e não depende da configuração administrativa.
+  const minBet=DEFAULT_MIN_BET;
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
-  const minBet=Number.isFinite(minRaw)&&minRaw>=DEFAULT_MIN_BET?Number(minRaw.toFixed(2)):DEFAULT_MIN_BET;
   const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Number(maxRaw.toFixed(2)):DEFAULT_MAX_BET;
   return {prizes,minBet,maxBet};
 }
