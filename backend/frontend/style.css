@@ -463,6 +463,7 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 
 /* Admin: controles da configuração da roleta */
 .admin-roulette-prizes{display:block;margin-top:14px}
+.admin-static-field{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:68px;padding:12px 14px;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:#090b10}.admin-static-field span{color:#aeb5c0;font-size:12px}.admin-static-field strong{color:#f5c542;font-size:18px}.admin-static-field small{color:#747d89;font-size:11px}
 .admin-roulette-save-actions{margin-top:14px}
 
 
