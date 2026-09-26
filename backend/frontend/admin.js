@@ -8,8 +8,6 @@ let adminAuthenticated=false;
 let pushSubscription=null;
 let notifyReady=false;
 let refreshTimer=null;
-let editingDepositId=null;
-let isEditingDeposit=false;
 let currentView="dashboard";
 let userSearchTerm="";
 let cachedUsers=[];
@@ -56,11 +54,11 @@ async function updateAppBadge(){
   if(navigator.setAppBadge&&count>0)await navigator.setAppBadge(count);else if(navigator.clearAppBadge)await navigator.clearAppBadge();
  }catch{}
 }
-function pauseAutoRefresh(){isEditingDeposit=true;if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
+function pauseAutoRefresh(){if(refreshTimer){clearInterval(refreshTimer);refreshTimer=null}}
 function resumeAutoRefresh(){
- isEditingDeposit=false;if(refreshTimer)clearInterval(refreshTimer);
+ if(refreshTimer)clearInterval(refreshTimer);
  if(!adminAuthenticated)return;
- refreshTimer=setInterval(()=>{if(adminAuthenticated&&!isEditingDeposit)load()},10000);
+ refreshTimer=setInterval(()=>{if(adminAuthenticated)load()},10000);
 }
 function openView(view){
  closeMobileMenu();
