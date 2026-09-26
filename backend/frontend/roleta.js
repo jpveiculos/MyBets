@@ -1,18 +1,16 @@
-const TOTAL=96;
-const GROUP_SIZE=6;
-const PRIZE_COUNT=TOTAL/GROUP_SIZE;
-const GROUP_ANGLE=360/PRIZE_COUNT;
+let TOTAL=96;
+let GROUP_SIZE=6;
+let PRIZE_COUNT=TOTAL/GROUP_SIZE;
+let GROUP_ANGLE=360/PRIZE_COUNT;
 // A fatia colorida ocupa metade do grupo; os 5 setores de perda
 // são comprimidos para que a área preta continue exatamente igual à colorida.
-const PRIZE_ANGLE=GROUP_ANGLE/2;
-const LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
+let PRIZE_ANGLE=GROUP_ANGLE/2;
+let LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
 
-const PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
-
+let PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 let MIN_BET=.50;
 let MAX_BET=100;
-let prizes=[...DEFAULT_PRIZES];
+let prizes=[];
 let rotation=-PRIZE_ANGLE/2;
 let spinning=false;
 let configLoaded=false;
@@ -44,6 +42,14 @@ function polar(cx,cy,r,a){
 function wedge(cx,cy,r,a0,a1){
   const p0=polar(cx,cy,r,a0),p1=polar(cx,cy,r,a1);
   return `M ${cx} ${cy} L ${p0[0]} ${p0[1]} A ${r} ${r} 0 ${a1-a0>180?1:0} 1 ${p1[0]} ${p1[1]} Z`;
+}
+
+function rebuildGeometry(){
+  PRIZE_COUNT=TOTAL/GROUP_SIZE;
+  GROUP_ANGLE=360/PRIZE_COUNT;
+  PRIZE_ANGLE=GROUP_ANGLE/2;
+  LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
+  PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 }
 
 function sectorGeometry(sector){
@@ -194,7 +200,7 @@ function drawWheel(){
 function updatePrizeValues(){
   const bet=getBet();
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
-    const multiplier=Number(prizes[index]||DEFAULT_PRIZES[index]);
+    const multiplier=Number(prizes[index]||0);
     const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
     t.textContent=money(value);
   });
@@ -211,7 +217,7 @@ function normalizeBet(){
   $("betAmount").value=value.toFixed(2);
 }
 
-function changeBet(delta){
+function changeBet(delta=.50){
   const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((getBet()+delta).toFixed(2))));
   $("betAmount").value=next.toFixed(2);
   updatePrizeValues();
@@ -234,17 +240,26 @@ async function loadConfig(){
     const d=await api("/api/roulette/config");
     const r=d.roulette;
 
-    // O valor mínimo da roleta é fixo em R$ 0,50.
-    MIN_BET=.50;
-    MAX_BET=Number(r.maxBet)||100;
+    TOTAL=Number(r.totalSectors);
+    GROUP_SIZE=Number(r.groupSize);
+    MIN_BET=Number(r.minBet);
+    MAX_BET=Number(r.maxBet);
+    prizes=Array.isArray(r.prizes)?r.prizes.map(Number):[];
 
-    const configured=Array.isArray(r.prizes)?r.prizes.map(Number):[];
-    const exactConfig=configured.length===DEFAULT_PRIZES.length&&configured.every((value,index)=>value===DEFAULT_PRIZES[index]);
-    prizes=exactConfig?configured:[...DEFAULT_PRIZES];
-  }catch{
-    MIN_BET=.50;
-    MAX_BET=100;
-    prizes=[...DEFAULT_PRIZES];
+    if(!Number.isInteger(TOTAL)||TOTAL<=0)throw new Error("Configuração de setores inválida.");
+    if(!Number.isInteger(GROUP_SIZE)||GROUP_SIZE<2||TOTAL%GROUP_SIZE!==0)throw new Error("Configuração de grupos inválida.");
+    if(!Number.isFinite(MIN_BET)||MIN_BET<=0)throw new Error("Configuração de aposta mínima inválida.");
+    if(!Number.isFinite(MAX_BET)||MAX_BET<MIN_BET)throw new Error("Configuração de aposta máxima inválida.");
+    if(prizes.length!==TOTAL/GROUP_SIZE||prizes.some(value=>!Number.isFinite(value)||value<=0)){
+      throw new Error("Configuração de prêmios inválida.");
+    }
+
+    rebuildGeometry();
+  }catch(error){
+    configLoaded=false;
+    $("message").textContent=error.message||"Não foi possível carregar a configuração da roleta.";
+    $("message").classList.add("show");
+    return;
   }
 
   $("betAmount").min=MIN_BET.toFixed(2);
@@ -330,8 +345,8 @@ async function spin(){
   }
 }
 
-$("betMinus").onclick=()=>changeBet(-1);
-$("betPlus").onclick=()=>changeBet(1);
+$("betMinus").onclick=()=>changeBet(-.50);
+$("betPlus").onclick=()=>changeBet(.50);
 $("spinButton").onclick=spin;
 $("betAmount").addEventListener("input",updatePrizeValues);
 $("betAmount").addEventListener("change",()=>{
