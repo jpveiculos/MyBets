@@ -270,7 +270,7 @@ app.get("/",(_req,res)=>res.sendFile(path.join(frontendPath,"index.html")));
 
 app.use((err,_req,res,_next)=>{
   console.error("Erro:",err);
-  const status=/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário|valor/.test(String(err.message))?400:500;
+  const status=Number.isInteger(err.statusCode) ? err.statusCode : (/inválid|insuficiente|obrigat|não encontrado|já foi|desativados|movimentação|negativo|Reserva|senha|usuário|valor/.test(String(err.message))?400:500);
   res.status(status).json({message:err.message||"Erro interno do servidor."});
 });
 
