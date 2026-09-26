@@ -66,6 +66,8 @@ async function load(){
 }
 
 function showDepositPromotion(){
+  stopPixPolling();
+  $("pixPaymentArea").classList.add("hidden");
   $("depositPromo").classList.remove("hidden");
   $("withdrawArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
@@ -184,6 +186,8 @@ async function openWithdraw(){
 
     financeMode="withdraw";
     $("financeModal").classList.remove("hidden");
+    stopPixPolling();
+    $("pixPaymentArea").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("financeTitle").textContent="Solicitar saque";
     $("withdrawArea").classList.remove("hidden");
@@ -204,6 +208,8 @@ async function openBuyCredits(){
     $("buyCreditsAmount").max=buyCreditsAvailable>0?buyCreditsAvailable.toFixed(2):"0.01";
     $("buyCreditsAmount").value="";
     $("buyCreditsMessage").textContent="";
+    stopPixPolling();
+    $("pixPaymentArea").classList.add("hidden");
     $("depositPromo").classList.add("hidden");
     $("withdrawArea").classList.add("hidden");
     $("buyCreditsArea").classList.remove("hidden");
