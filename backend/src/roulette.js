@@ -21,9 +21,26 @@ async function getSetting(key,fallback){
   return r.rows[0]?.setting_value??fallback;
 }
 
+function getPrizeDistribution(prizes){
+  return prizes.reduce((distribution,multiplier)=>{
+    const key=String(multiplier);
+    distribution[key]=(distribution[key]||0)+1;
+    return distribution;
+  },{});
+}
+
+function getPrizeProbability(prizes){
+  const distribution=getPrizeDistribution(prizes);
+  return Object.fromEntries(
+    Object.entries(distribution).map(([multiplier,count])=>[
+      multiplier,
+      Number(((count/DRAW_DENOMINATOR)*100).toFixed(4))
+    ])
+  );
+}
+
 async function getConfig(){
   const prizes=[...DEFAULT_PRIZES];
-  // A aposta mínima é fixa em R$ 0,50 e não depende da configuração administrativa.
   const minBet=DEFAULT_MIN_BET;
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
   const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Number(maxRaw.toFixed(2)):DEFAULT_MAX_BET;
@@ -40,14 +57,15 @@ export async function rouletteConfig(){
   return {
     id:"roulette",
     totalSectors:TOTAL_SECTORS,
+    groupSize:GROUP_SIZE,
     prizeSectors:PRIZE_SECTORS,
     lossSectors:LOSS_SECTORS,
     prizeIndexes:PRIZE_INDEXES,
     minBet,
     maxBet,
     prizes,
-    prizeDistribution:{2:4,3:4,4:4,5:4},
-    probability:{2:5,3:5,4:5,5:5}
+    prizeDistribution:getPrizeDistribution(prizes),
+    probability:getPrizeProbability(prizes)
   };
 }
 
