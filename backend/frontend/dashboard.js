@@ -4,6 +4,8 @@ let playerId="";
 let playCredits=0;
 let withdrawableBalance=0;
 let buyCreditsAvailable=0;
+let pixDepositId=null;
+let pixPollTimer=null;
 
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -111,10 +113,8 @@ async function createMercadoPagoPayment(){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify({amount})
     });
-    if(!d.payment?.checkoutUrl) throw new Error("O Mercado Pago não retornou o checkout.");
-    // O Checkout Pro segue na mesma janela. Assim, o retorno automático
-    // do Mercado Pago funciona de forma consistente no computador e no celular.
-    window.location.href=d.payment.checkoutUrl;
+    if(!d.payment?.id || !d.payment?.qrCode) throw new Error("O Mercado Pago não retornou um QR Code Pix.");
+    showPixPayment(d.payment);
   }catch(e){
     button.disabled=false;
     m.style.color="#ff5d6c";
@@ -122,6 +122,47 @@ async function createMercadoPagoPayment(){
   }
 }
 
+function stopPixPolling(){
+  if(pixPollTimer){clearTimeout(pixPollTimer);pixPollTimer=null;}
+  pixDepositId=null;
+}
+function showPixPayment(payment){
+  stopPixPolling();
+  pixDepositId=String(payment.id);
+  $("depositPromo").classList.add("hidden");
+  $("buyCreditsArea").classList.add("hidden");
+  $("withdrawArea").classList.add("hidden");
+  $("pixPaymentArea").classList.remove("hidden");
+  $("financeTitle").textContent="Pagamento Pix";
+  $("pixPaymentQr").src=payment.qrCodeBase64?("data:image/png;base64,"+payment.qrCodeBase64):payment.ticketUrl;
+  $("pixPaymentCopy").value=payment.qrCode||"";
+  $("pixPaymentStatus").textContent="Aguardando pagamento…";
+  checkPixPayment();
+}
+async function checkPixPayment(){
+  if(!pixDepositId)return;
+  try{
+    const d=await api("/api/payments/mercadopago/status/"+encodeURIComponent(pixDepositId));
+    const result=d.result||{};
+    if(result.depositStatus==="approved"){
+      $("pixPaymentStatus").textContent="Pagamento aprovado! Atualizando seus créditos…";
+      stopPixPolling();
+      $("financeModal").classList.add("hidden");
+      $("pixPaymentArea").classList.add("hidden");
+      await load();
+      return;
+    }
+    if(result.depositStatus==="rejected"){
+      $("pixPaymentStatus").textContent="Pagamento não aprovado.";
+      stopPixPolling();
+      return;
+    }
+    $("pixPaymentStatus").textContent="Aguardando confirmação do pagamento…";
+  }catch(e){
+    $("pixPaymentStatus").textContent="Conferindo o pagamento…";
+  }
+  if(pixDepositId)pixPollTimer=setTimeout(checkPixPayment,1500);
+}
 async function openWithdraw(){
   try{
     const a=await api("/api/account");
@@ -222,7 +263,9 @@ $("withdrawForm").onsubmit=async e=>{
 };
 
 $("closeFinance").onclick=()=>{
+  stopPixPolling();
   $("financeModal").classList.add("hidden");
+  $("pixPaymentArea").classList.add("hidden");
   $("buyCreditsArea").classList.add("hidden");
 };
 
