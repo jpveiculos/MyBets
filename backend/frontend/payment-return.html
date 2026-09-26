@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pagamento • MyBets</title>
+<style>
+html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;background:#08090d;color:#fff}
+body{display:grid;place-items:center;padding:24px;box-sizing:border-box}
+.card{width:min(440px,100%);box-sizing:border-box;padding:28px;border:1px solid #262b35;border-radius:22px;background:#0e1118;text-align:center;box-shadow:0 18px 60px #0008}
+h1{margin:0 0 12px;font-size:26px}
+p{color:#aeb5c3;line-height:1.5}
+.status{margin:20px 0;padding:14px;border-radius:14px;background:#151a23}
+button{border:1px solid #333b48;background:#171d27;color:#fff;border-radius:12px;padding:13px 18px;font-weight:700}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<section class="card">
+  <h1>Pagamento MyBets</h1>
+  <p id="message">Conferindo a confirmação do Mercado Pago…</p>
+  <div class="status" id="status">Aguarde um instante.</div>
+  <button id="back" class="hidden" type="button">Voltar ao MyBets</button>
+</section>
+<script>
+const params=new URLSearchParams(location.search);
+const depositId=params.get("deposit");
+const payment=params.get("payment");
+const message=document.getElementById("message");
+const status=document.getElementById("status");
+const back=document.getElementById("back");
+
+function finish(result){
+  try{
+    if(window.opener){
+      window.opener.postMessage({type:"mybets-mercadopago-result",result},location.origin);
+    }
+  }catch{}
+  setTimeout(()=>{
+    try{window.close()}catch{}
+    if(!window.closed){
+      back.classList.remove("hidden");
+    }
+  },250);
+}
+
+async function check(){
+  if(!depositId){
+    message.textContent="Não foi possível identificar este depósito.";
+    status.textContent="Depósito inválido.";
+    back.classList.remove("hidden");
+    return;
+  }
+  try{
+    const r=await fetch("/api/payments/mercadopago/status/"+encodeURIComponent(depositId),{credentials:"same-origin",cache:"no-store"});
+    const d=await r.json().catch(()=>({}));
+    if(!r.ok) throw new Error(d.message||"Não foi possível consultar o pagamento.");
+    const result=d.result||{};
+    if(result.depositStatus==="approved"){
+      message.textContent="Pagamento confirmado.";
+      status.textContent="Os créditos foram adicionados automaticamente.";
+      finish(result);
+      return;
+    }
+    if(result.depositStatus==="rejected"){
+      message.textContent="O pagamento não foi aprovado.";
+      status.textContent="Você pode fechar esta janela.";
+      finish(result);
+      return;
+    }
+    if(payment==="pending"){
+      message.textContent="Pagamento em processamento.";
+    }else{
+      message.textContent="Aguardando a confirmação do Mercado Pago…";
+    }
+    status.textContent=result.orderStatusDetail||result.orderStatus||"Aguardando confirmação";
+    setTimeout(check,2500);
+  }catch(e){
+    message.textContent=e.message;
+    status.textContent="Tentaremos novamente automaticamente.";
+    setTimeout(check,4000);
+  }
+}
+
+back.onclick=()=>{
+  if(window.opener){
+    try{window.opener.focus()}catch{}
+  }
+  window.close();
+  setTimeout(()=>{location.href="/dashboard.html"},150);
+};
+
+check();
+</script>
+</body>
+</html>
