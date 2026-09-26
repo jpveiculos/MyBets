@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestWithdrawal, purchasePlayCredits, getTransactions } from "./finance.js";
-import { createMercadoPagoDeposit, handleMercadoPagoWebhook, syncMercadoPagoDeposit, isMercadoPagoConfigured } from "./mercadopago.js";
+import { createMercadoPagoDeposit, handleMercadoPagoWebhook, syncMercadoPagoDeposit, reconcilePendingMercadoPagoDeposits, isMercadoPagoConfigured } from "./mercadopago.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, addCreditsWithDepositBonus, addBonusCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
@@ -296,6 +296,15 @@ async function start(){
   setInterval(() => {
     pruneOldAuditLogs().catch(error => console.error("Falha na limpeza da auditoria:", error));
   }, 24 * 60 * 60 * 1000).unref();
+  const reconcileMercadoPago = () => {
+    reconcilePendingMercadoPagoDeposits()
+      .then(result => {
+        if (result.checked) console.log("Mercado Pago: reconciliação", result);
+      })
+      .catch(error => console.error("Falha na reconciliação Mercado Pago:", error));
+  };
+  reconcileMercadoPago();
+  setInterval(reconcileMercadoPago, 60 * 1000).unref();
   server=app.listen(PORT,"0.0.0.0",()=>console.log(`MyBets Roulette rodando na porta ${PORT}.`));
 }
 async function shutdown(signal){
