@@ -234,7 +234,8 @@ async function loadConfig(){
     const d=await api("/api/roulette/config");
     const r=d.roulette;
 
-    MIN_BET=Number(r.minBet)||.50;
+    // O valor mínimo da roleta é fixo em R$ 0,50.
+    MIN_BET=.50;
     MAX_BET=Number(r.maxBet)||100;
 
     const configured=Array.isArray(r.prizes)?r.prizes.map(Number):[];
