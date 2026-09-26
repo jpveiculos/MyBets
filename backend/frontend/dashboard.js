@@ -4,7 +4,6 @@ let playerId="";
 let playCredits=0;
 let withdrawableBalance=0;
 let buyCreditsAvailable=0;
-let mercadoPagoWindow=null;
 
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -221,19 +220,6 @@ $("withdrawForm").onsubmit=async e=>{
     setTimeout(()=>{$("financeModal").classList.add("hidden");load()},1800);
   }catch(e){m.textContent=e.message}
 };
-
-window.addEventListener("message",async event=>{
-  if(event.origin!==location.origin) return;
-  if(event.data?.type!=="mybets-mercadopago-result") return;
-
-  if(mercadoPagoWindow && !mercadoPagoWindow.closed){
-    try{ mercadoPagoWindow.close(); }catch{}
-  }
-
-  $("financeModal").classList.add("hidden");
-  $("depositMessage").textContent="";
-  await load();
-});
 
 $("closeFinance").onclick=()=>{
   $("financeModal").classList.add("hidden");
