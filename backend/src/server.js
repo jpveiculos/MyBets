@@ -12,8 +12,6 @@ import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } fro
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
 import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
-import { myDragonConfig, spinMyDragon } from "./games/myDragon.js";
-import { lucky7Config, spinLucky7 } from "./games/lucky7.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -88,8 +86,6 @@ app.post("/api/auth/admin-logout", asyncRoute(async (req,res) => {
 
 const GAME_ROUTES={
   "my-tiger":{config:myTigerConfig,spin:spinMyTiger},
-  "my-dragon":{config:myDragonConfig,spin:spinMyDragon},
-  "lucky7":{config:lucky7Config,spin:spinLucky7}
 };
 
 app.get("/api/games/:gameId/config", requireUser, asyncRoute(async (req,res) => {
@@ -265,7 +261,7 @@ const frontendNoCache=(req,res,next)=>{
   next();
 };
 
-for (const page of ["dashboard.html","roleta.html","my-tiger.html","my-dragon.html","lucky7.html"]) {
+for (const page of ["dashboard.html","roleta.html","my-tiger.html"]) {
   app.get("/"+page, requireUserPage, (_req,res)=>{
     res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
     res.setHeader("Pragma","no-cache");
