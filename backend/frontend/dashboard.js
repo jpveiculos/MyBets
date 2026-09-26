@@ -113,13 +113,9 @@ async function createMercadoPagoPayment(){
       body:JSON.stringify({amount})
     });
     if(!d.payment?.checkoutUrl) throw new Error("O Mercado Pago não retornou o checkout.");
-    mercadoPagoWindow=window.open(d.payment.checkoutUrl,"_blank","noopener,noreferrer");
-    if(!mercadoPagoWindow){
-      window.location.href=d.payment.checkoutUrl;
-    }else{
-      m.style.color="#f5b942";
-      m.textContent="O Mercado Pago foi aberto. Após a confirmação, esta janela será fechada automaticamente.";
-    }
+    // O Checkout Pro segue na mesma janela. Assim, o retorno automático
+    // do Mercado Pago funciona de forma consistente no computador e no celular.
+    window.location.href=d.payment.checkoutUrl;
   }catch(e){
     button.disabled=false;
     m.style.color="#ff5d6c";
