@@ -296,15 +296,23 @@ async function start(){
   setInterval(() => {
     pruneOldAuditLogs().catch(error => console.error("Falha na limpeza da auditoria:", error));
   }, 24 * 60 * 60 * 1000).unref();
-  const reconcileMercadoPago = () => {
-    reconcilePendingMercadoPagoDeposits()
-      .then(result => {
-        if (result.checked) console.log("Mercado Pago: reconciliação", result);
-      })
-      .catch(error => console.error("Falha na reconciliação Mercado Pago:", error));
+  let reconciliationRunning = false;
+  const reconcileMercadoPago = async () => {
+    if (reconciliationRunning) return;
+    reconciliationRunning = true;
+    try {
+      const result = await reconcilePendingMercadoPagoDeposits();
+      if (result.checked) console.log("Mercado Pago: reconciliação", result);
+    } catch (error) {
+      console.error("Falha na reconciliação Mercado Pago:", error);
+    } finally {
+      reconciliationRunning = false;
+    }
   };
   reconcileMercadoPago();
-  setInterval(reconcileMercadoPago, 60 * 1000).unref();
+  // Fallback rápido: se o webhook não chegar ou estiver sendo reentregue,
+  // uma cobrança pendente é conferida no máximo alguns segundos depois.
+  setInterval(reconcileMercadoPago, 5 * 1000).unref();
   server=app.listen(PORT,"0.0.0.0",()=>console.log(`MyBets Roulette rodando na porta ${PORT}.`));
 }
 async function shutdown(signal){
