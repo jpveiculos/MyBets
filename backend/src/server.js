@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 import { initDatabase, pool } from "./db.js";
 import { register, loginPlayer, loginAdmin, logout, requireUser, requireUserPage, requireAdmin, setSessionCookie } from "./auth.js";
 import { getAccount, requestWithdrawal, purchasePlayCredits, getTransactions } from "./finance.js";
-import { createMercadoPagoDeposit, handleMercadoPagoWebhook, isMercadoPagoConfigured } from "./mercadopago.js";
+import { createMercadoPagoDeposit, handleMercadoPagoWebhook, syncMercadoPagoDeposit, isMercadoPagoConfigured } from "./mercadopago.js";
 import { listUsers, listDeposits, listWithdrawals, approveDeposit, rejectDeposit, approveWithdrawal, rejectWithdrawal, addCreditsWithDepositBonus, addBonusCredits, banUser, unbanUser, deleteUser, getSettings, getPublicSettings, updateSetting } from "./admin.js";
 import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } from "./push.js";
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
@@ -129,6 +129,14 @@ app.post("/api/deposits", requireUser, asyncRoute(async (req,res) => {
 app.post("/api/payments/mercadopago/create", requireUser, asyncRoute(async (req,res) => {
   const payment=await createMercadoPagoDeposit({userId:req.user.id,amount:req.body.amount});
   res.status(201).json({ok:true,payment});
+}));
+
+app.get("/api/payments/mercadopago/status/:id", requireUser, asyncRoute(async (req,res) => {
+  const result=await syncMercadoPagoDeposit({
+    depositId:req.params.id,
+    userId:req.user.id
+  });
+  res.json({ok:true,result});
 }));
 
 app.post("/api/credits/purchase", requireUser, asyncRoute(async (req,res) => {
