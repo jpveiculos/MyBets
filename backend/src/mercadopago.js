@@ -5,7 +5,12 @@ import { addDepositCredits } from "./finance.js";
 const API_URL = "https://api.mercadopago.com";
 const ACCESS_TOKEN = String(process.env.MERCADOPAGO_ACCESS_TOKEN || "").trim();
 const WEBHOOK_SECRET = String(process.env.MERCADOPAGO_WEBHOOK_SECRET || "").trim();
-const PUBLIC_BASE_URL = String(process.env.PUBLIC_BASE_URL || "https://mybets.app.br").replace(/\/$/, "");
+const PUBLIC_BASE_URL = String(
+  process.env.PUBLIC_BASE_URL ||
+  process.env.URL_BASE_PUBLICA ||
+  process.env["URL_BASE_PÚBLICA"] ||
+  "https://mybets.app.br"
+).replace(/\/$/, "");
 
 function money(value) {
   const n = Number(value);
@@ -43,20 +48,22 @@ function verifyWebhookSignature({ signature, requestId, dataId }) {
   if (!signature || !requestId || !dataId) return false;
 
   let ts = "";
-  let received = "";
+  const receivedSignatures = [];
   for (const part of String(signature).split(",")) {
     const [key, ...rest] = part.split("=");
     const value = rest.join("=").trim();
     if (key?.trim() === "ts") ts = value;
-    if (key?.trim() === "v1") received = value;
+    if (key?.trim() === "v1" && value) receivedSignatures.push(value);
   }
-  if (!ts || !received) return false;
+  if (!ts || receivedSignatures.length === 0) return false;
 
   const manifest = `id:${String(dataId).toLowerCase()};request-id:${requestId};ts:${ts};`;
   const expected = crypto.createHmac("sha256", WEBHOOK_SECRET).update(manifest).digest("hex");
-  const a = Buffer.from(received, "utf8");
-  const b = Buffer.from(expected, "utf8");
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  return receivedSignatures.some(received => {
+    const a = Buffer.from(received, "utf8");
+    const b = Buffer.from(expected, "utf8");
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+  });
 }
 
 export async function createMercadoPagoDeposit({ userId, amount }) {
