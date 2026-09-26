@@ -100,12 +100,11 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
         external_reference: externalReference,
         description: `Créditos MyBets #${deposit.id}`,
         items: [{
-          id: "mybets-credits",
+          external_code: `MYBETS-CREDITS-${deposit.id}`,
           title: "Créditos para jogar",
+          description: `Créditos MyBets #${deposit.id}`,
           quantity: 1,
-          unit_price: value.toFixed(2),
-          total_amount: value.toFixed(2),
-          unit_measure: "unit"
+          unit_price: value.toFixed(2)
         }],
         config: {
           online: {
