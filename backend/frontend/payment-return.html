@@ -71,11 +71,11 @@ async function check(){
       message.textContent="Aguardando a confirmação do Mercado Pago…";
     }
     status.textContent=result.orderStatusDetail||result.orderStatus||"Aguardando confirmação";
-    setTimeout(check,2500);
+    setTimeout(check,1000);
   }catch(e){
     message.textContent=e.message;
     status.textContent="Tentaremos novamente automaticamente.";
-    setTimeout(check,4000);
+    setTimeout(check,2000);
   }
 }
 
