@@ -112,10 +112,6 @@ export async function createMercadoPagoDeposit({ userId, amount }) {
             failure_url: `${PUBLIC_BASE_URL}/dashboard.html?payment=failed&deposit=${deposit.id}`,
             pending_url: `${PUBLIC_BASE_URL}/dashboard.html?payment=pending&deposit=${deposit.id}`,
             auto_return: "approved"
-          },
-          payment_method: {
-            default_type: "bank_transfer",
-            not_allowed_types: ["credit_card", "ticket"]
           }
         }
       })
