@@ -99,7 +99,7 @@ app.post("/api/games/:gameId/spin", requireUser, asyncRoute(async (req,res) => {
   if(!game) return res.status(404).json({message:"Jogo não encontrado."});
   const spin=await game.spin({userId:req.user.id,betAmount:req.body?.betAmount});
   const account=await getAccount(req.user.id);
-  res.json({ok:true,spin,user:{id:account.id,username:account.username,playCredits:Number(account.play_credits||0),availableBalance:Number(account.play_credits||0),withdrawableBalance:Number(account.withdrawable_balance||0)}});
+  res.json({ok:true,spin,user:{id:account.id,username:account.username,playCredits:Number(account.play_credits||0),availableBalance:Number(account.play_credits||0),withdrawableBalance:Number(account.withdrawable_balance||0),cashBalance:Number(account.withdrawable_balance||0)}});
 }));
 
 app.get("/api/roulette/config", requireUser, asyncRoute(async (_req,res) => {
