@@ -3,12 +3,12 @@ import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
 const TOTAL_SECTORS=100;
-const GROUP_SIZE=9;
+const GROUP_SIZE=10;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-const DEFAULT_PRIZES=[2,3,4,5,6,7,8,9,10];
+const DEFAULT_PRIZES=[2,3,3,4,5,6,7,8,9,10];
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
