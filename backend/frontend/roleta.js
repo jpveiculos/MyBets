@@ -311,7 +311,7 @@ async function spin(){
     const destination=rotation+360+delta;
     // Giro curto: a roleta continua fazendo um giro completo, mas libera
     // o botão logo após parar, sem a espera extra da animação anterior.
-    const duration=500;
+    const duration=1000;
     const start=performance.now();
     const wheel=$("wheel");
 
