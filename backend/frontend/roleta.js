@@ -217,7 +217,7 @@ function updatePrizeValues(){
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
     const multiplier=Number(prizes[index]||0);
     const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
-    t.textContent=money(value);
+    t.textContent=Number.isInteger(value)?`R$ ${value}`:money(value);
   });
 }
 
