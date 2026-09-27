@@ -157,6 +157,9 @@ app.get("/api/admin/session", requireAdmin, asyncRoute(async (req,res) => {
 app.get("/api/admin/users", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,users:await listUsers()});
 }));
+app.get("/api/admin/withdrawals", requireAdmin, asyncRoute(async (_req,res) => {
+  res.json({ok:true,withdrawals:await listWithdrawals()});
+}));
 app.post("/api/admin/withdrawals/:id/approve", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await approveWithdrawal({id:req.params.id,adminId:req.admin.id,adminNote:req.body.adminNote})});
 }));
