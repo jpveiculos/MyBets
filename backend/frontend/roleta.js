@@ -109,6 +109,17 @@ function drawWheel(){
       g.appendChild(s);
     });
 
+    const filter=document.createElementNS(ns,"filter");
+    filter.setAttribute("id","wheel-bevel-"+key);
+    filter.setAttribute("x","-20%");
+    filter.setAttribute("y","-20%");
+    filter.setAttribute("width","140%");
+    filter.setAttribute("height","140%");
+    const shadow=document.createElementNS(ns,"feDropShadow");
+    shadow.setAttribute("dx","0"); shadow.setAttribute("dy","3"); shadow.setAttribute("stdDeviation","2.5"); shadow.setAttribute("flood-color","#000"); shadow.setAttribute("flood-opacity",".65");
+    filter.appendChild(shadow);
+    defs.appendChild(filter);
+
     defs.appendChild(g);
   });
 
@@ -152,7 +163,8 @@ function drawWheel(){
     prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
     prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
     prizePath.setAttribute("stroke",colors[multiplier]?.stroke||"#ffe16a");
-    prizePath.setAttribute("stroke-width","2.5");
+    prizePath.setAttribute("stroke-width","3");
+    prizePath.setAttribute("filter","url(#wheel-bevel-"+multiplier+")");
     svg.appendChild(prizePath);
 
     const blackStart=prizeGeometry.end;
@@ -170,14 +182,15 @@ function drawWheel(){
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
-    label.setAttribute("font-size","14");
+    label.setAttribute("font-size","19");
     label.setAttribute("font-family","Arial,Helvetica,sans-serif");
     label.setAttribute("font-weight","900");
     label.setAttribute("text-anchor","middle");
     label.setAttribute("dominant-baseline","middle");
     label.setAttribute("paint-order","stroke");
     label.setAttribute("stroke","#000");
-    label.setAttribute("stroke-width","3");
+    label.setAttribute("stroke-width","4");
+    label.setAttribute("filter","drop-shadow(0 2px 2px #000)");
     label.setAttribute("class","prize-label");
     label.setAttribute("transform",`rotate(${labelAngle+270} ${xy[0]} ${xy[1]})`);
     label.textContent=String(multiplier)+"x";
