@@ -8,8 +8,8 @@ const PRIZE_SECTORS=16;
 const LOSS_SECTORS=64;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-// 16 setores premiados: 4x 2, 4x 3, 4x 4, 3x 5 e 1x 10. Cada prêmio é seguido por 4 setores de perda.
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
+// 16 setores premiados: 4x 2, 4x 3, 4x 4 e 4x 5. Cada prêmio é seguido por 4 setores de perda.
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
