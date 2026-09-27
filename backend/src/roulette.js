@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=54;
+const TOTAL_SECTORS=60;
 const GROUP_SIZE=6;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
