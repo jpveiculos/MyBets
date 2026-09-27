@@ -5,16 +5,15 @@ Projeto da plataforma MyBets.
 ## Estrutura
 - Roleta
 - My Tiger
-- Conta do jogador e saldo virtual
-- Depósitos manuais via Pix/QR Code
-- Saques manuais com reserva e regras de liberação
+- Conta do jogador com créditos para jogar e saldo para saque
+- Depósitos automáticos via Mercado Pago
+- Saques via Pix com análise administrativa
 - Histórico de transações e apostas
 - Área administrativa
 - PostgreSQL
-- Aplicativo Android em WebView
 
 ## Financeiro
-As operações financeiras da plataforma são virtuais e manuais. Não há integração bancária ou gateway de pagamento.
+Os créditos para jogar são separados do saldo disponível para saque. Os depósitos são processados automaticamente pelo Mercado Pago e os créditos são liberados após a confirmação do pagamento.
 
 ## Desenvolvimento
 - Backend: Node.js + Express
