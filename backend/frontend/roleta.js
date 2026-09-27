@@ -28,7 +28,7 @@ async function api(url,options={}){
 async function loadAccount(){
   try{
     const d=await api("/api/account");
-    $("balance").textContent=Number(d.account.play_credits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.account.cash_balance);
+    $("balance").textContent=Number(d.account.play_credits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.account.withdrawable_balance);
   }catch{
     location.href="/";
   }
