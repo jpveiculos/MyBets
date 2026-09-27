@@ -192,15 +192,24 @@ function drawWheel(){
     svg.appendChild(label);
   }
 
-  // Aro 3D limpo: uma única faixa dourada espessa, com profundidade apenas pela sombra.
+  // Novo aro: acabamento de cassino, espesso e limpo, sem faixas que lembrem madeira.
+  const ringShadow=document.createElementNS(ns,"circle");
+  ringShadow.setAttribute("cx","200");
+  ringShadow.setAttribute("cy","200");
+  ringShadow.setAttribute("r","194");
+  ringShadow.setAttribute("fill","none");
+  ringShadow.setAttribute("stroke","#6b4300");
+  ringShadow.setAttribute("stroke-width","20");
+  ringShadow.setAttribute("filter","drop-shadow(0 5px 4px rgba(0,0,0,.7))");
+  svg.appendChild(ringShadow);
+
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
-  ring.setAttribute("r","193");
+  ring.setAttribute("r","194");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","#d99a17");
-  ring.setAttribute("stroke-width","18");
-  ring.setAttribute("filter","drop-shadow(0 5px 3px rgba(0,0,0,.65))");
+  ring.setAttribute("stroke","#e5aa22");
+  ring.setAttribute("stroke-width","16");
   svg.appendChild(ring);
 }
 
