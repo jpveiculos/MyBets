@@ -2,16 +2,17 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=54;
-const GROUP_SIZE=6;
-const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
-const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
+const TOTAL_SECTORS=64;
+const GROUP_SIZE=4;
+const PRIZE_SECTORS=16;
+const LOSS_SECTORS=48;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-const DEFAULT_PRIZES=[2,3,4,5,6,7,8,9,10];
+// 16 setores premiados: 4x 2, 4x 3, 4x 4, 3x 5 e 1x 10.
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,10];
 
 const DEFAULT_MIN_BET=.50;
-const DEFAULT_MAX_BET=10;
+const DEFAULT_MAX_BET=100;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
 
 async function getSetting(key,fallback){
@@ -39,9 +40,10 @@ function getPrizeProbability(prizes){
 
 async function getConfig(){
   const prizes=[...DEFAULT_PRIZES];
-  const minBet=DEFAULT_MIN_BET;
+  const minRaw=Number(await getSetting("roulette_min_bet",String(DEFAULT_MIN_BET)));
+  const minBet=Number.isFinite(minRaw)&&minRaw>0?Number(minRaw.toFixed(2)):DEFAULT_MIN_BET;
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
-  const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Math.min(10,Number(maxRaw.toFixed(2))):DEFAULT_MAX_BET;
+  const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Math.min(100,Number(maxRaw.toFixed(2))):DEFAULT_MAX_BET;
   return {prizes,minBet,maxBet};
 }
 
