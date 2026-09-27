@@ -69,7 +69,7 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   if (!Number.isFinite(configuredBonusPercent) || configuredBonusPercent < 0) throw new Error("A porcentagem de bônus de depósito está inválida.");
   // O bônus de depósito só é aplicado quando o valor pago é superior a R$ 10,00.
   // O crédito do depósito continua sendo lançado normalmente abaixo desse limite.
-  const bonusApplied = value > DEPOSIT_BONUS_MIN_AMOUNT;
+  const bonusApplied = value >= DEPOSIT_BONUS_MIN_AMOUNT;
   const bonusPercent = bonusApplied ? configuredBonusPercent : 0;
   const multiplier = 1 + (bonusPercent / 100);
   const creditsAdded = money(value * multiplier);
