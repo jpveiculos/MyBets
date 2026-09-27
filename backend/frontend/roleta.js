@@ -192,6 +192,8 @@ function drawWheel(){
     svg.appendChild(label);
   }
 
+}
+
 function updatePrizeValues(){
   const bet=getBet();
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
