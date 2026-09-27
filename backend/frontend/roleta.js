@@ -234,9 +234,11 @@ function normalizeBet(){
 }
 
 function changeBet(delta=.50){
-  const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((getBet()+delta).toFixed(2))));
+  if(spinning)return;
+  const current=getBet();
+  const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((current+delta).toFixed(2))));
   $("betAmount").value=next.toFixed(2);
-  updatePrizeValues();
+  $("betAmount").dispatchEvent(new Event("input",{bubbles:true}));
 }
 
 function targetForSector(sector){
@@ -363,9 +365,9 @@ async function spin(){
   }
 }
 
-$("betMinus").onclick=()=>changeBet(-.50);
-$("betPlus").onclick=()=>changeBet(.50);
-$("spinButton").onclick=spin;
+$("betMinus").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();changeBet(-.50);});
+$("betPlus").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();changeBet(.50);});
+$("spinButton").addEventListener("click",spin);
 $("betAmount").addEventListener("input",updatePrizeValues);
 $("betAmount").addEventListener("change",()=>{
   normalizeBet();
