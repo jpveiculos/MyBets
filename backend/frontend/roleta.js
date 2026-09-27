@@ -193,14 +193,15 @@ function drawWheel(){
   }
 
   // Novo aro: acabamento de cassino, espesso e limpo, sem faixas que lembrem madeira.
+  // Aro dourado 3D: sombra profunda + metal dourado em camadas.
   const ringShadow=document.createElementNS(ns,"circle");
   ringShadow.setAttribute("cx","200");
   ringShadow.setAttribute("cy","200");
   ringShadow.setAttribute("r","190");
   ringShadow.setAttribute("fill","none");
-  ringShadow.setAttribute("stroke","#042f42");
-  ringShadow.setAttribute("stroke-width","16");
-  ringShadow.setAttribute("filter","drop-shadow(0 5px 4px rgba(0,0,0,.7))");
+  ringShadow.setAttribute("stroke","#4b2d00");
+  ringShadow.setAttribute("stroke-width","18");
+  ringShadow.setAttribute("filter","drop-shadow(0 6px 5px rgba(0,0,0,.8))");
   svg.appendChild(ringShadow);
 
   const ring=document.createElementNS(ns,"circle");
@@ -208,9 +209,19 @@ function drawWheel(){
   ring.setAttribute("cy","200");
   ring.setAttribute("r","190");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","#159bc0");
+  ring.setAttribute("stroke","url(#outer-metallic-gold)");
   ring.setAttribute("stroke-width","12");
   svg.appendChild(ring);
+
+  const ringHighlight=document.createElementNS(ns,"circle");
+  ringHighlight.setAttribute("cx","200");
+  ringHighlight.setAttribute("cy","200");
+  ringHighlight.setAttribute("r","184");
+  ringHighlight.setAttribute("fill","none");
+  ringHighlight.setAttribute("stroke","#fff1a3");
+  ringHighlight.setAttribute("stroke-width","2");
+  ringHighlight.setAttribute("opacity",".8");
+  svg.appendChild(ringHighlight);
 }
 
 function updatePrizeValues(){
