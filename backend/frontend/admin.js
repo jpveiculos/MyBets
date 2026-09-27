@@ -380,3 +380,6 @@ if("Notification"in window&&Notification.permission==="granted")$("notifyStatus"
  });
  window.closeMobileMenu=()=>setMenuOpen(false);
 })();
+
+const userSearchInput=$("userSearch");
+userSearchInput?.addEventListener("input",()=>{userSearchInput.value=userSearchInput.value.replace(/\D/g,"")});
