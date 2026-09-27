@@ -2,13 +2,13 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=100;
+const TOTAL_SECTORS=84;
 const GROUP_SIZE=4;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-const DEFAULT_PRIZES=[4,2,5,3,7,2,4,5,2,8,3,5,4,2,9,5,3,4,6,5,4,3,2,10];
+const DEFAULT_PRIZES=[4,2,5,3,7,2,4,5,2,8,3,5,4,2,9,5,3,4,6,5,3,2,10];
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
