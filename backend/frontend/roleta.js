@@ -173,7 +173,7 @@ function drawWheel(){
 
     const label=document.createElementNS(ns,"text");
     const labelAngle=prizeGeometry.center;
-    const xy=polar(200,200,142,labelAngle);
+    const xy=polar(200,200,130,labelAngle);
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
@@ -193,15 +193,14 @@ function drawWheel(){
   }
 
   // Novo aro: acabamento de cassino, espesso e limpo, sem faixas que lembrem madeira.
-  // Aro dourado 3D: sombra profunda + metal dourado em camadas.
   const ringShadow=document.createElementNS(ns,"circle");
   ringShadow.setAttribute("cx","200");
   ringShadow.setAttribute("cy","200");
   ringShadow.setAttribute("r","190");
   ringShadow.setAttribute("fill","none");
-  ringShadow.setAttribute("stroke","#4b2d00");
-  ringShadow.setAttribute("stroke-width","18");
-  ringShadow.setAttribute("filter","drop-shadow(0 6px 5px rgba(0,0,0,.8))");
+  ringShadow.setAttribute("stroke","#042f42");
+  ringShadow.setAttribute("stroke-width","16");
+  ringShadow.setAttribute("filter","drop-shadow(0 5px 4px rgba(0,0,0,.7))");
   svg.appendChild(ringShadow);
 
   const ring=document.createElementNS(ns,"circle");
@@ -209,19 +208,9 @@ function drawWheel(){
   ring.setAttribute("cy","200");
   ring.setAttribute("r","190");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","url(#outer-metallic-gold)");
+  ring.setAttribute("stroke","#159bc0");
   ring.setAttribute("stroke-width","12");
   svg.appendChild(ring);
-
-  const ringHighlight=document.createElementNS(ns,"circle");
-  ringHighlight.setAttribute("cx","200");
-  ringHighlight.setAttribute("cy","200");
-  ringHighlight.setAttribute("r","184");
-  ringHighlight.setAttribute("fill","none");
-  ringHighlight.setAttribute("stroke","#fff1a3");
-  ringHighlight.setAttribute("stroke-width","2");
-  ringHighlight.setAttribute("opacity",".8");
-  svg.appendChild(ringHighlight);
 }
 
 function updatePrizeValues(){
@@ -245,11 +234,9 @@ function normalizeBet(){
 }
 
 function changeBet(delta=.50){
-  if(spinning)return;
-  const current=getBet();
-  const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((current+delta).toFixed(2))));
+  const next=Math.min(MAX_BET,Math.max(MIN_BET,Number((getBet()+delta).toFixed(2))));
   $("betAmount").value=next.toFixed(2);
-  $("betAmount").dispatchEvent(new Event("input",{bubbles:true}));
+  updatePrizeValues();
 }
 
 function targetForSector(sector){
@@ -376,9 +363,9 @@ async function spin(){
   }
 }
 
-$("betMinus").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();changeBet(-.50);});
-$("betPlus").addEventListener("click",event=>{event.preventDefault();event.stopPropagation();changeBet(.50);});
-$("spinButton").addEventListener("click",spin);
+$("betMinus").onclick=()=>changeBet(-.50);
+$("betPlus").onclick=()=>changeBet(.50);
+$("spinButton").onclick=spin;
 $("betAmount").addEventListener("input",updatePrizeValues);
 $("betAmount").addEventListener("change",()=>{
   normalizeBet();
@@ -387,18 +374,3 @@ $("betAmount").addEventListener("change",()=>{
 
 loadAccount();
 loadConfig();
-
-/* Valores rápidos para definir o valor da aposta */
-document.querySelectorAll("[data-bet-value]").forEach(button=>{
-  button.addEventListener("click",()=>{
-    const value=Number(button.dataset.betValue);
-    const input=document.getElementById("betAmount");
-    if(!input || !Number.isFinite(value)) return;
-    const min=Number(input.min||0);
-    const max=Number(input.max||Infinity);
-    const finalValue=Math.min(max,Math.max(min,value));
-    input.value=finalValue.toFixed(2);
-    input.dispatchEvent(new Event("input",{bubbles:true}));
-    input.dispatchEvent(new Event("change",{bubbles:true}));
-  });
-});
