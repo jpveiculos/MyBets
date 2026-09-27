@@ -39,7 +39,7 @@ const asyncRoute = fn => (req,res,next) => Promise.resolve(fn(req,res,next)).cat
 
 app.get("/api/health", asyncRoute(async (_req,res) => {
   await pool.query("SELECT 1");
-  res.json({ok:true,service:"mybets-roulette",database:"connected",timestamp:new Date().toISOString()});
+  res.json({ok:true,service:"mybets",database:"connected",timestamp:new Date().toISOString()});
 }));
 
 app.get("/api/settings/public", asyncRoute(async (_req,res) => {
@@ -156,23 +156,6 @@ app.get("/api/admin/session", requireAdmin, asyncRoute(async (req,res) => {
 
 app.get("/api/admin/users", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,users:await listUsers()});
-}));
-app.get("/api/admin/deposits", requireAdmin, asyncRoute(async (_req,res) => {
-  res.json({ok:true,deposits:await listDeposits()});
-}));
-app.get("/api/admin/withdrawals", requireAdmin, asyncRoute(async (_req,res) => {
-  res.json({ok:true,withdrawals:await listWithdrawals()});
-}));
-app.post("/api/admin/deposits/:id/approve", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,result:await approveDeposit({
-    id:req.params.id,
-    adminId:req.admin.id,
-    approvedAmount:req.body.approvedAmount,
-    adminNote:req.body.adminNote
-  })});
-}));
-app.post("/api/admin/deposits/:id/reject", requireAdmin, asyncRoute(async (req,res) => {
-  res.json({ok:true,result:await rejectDeposit({id:req.params.id,adminId:req.admin.id,adminNote:req.body.adminNote})});
 }));
 app.post("/api/admin/withdrawals/:id/approve", requireAdmin, asyncRoute(async (req,res) => {
   res.json({ok:true,result:await approveWithdrawal({id:req.params.id,adminId:req.admin.id,adminNote:req.body.adminNote})});
@@ -305,7 +288,7 @@ async function start(){
   // Fallback rápido: se o webhook não chegar ou estiver sendo reentregue,
   // uma cobrança pendente é conferida no máximo alguns segundos depois.
   setInterval(reconcileMercadoPago, 5 * 1000).unref();
-  server=app.listen(PORT,"0.0.0.0",()=>console.log(`MyBets Roulette rodando na porta ${PORT}.`));
+  server=app.listen(PORT,"0.0.0.0",()=>console.log(`MyBets rodando na porta ${PORT}.`));
 }
 async function shutdown(signal){
   console.log(`Recebido ${signal}. Encerrando servidor...`);
@@ -315,4 +298,4 @@ async function shutdown(signal){
 }
 process.on("SIGTERM",()=>shutdown("SIGTERM"));
 process.on("SIGINT",()=>shutdown("SIGINT"));
-start().catch(error=>{console.error("Falha ao iniciar MyBets Roulette:",error);process.exit(1);});
+start().catch(error=>{console.error("Falha ao iniciar MyBets:",error);process.exit(1);});
