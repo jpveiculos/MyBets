@@ -35,7 +35,7 @@ export async function spinGame(config,args){
  const client=await pool.connect();
  try{
   await client.query("BEGIN");
-  const r=await client.query("SELECT id,username,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 FOR UPDATE",[args.userId]);
+  const r=await client.query("SELECT id,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 FOR UPDATE",[args.userId]);
   if(!r.rows.length)throw new Error("Usuário não encontrado.");
   const user=r.rows[0];
   const credits=money(user.play_credits||0);
