@@ -109,7 +109,7 @@ app.get("/api/roulette/config", requireUser, asyncRoute(async (_req,res) => {
 app.post("/api/roulette/spin", requireUser, asyncRoute(async (req,res) => {
   const spin=await spinRoulette({userId:req.user.id,betAmount:req.body?.betAmount});
   const account=await getAccount(req.user.id);
-  res.json({ok:true,spin,user:{id:account.id,username:account.username,playCredits:Number(account.play_credits||0),availableBalance:Number(account.play_credits||0),withdrawableBalance:Number(account.withdrawable_balance||0)}});
+  res.json({ok:true,spin,user:{id:account.id,username:account.username,playCredits:Number(account.play_credits||0),availableBalance:Number(account.play_credits||0),withdrawableBalance:Number(account.withdrawable_balance||0),cashBalance:Number(account.withdrawable_balance||0)}});
 }));
 
 app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
