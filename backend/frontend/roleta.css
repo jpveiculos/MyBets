@@ -19,3 +19,60 @@ body{position:fixed;inset:0}
 .nav{position:fixed;left:0;right:0;bottom:0;height:64px;background:rgba(4,8,13,.96);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));z-index:60}.nav a{display:flex;align-items:center;justify-content:center;gap:9px;color:#d9dde5;font-weight:800;font-size:14px;text-decoration:none}.nav a span{font-size:20px}.nav a.active{color:var(--gold)}
 .notice{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);z-index:100;min-width:min(82vw,360px);padding:18px 24px;border-radius:18px;text-align:center;font-weight:900;font-size:24px;opacity:0;pointer-events:none;transition:.22s ease;box-shadow:0 14px 40px rgba(0,0,0,.55)}.notice.show{opacity:1;transform:translate(-50%,-50%) scale(1)}#result{color:#53f28b;background:rgba(8,42,24,.94);border:2px solid rgba(83,242,139,.72);text-shadow:0 2px 12px rgba(83,242,139,.45)}#message{color:#fff;background:rgba(45,12,12,.96);border:2px solid rgba(255,93,108,.65);font-size:16px}
 @media(max-width:430px){.header{height:64px;padding:0 8px}.logo{font-size:29px;flex:1;min-width:0}.account-boxes{gap:4px;flex-shrink:0}.account-box{width:76px;flex:0 0 76px;height:44px;padding:5px 4px}.account-box span{font-size:8px}.account-box b{font-size:11px}.balance{min-width:172px;height:44px}.balance b{font-size:16px}}
+
+/* ===== RECARGA RÁPIDA ABAIXO DO GIRAR ===== */
+.quick-deposit{
+  width:100%;
+  margin-top:10px;
+  padding:9px 10px 10px;
+  border:1px solid rgba(255,216,61,.18);
+  border-radius:14px;
+  background:linear-gradient(180deg,#0b1118,#070b10);
+}
+.quick-deposit-title{
+  display:block;
+  margin-bottom:7px;
+  color:#aeb7c5;
+  font-size:11px;
+  font-weight:800;
+  text-align:center;
+}
+.quick-deposit-options{
+  display:grid;
+  grid-template-columns:repeat(6,minmax(0,1fr));
+  gap:6px;
+}
+.quick-deposit-options a{
+  min-width:0;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid rgba(255,216,61,.32);
+  border-radius:9px;
+  background:linear-gradient(180deg,#151d27,#0a1017);
+  color:#ffd83d;
+  font-size:12px;
+  font-weight:900;
+  text-decoration:none;
+  white-space:nowrap;
+  transition:filter .15s ease,transform .15s ease;
+}
+.quick-deposit-options a:active{transform:scale(.97)}
+.quick-deposit-options a:hover{filter:brightness(1.12)}
+@media(max-width:430px){
+  .quick-deposit{
+    margin-top:9px;
+    padding:8px 7px 9px;
+  }
+  .quick-deposit-title{
+    margin-bottom:6px;
+    font-size:10px;
+  }
+  .quick-deposit-options{gap:5px}
+  .quick-deposit-options a{
+    height:34px;
+    border-radius:8px;
+    font-size:11px;
+  }
+}
