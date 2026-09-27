@@ -178,7 +178,7 @@ function drawWheel(){
 
     const label=document.createElementNS(ns,"text");
     const labelAngle=prizeGeometry.center;
-    const xy=polar(200,200,118,labelAngle);
+    const xy=polar(200,200,125,labelAngle);
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
