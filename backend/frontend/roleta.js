@@ -136,7 +136,7 @@ function drawWheel(){
     6:{stroke:"#00e5ff"},
     7:{stroke:"#ff4fd8"},
     8:{stroke:"#7dff45"},
-    9:{stroke:"#b86cff"},
+    9:{stroke:"#00a6a6"},
     10:{stroke:"#ff2525"}
   };
 
