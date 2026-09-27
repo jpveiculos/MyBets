@@ -2,6 +2,7 @@ import { pool } from "./db.js";
 import { sendAdminPush } from "./push.js";
 
 export const DEPOSIT_BONUS_PERCENT = 10;
+export const DEPOSIT_BONUS_MIN_AMOUNT = 10;
 
 function money(value) {
   const n = Number(value);
@@ -64,8 +65,12 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   if (!user) throw new Error("Usuário não encontrado.");
 
   const settingsResult = await client.query("SELECT setting_value FROM site_settings WHERE setting_key=$1 LIMIT 1",["deposit_bonus_percent"]);
-  const bonusPercent = Number(settingsResult.rows[0]?.setting_value ?? DEPOSIT_BONUS_PERCENT);
-  if (!Number.isFinite(bonusPercent) || bonusPercent < 0) throw new Error("A porcentagem de bônus de depósito está inválida.");
+  const configuredBonusPercent = Number(settingsResult.rows[0]?.setting_value ?? DEPOSIT_BONUS_PERCENT);
+  if (!Number.isFinite(configuredBonusPercent) || configuredBonusPercent < 0) throw new Error("A porcentagem de bônus de depósito está inválida.");
+  // O bônus de depósito só é aplicado quando o valor pago é superior a R$ 10,00.
+  // O crédito do depósito continua sendo lançado normalmente abaixo desse limite.
+  const bonusApplied = value > DEPOSIT_BONUS_MIN_AMOUNT;
+  const bonusPercent = bonusApplied ? configuredBonusPercent : 0;
   const multiplier = 1 + (bonusPercent / 100);
   const creditsAdded = money(value * multiplier);
   const newCredits = money(Number(user.play_credits || 0) + creditsAdded);
@@ -78,10 +83,10 @@ export async function addDepositCredits({client,userId,amount,referenceId=null})
   await client.query(
     `INSERT INTO transactions(user_id,type,amount,balance_after,reference_id,note)
      VALUES($1,'deposit_credits',$2,$3,$4,$5)`,
-    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (depósito + ${bonusPercent.toFixed(2)}% de bônus).`]
+    [userId,creditsAdded,newCredits,referenceId,`Depósito de R$ ${value.toFixed(2)} convertido em ${creditsAdded.toFixed(2)} créditos para jogar (${bonusApplied ? `depósito + ${bonusPercent.toFixed(2)}% de bônus` : "sem bônus: valor abaixo do mínimo de R$ 10,00"}).`]
   );
 
-  return {depositAmount:value,bonusPercent,creditsAdded,newPlayCredits:newCredits};
+  return {depositAmount:value,bonusPercent,bonusApplied,bonusMinimum:DEPOSIT_BONUS_MIN_AMOUNT,creditsAdded,newPlayCredits:newCredits};
 }
 
 export async function purchasePlayCredits({userId,amount}) {
