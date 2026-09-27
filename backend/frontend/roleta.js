@@ -2,7 +2,7 @@ let TOTAL=96;
 let GROUP_SIZE=6;
 let PRIZE_COUNT=TOTAL/GROUP_SIZE;
 let GROUP_ANGLE=360/PRIZE_COUNT;
-// A fatia colorida ocupa metade do grupo; os 5 setores de perda
+// A fatia colorida ocupa metade do grupo; os 3 setores de perda
 // são comprimidos para que a área preta continue exatamente igual à colorida.
 let PRIZE_ANGLE=GROUP_ANGLE/2;
 let LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
