@@ -374,3 +374,18 @@ $("betAmount").addEventListener("change",()=>{
 
 loadAccount();
 loadConfig();
+
+/* Valores rápidos para definir o valor da aposta */
+document.querySelectorAll("[data-bet-value]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    const value=Number(button.dataset.betValue);
+    const input=document.getElementById("betAmount");
+    if(!input || !Number.isFinite(value)) return;
+    const min=Number(input.min||0);
+    const max=Number(input.max||Infinity);
+    const finalValue=Math.min(max,Math.max(min,value));
+    input.value=finalValue.toFixed(2);
+    input.dispatchEvent(new Event("input",{bubbles:true}));
+    input.dispatchEvent(new Event("change",{bubbles:true}));
+  });
+});
