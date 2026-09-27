@@ -2,8 +2,8 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=125;
-const GROUP_SIZE=5;
+const TOTAL_SECTORS=100;
+const GROUP_SIZE=4;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
