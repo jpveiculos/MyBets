@@ -192,35 +192,16 @@ function drawWheel(){
     svg.appendChild(label);
   }
 
-  // Aro 3D limpo: duas camadas douradas uniformes, sem manchas ou faixas irregulares.
-  const ringBase=document.createElementNS(ns,"circle");
-  ringBase.setAttribute("cx","200");
-  ringBase.setAttribute("cy","200");
-  ringBase.setAttribute("r","193");
-  ringBase.setAttribute("fill","none");
-  ringBase.setAttribute("stroke","#8f5a00");
-  ringBase.setAttribute("stroke-width","20");
-  ringBase.setAttribute("filter","drop-shadow(0 4px 3px rgba(0,0,0,.65))");
-  svg.appendChild(ringBase);
-
+  // Aro 3D limpo: uma única faixa dourada espessa, com profundidade apenas pela sombra.
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
   ring.setAttribute("r","193");
   ring.setAttribute("fill","none");
   ring.setAttribute("stroke","#d99a17");
-  ring.setAttribute("stroke-width","15");
+  ring.setAttribute("stroke-width","18");
+  ring.setAttribute("filter","drop-shadow(0 5px 3px rgba(0,0,0,.65))");
   svg.appendChild(ring);
-
-  const ringHighlight=document.createElementNS(ns,"circle");
-  ringHighlight.setAttribute("cx","200");
-  ringHighlight.setAttribute("cy","200");
-  ringHighlight.setAttribute("r","193");
-  ringHighlight.setAttribute("fill","none");
-  ringHighlight.setAttribute("stroke","#f0bd3a");
-  ringHighlight.setAttribute("stroke-width","3");
-  ringHighlight.setAttribute("opacity","0.9");
-  svg.appendChild(ringHighlight);
 }
 
 function updatePrizeValues(){
