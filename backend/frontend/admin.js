@@ -208,14 +208,17 @@ function renderRouletteSettings(settings,roulette){
  if(!minField||!maxField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
- maxField.value=map.roulette_max_bet??"10.00";
+ maxField.value=map.roulette_max_bet??"100.00";
  const structure=$("rouletteStructure"),probabilities=$("rouletteProbabilities");
  if(roulette){
   const total=Number(roulette.totalSectors)||0,prizes=Number(roulette.prizeSectors)||0,loss=Number(roulette.lossSectors)||0;
   const dist=roulette.prizeDistribution||{};
   const p=roulette.probability||{};
   if(structure)structure.textContent=`${total} setores: ${loss} de perda e ${prizes} premiados. A fatia preta comprime os setores lógicos de perda e mantém a área visual equivalente à fatia colorida.`;
-  if(probabilities)probabilities.textContent=`2x: ${Number(p[2]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 3x: ${Number(p[3]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 4x: ${Number(p[4]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}% • 5x: ${Number(p[5]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`;
+  if(probabilities){
+   const order=Object.keys(dist).sort((a,b)=>Number(a)-Number(b));
+   probabilities.textContent=order.map(multiplier=>`${multiplier}x: ${Number(p[multiplier]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`).join(" • ");
+  }
  }
 }
 function settingLabel(key){
