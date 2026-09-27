@@ -78,7 +78,7 @@ export async function spinRoulette({userId,betAmount}){
   try{
     await client.query("BEGIN");
     const r=await client.query(
-      "SELECT id,username,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 FOR UPDATE",
+      "SELECT id,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 FOR UPDATE",
       [userId]
     );
     if(!r.rows.length)throw new Error("Usuário não encontrado.");
