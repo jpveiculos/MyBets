@@ -214,7 +214,7 @@ function renderRouletteSettings(settings,roulette){
   const total=Number(roulette.totalSectors)||0,prizes=Number(roulette.prizeSectors)||0,loss=Number(roulette.lossSectors)||0;
   const dist=roulette.prizeDistribution||{};
   const p=roulette.probability||{};
-  if(structure)structure.textContent=`${total} setores: ${loss} de perda e ${prizes} premiados. A fatia preta comprime os setores lógicos de perda e mantém a área visual equivalente à fatia colorida.`;
+  if(structure)structure.textContent=`${total} setores: ${loss} de perda e ${prizes} premiados. Distribuição: ${Object.keys(dist).sort((a,b)=>Number(a)-Number(b)).map(multiplier=>`${dist[multiplier]}× ${multiplier}x`).join(" • ")}. A fatia preta comprime os setores lógicos de perda e mantém a área visual equivalente à fatia colorida.`;
   if(probabilities){
    const order=Object.keys(dist).sort((a,b)=>Number(a)-Number(b));
    probabilities.textContent=order.map(multiplier=>`${multiplier}x: ${Number(p[multiplier]||0).toLocaleString("pt-BR",{maximumFractionDigits:4})}%`).join(" • ");
