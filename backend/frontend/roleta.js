@@ -177,7 +177,7 @@ function drawWheel(){
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
-    label.setAttribute("font-size","25");
+    label.setAttribute("font-size","20");
     label.setAttribute("font-family","Arial,Helvetica,sans-serif");
     label.setAttribute("font-weight","900");
     label.setAttribute("text-anchor","middle");
@@ -217,7 +217,7 @@ function updatePrizeValues(){
   document.querySelectorAll("#wheelSvg .prize-label").forEach((t,index)=>{
     const multiplier=Number(prizes[index]||0);
     const value=Number.isFinite(multiplier)&&multiplier>0?bet*multiplier:0;
-    t.textContent=Number.isInteger(value)?`R$ ${value}`:money(value);
+    t.textContent=money(value);
   });
 }
 
