@@ -34,6 +34,8 @@ async function load(){
     $("withdrawMax").disabled=withdrawableBalance<=0;
     $("withdrawBtn").disabled=withdrawableBalance<=0;
     $("withdrawBtn").title=withdrawableBalance>0?"Solicitar saque":"Não há saldo disponível para saque";
+    $("platformCreditsBtn").disabled=withdrawableBalance<=0;
+    $("platformCreditsBtn").title=withdrawableBalance>0?"Usar saldo para adicionar créditos":"Não há saldo disponível para adicionar créditos";
     const hint=$("withdrawHint");
     if(hint) hint.textContent="Saque via Pix";
 
@@ -197,6 +199,8 @@ async function openWithdraw(){
     $("withdrawAmount").max=withdrawableBalance>0?withdrawableBalance.toFixed(2):"0.01";
     $("withdrawMax").disabled=withdrawableBalance<=0;
     $("withdrawBtn").disabled=withdrawableBalance<=0;
+    $("platformCreditsBtn").disabled=withdrawableBalance<=0;
+    $("platformCreditsBtn").title=withdrawableBalance>0?"Usar saldo para adicionar créditos":"Não há saldo disponível para adicionar créditos";
 
     if(withdrawableBalance<=0){
       $("withdrawMessage").textContent="Ainda não há saldo disponível para saque.";
@@ -223,6 +227,11 @@ async function openBuyCredits(){
   try{
     const a=await api("/api/account");
     buyCreditsAvailable=Number(a.account.withdrawable_balance||0);
+    if(buyCreditsAvailable<=0){
+      $("platformCreditsBtn").disabled=true;
+      $("platformCreditsBtn").title="Não há saldo disponível para adicionar créditos";
+      return;
+    }
     $("buyCreditsAvailable").textContent=money(buyCreditsAvailable);
     $("buyCreditsAmount").max=buyCreditsAvailable>0?buyCreditsAvailable.toFixed(2):"0.01";
     $("buyCreditsAmount").value="";
