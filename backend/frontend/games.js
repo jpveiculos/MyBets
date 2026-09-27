@@ -32,7 +32,8 @@ function renderPaytable(){
 function draw(grid){$("reels").innerHTML=grid.map(s=>'<div class="reel" data-id="'+s.id+'">'+s.label+"</div>").join("")}
 function initial(){const symbols=config.symbols,n=config.rows*config.columns;draw(Array.from({length:n},(_,i)=>symbols[i%symbols.length]))}
 async function load(){try{const c=await api("/api/games/"+GAME.id+"/config"),a=await api("/api/account");config=c.game;account=a.account;bet=config.minBet;$("balance").textContent=money(account.play_credits);$("cashBalance").textContent=money(account.withdrawable_balance);$("bet").value=bet.toFixed(2);renderPaytable();initial();updatePlayability()}catch(e){$("result").textContent=e.message||"Faça login para jogar.";$("spin").disabled=true}}
-function setBet(value){if(!config||spinning)return;const n=Number(String(value).replace(",", "."));if(!Number.isFinite(n))return;$("bet").value=Math.min(config.maxBet,Math.max(config.minBet,Number(n.toFixed(2)))).toFixed(2);bet=Number($("bet").value);updatePlayability()}\nfunction changeBet(delta){if(!config||spinning)return;setBet(bet+delta)}
+function setBet(value){if(!config||spinning)return;const n=Number(String(value).replace(",", "."));if(!Number.isFinite(n))return;$("bet").value=Math.min(config.maxBet,Math.max(config.minBet,Number(n.toFixed(2)))).toFixed(2);bet=Number($("bet").value);updatePlayability()}
+function changeBet(delta){if(!config||spinning)return;setBet(bet+delta)}
 async function animate(){let t=0;return new Promise(resolve=>{const timer=setInterval(()=>{const n=config.rows*config.columns;draw(Array.from({length:n},()=>config.symbols[Math.floor(Math.random()*config.symbols.length)]));document.querySelectorAll(".reel").forEach(x=>x.classList.add("spinfx"));if(++t>=16){clearInterval(timer);resolve()}},55)})}
 async function spin(){
   if(spinning||!config)return;
