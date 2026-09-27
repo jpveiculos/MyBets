@@ -18,7 +18,7 @@ async function refreshAccount(){
   try{
     const a=await api("/api/account");
     account=a.account;
-    $("balance").textContent=money(account.play_credits);$("cashBalance").textContent=money(account.cash_balance);
+    $("balance").textContent=money(account.play_credits);$("cashBalance").textContent=money(account.withdrawable_balance);
     updatePlayability();
     return account;
   }catch{return null;}
