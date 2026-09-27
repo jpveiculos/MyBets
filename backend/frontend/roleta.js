@@ -1,17 +1,13 @@
-let TOTAL=100;
-let GROUP_SIZE=5;
-let PRIZE_COUNT=TOTAL/GROUP_SIZE;
-let GROUP_ANGLE=360/PRIZE_COUNT;
-// A fatia colorida ocupa metade do grupo; os 3 setores de perda
-// são comprimidos para que a área preta continue exatamente igual à colorida.
-let PRIZE_ANGLE=GROUP_ANGLE/2;
-let LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
-
-let PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
-let MIN_BET=.50;
-let MAX_BET=100;
+let TOTAL=0;
+let GROUP_SIZE=0;
+let PRIZE_COUNT=0;
+let GROUP_ANGLE=0;
+let PRIZE_ANGLE=0;
+let LOSS_ANGLE=0;
+let MIN_BET=0;
+let MAX_BET=0;
 let prizes=[];
-let rotation=-PRIZE_ANGLE/2;
+let rotation=0;
 let spinning=false;
 let configLoaded=false;
 
@@ -49,7 +45,6 @@ function rebuildGeometry(){
   GROUP_ANGLE=360/PRIZE_COUNT;
   PRIZE_ANGLE=GROUP_ANGLE/2;
   LOSS_ANGLE=PRIZE_ANGLE/(GROUP_SIZE-1);
-  PRIZE_INDEXES=Array.from({length:TOTAL},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 }
 
 function sectorGeometry(sector){
@@ -243,8 +238,6 @@ function changeBet(delta=.50){
   updatePrizeValues();
 }
 
-const WHEEL_OFFSET=0;
-
 function targetForSector(sector){
   return -sectorGeometry(sector).center;
 }
@@ -291,7 +284,7 @@ async function loadConfig(){
   updatePrizeValues();
 
   // Estado inicial: o centro da primeira fatia de prêmio fica exatamente sob o ponteiro.
-  rotation=WHEEL_OFFSET;
+  rotation=0;
   const wheel=$("wheel");
   wheel.style.transform=`rotate(${rotation}deg)`;
 
