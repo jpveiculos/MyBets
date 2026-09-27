@@ -109,10 +109,6 @@ function transactionTypeLabel(type){
   roulette_loss:"APOSTA ROLETA",
   "my-tiger_win":"PRÊMIO MY TIGER",
   "my-tiger_loss":"APOSTA MY TIGER",
-  "my-dragon_win":"PRÊMIO MY DRAGON",
-  "my-dragon_loss":"APOSTA MY DRAGON",
-  lucky7_win:"PRÊMIO LUCKY7",
-  lucky7_loss:"APOSTA LUCKY7",
   withdrawal_reserved:"SAQUE RESERVADO"
  };
  return labels[type]||String(type||"MOVIMENTAÇÃO").replace(/_/g," ").toUpperCase();
