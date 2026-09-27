@@ -111,7 +111,7 @@ function drawWheel(){
     filter.setAttribute("width","140%");
     filter.setAttribute("height","140%");
     const shadow=document.createElementNS(ns,"feDropShadow");
-    shadow.setAttribute("dx","0"); shadow.setAttribute("dy","3"); shadow.setAttribute("stdDeviation","2.5"); shadow.setAttribute("flood-color","#000"); shadow.setAttribute("flood-opacity",".65");
+    shadow.setAttribute("dx","0"); shadow.setAttribute("dy","5"); shadow.setAttribute("stdDeviation","3.5"); shadow.setAttribute("flood-color","#000"); shadow.setAttribute("flood-opacity",".82");
     filter.appendChild(shadow);
     defs.appendChild(filter);
 
@@ -158,7 +158,7 @@ function drawWheel(){
     prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
     prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
     prizePath.setAttribute("stroke",colors[multiplier]?.stroke||"#ffe16a");
-    prizePath.setAttribute("stroke-width","3");
+    prizePath.setAttribute("stroke-width","4");
     prizePath.setAttribute("filter","url(#wheel-bevel-"+multiplier+")");
     svg.appendChild(prizePath);
 
