@@ -118,19 +118,19 @@ function drawWheel(){
     defs.appendChild(g);
   });
 
-  const outerGold=document.createElementNS(ns,"linearGradient");
-  outerGold.setAttribute("id","outer-solid-gold");
-  outerGold.setAttribute("x1","0%");
-  outerGold.setAttribute("y1","0%");
-  outerGold.setAttribute("x2","0%");
-  outerGold.setAttribute("y2","100%");
-  [["0%","#d99a17"],["50%","#d99a17"],["100%","#d99a17"]].forEach(([offset,color])=>{
+  const outerMetallic=document.createElementNS(ns,"linearGradient");
+  outerMetallic.setAttribute("id","outer-metallic-gold");
+  outerMetallic.setAttribute("x1","0%");
+  outerMetallic.setAttribute("y1","0%");
+  outerMetallic.setAttribute("x2","100%");
+  outerMetallic.setAttribute("y2","100%");
+  [["0%","#fff1a3"],["18%","#d99a17"],["38%","#8f5a00"],["50%","#ffe27a"],["66%","#b87408"],["84%","#fff0a0"],["100%","#9a6100"]].forEach(([offset,color])=>{
     const s=document.createElementNS(ns,"stop");
     s.setAttribute("offset",offset);
     s.setAttribute("stop-color",color);
-    outerGold.appendChild(s);
+    outerMetallic.appendChild(s);
   });
-  defs.appendChild(outerGold);
+  defs.appendChild(outerMetallic);
 
   svg.appendChild(defs);
 
@@ -195,20 +195,20 @@ function drawWheel(){
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
-  ring.setAttribute("r","193");
+  ring.setAttribute("r","194");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","#d99a17");
-  ring.setAttribute("stroke-width","18");
+  ring.setAttribute("stroke","url(#outer-metallic-gold)");
+  ring.setAttribute("stroke-width","14");
   svg.appendChild(ring);
 
   const ringHighlight=document.createElementNS(ns,"circle");
   ringHighlight.setAttribute("cx","200");
   ringHighlight.setAttribute("cy","200");
-  ringHighlight.setAttribute("r","193");
+  ringHighlight.setAttribute("r","189.8");
   ringHighlight.setAttribute("fill","none");
-  ringHighlight.setAttribute("stroke","#d99a17");
-  ringHighlight.setAttribute("stroke-width","18");
-  ringHighlight.setAttribute("opacity","1");
+  ringHighlight.setAttribute("stroke","#fff3b0");
+  ringHighlight.setAttribute("stroke-width","2");
+  ringHighlight.setAttribute("opacity","0.72");
   svg.appendChild(ringHighlight);
 }
 
