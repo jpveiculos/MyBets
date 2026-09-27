@@ -195,20 +195,20 @@ function drawWheel(){
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
-  ring.setAttribute("r","195");
+  ring.setAttribute("r","194");
   ring.setAttribute("fill","none");
   ring.setAttribute("stroke","url(#outer-metallic-gold)");
-  ring.setAttribute("stroke-width","10");
+  ring.setAttribute("stroke-width","14");
   svg.appendChild(ring);
 
   const ringHighlight=document.createElementNS(ns,"circle");
   ringHighlight.setAttribute("cx","200");
   ringHighlight.setAttribute("cy","200");
-  ringHighlight.setAttribute("r","191.8");
+  ringHighlight.setAttribute("r","189.8");
   ringHighlight.setAttribute("fill","none");
   ringHighlight.setAttribute("stroke","#fff3b0");
-  ringHighlight.setAttribute("stroke-width","1.5");
-  ringHighlight.setAttribute("opacity","0.62");
+  ringHighlight.setAttribute("stroke-width","2");
+  ringHighlight.setAttribute("opacity","0.72");
   svg.appendChild(ringHighlight);
 }
 
