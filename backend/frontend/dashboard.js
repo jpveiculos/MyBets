@@ -40,6 +40,15 @@ async function load(){
     if(hint) hint.textContent="Saque via Pix";
 
     const params=new URLSearchParams(location.search);
+    const quickDeposit=params.get("deposit");
+    if(quickDeposit){
+      const amount=Number(quickDeposit);
+      if(Number.isFinite(amount)&&amount>0){
+        await openDeposit();
+        $("depositAmount").value=amount.toFixed(2);
+        history.replaceState({},document.title,location.pathname);
+      }
+    }
     const payment=params.get("payment");
     if(payment){
       const m=$("depositMessage");
