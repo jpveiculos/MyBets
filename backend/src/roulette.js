@@ -11,7 +11,7 @@ const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROU
 const DEFAULT_PRIZES=[2,3,4,5,6,7,8,9,10];
 
 const DEFAULT_MIN_BET=.50;
-const DEFAULT_MAX_BET=100;
+const DEFAULT_MAX_BET=10;
 const DRAW_DENOMINATOR=TOTAL_SECTORS;
 
 async function getSetting(key,fallback){
