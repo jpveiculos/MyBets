@@ -76,3 +76,24 @@ body{position:fixed;inset:0}
     font-size:11px;
   }
 }
+
+/* ===== POSIÇÃO FINAL DOS CONTROLES DA ROLETA ===== */
+.quick-deposit{
+  margin-top:10px;
+  margin-bottom:0;
+}
+.spin{
+  position:fixed;
+  left:50%;
+  bottom:74px;
+  transform:translateX(-50%);
+  width:min(calc(100vw - 24px),540px);
+  margin:0;
+  z-index:65;
+}
+@media(max-width:430px){
+  .spin{
+    bottom:73px;
+    width:calc(100vw - 24px);
+  }
+}
