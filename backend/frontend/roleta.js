@@ -198,8 +198,8 @@ function drawWheel(){
   ringShadow.setAttribute("cy","200");
   ringShadow.setAttribute("r","190");
   ringShadow.setAttribute("fill","none");
-  ringShadow.setAttribute("stroke","#20242a");
-  ringShadow.setAttribute("stroke-width","18");
+  ringShadow.setAttribute("stroke","#171b20");
+  ringShadow.setAttribute("stroke-width","20");
   ringShadow.setAttribute("filter","drop-shadow(0 5px 4px rgba(0,0,0,.7))");
   svg.appendChild(ringShadow);
 
@@ -208,8 +208,8 @@ function drawWheel(){
   ring.setAttribute("cy","200");
   ring.setAttribute("r","190");
   ring.setAttribute("fill","none");
-  ring.setAttribute("stroke","#8b929b");
-  ring.setAttribute("stroke-width","14");
+  ring.setAttribute("stroke","#737b86");
+  ring.setAttribute("stroke-width","16");
   svg.appendChild(ring);
 }
 
