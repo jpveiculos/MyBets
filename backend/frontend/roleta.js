@@ -28,7 +28,7 @@ async function api(url,options={}){
 async function loadAccount(){
   try{
     const d=await api("/api/account");
-    $("balance").textContent=Number(d.account.play_credits||0).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
+    $("balance").textContent=Number(d.account.play_credits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.account.cash_balance);
   }catch{
     location.href="/";
   }
@@ -342,7 +342,7 @@ async function spin(){
     $("betMinus").disabled=false;
     $("betPlus").disabled=false;
 
-    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:0,maximumFractionDigits:2});
+    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.user.cashBalance);
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
   }catch(e){
     spinning=false;
