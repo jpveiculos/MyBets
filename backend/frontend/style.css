@@ -741,3 +741,12 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 .dashboard-page .landing{padding-bottom:10px}
 .dashboard-page .site-footer-nav{position:static;height:64px}
 @media(max-width:700px){.dashboard-page{padding-bottom:0}.dashboard-page .landing{padding-bottom:8px}.dashboard-page .site-footer-nav{height:64px}}
+
+/* Acabamento global: nenhuma página cria área vazia rolável depois do último conteúdo. */
+html,body{min-height:0}
+body{padding-bottom:0!important}
+.site-shell{min-height:0}
+.landing{padding-bottom:0}
+.home-main{padding-bottom:0}
+.site-footer-nav{position:static}
+@media(max-width:700px){body{padding-bottom:0!important}}
