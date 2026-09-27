@@ -155,17 +155,17 @@ function drawWheel(){
     const multiplier=Number(prizes[group]);
 
     const prizePath=document.createElementNS(ns,"path");
-    prizePath.setAttribute("d",wedge(200,200,radius,prizeGeometry.start,prizeGeometry.end));
+    prizePath.setAttribute("d",wedge(200,200,194,prizeGeometry.start,prizeGeometry.end));
     prizePath.setAttribute("fill","url(#wheel3d-"+multiplier+")");
     prizePath.setAttribute("stroke",colors[multiplier]?.stroke||"#ffe16a");
     prizePath.setAttribute("stroke-width","4");
-    prizePath.setAttribute("filter","url(#wheel-bevel-"+multiplier+")");
+    // Sem sombra expandida nas fatias: evita que cores ultrapassem o aro externo.
     svg.appendChild(prizePath);
 
     const blackStart=prizeGeometry.end;
     const blackEnd=prizeGeometry.start+GROUP_ANGLE;
     const lossPath=document.createElementNS(ns,"path");
-    lossPath.setAttribute("d",wedge(200,200,radius,blackStart,blackEnd));
+    lossPath.setAttribute("d",wedge(200,200,194,blackStart,blackEnd));
     lossPath.setAttribute("fill","url(#wheel3d-black)");
     lossPath.setAttribute("stroke","none");
     lossPath.setAttribute("stroke-width","0");
