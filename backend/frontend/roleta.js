@@ -141,7 +141,7 @@ function drawWheel(){
   };
 
   // Visual: cada grupo mostra uma única fatia colorida e uma única
-  // fatia preta sólida. A divisão dos 5 setores de perda continua existindo
+  // fatia preta sólida. A divisão dos setores de perda continua existindo
   // apenas na geometria lógica usada pelo sorteio e pelo ponteiro.
   for(let group=0;group<PRIZE_COUNT;group++){
     const prizeIndex=group*GROUP_SIZE;
@@ -179,12 +179,11 @@ function drawWheel(){
     label.setAttribute("stroke","#000");
     label.setAttribute("stroke-width","3");
     label.setAttribute("class","prize-label");
-    // O valor acompanha o eixo da própria fatia: 0° no topo,
-    // aumentando no sentido horário junto com a geometria da roleta.
     label.setAttribute("transform",`rotate(${labelAngle+270} ${xy[0]} ${xy[1]})`);
     label.textContent=String(multiplier)+"x";
     svg.appendChild(label);
   }
+
   const ring=document.createElementNS(ns,"circle");
   ring.setAttribute("cx","200");
   ring.setAttribute("cy","200");
@@ -215,7 +214,7 @@ function updatePrizeValues(){
 }
 
 function getBet(){
-  const value=Number(String($("betAmount").value).replace(",",".")); 
+  const value=Number(String($("betAmount").value).replace(",","."));
   return Number.isFinite(value)?Number(value.toFixed(2)):MIN_BET;
 }
 
@@ -310,7 +309,9 @@ async function spin(){
     const delta=((target-current)%360+360)%360;
     const from=rotation;
     const destination=rotation+360+delta;
-    const duration=1800;
+    // Giro curto: a roleta continua fazendo um giro completo, mas libera
+    // o botão logo após parar, sem a espera extra da animação anterior.
+    const duration=900;
     const start=performance.now();
     const wheel=$("wheel");
 
@@ -335,14 +336,14 @@ async function spin(){
       requestAnimationFrame(frame);
     });
 
-    // O resultado já foi confirmado pelo servidor e a animação terminou.
-    // Libera imediatamente o botão, sem esperar nenhuma outra atualização de UI.
+    // Resultado confirmado pelo servidor e roleta já parada: libera imediatamente.
     spinning=false;
     $("spinButton").disabled=false;
     $("betMinus").disabled=false;
     $("betPlus").disabled=false;
 
-    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.user.cashBalance);$("cashBalance").textContent=money(d.user.cashBalance);
+    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+    $("cashBalance").textContent=money(d.user.cashBalance);
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
   }catch(e){
     spinning=false;
