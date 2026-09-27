@@ -177,7 +177,7 @@ function drawWheel(){
     label.setAttribute("x",xy[0]);
     label.setAttribute("y",xy[1]);
     label.setAttribute("fill","#fff");
-    label.setAttribute("font-size","26");
+    label.setAttribute("font-size","30");
     label.setAttribute("font-family","Arial,Helvetica,sans-serif");
     label.setAttribute("font-weight","900");
     label.setAttribute("text-anchor","middle");
