@@ -737,16 +737,19 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
 }
 
 /* Área do jogador: o rodapé acompanha o último item, sem espaço vazio abaixo. */
-.dashboard-page{padding-bottom:0}
+/* Navegação inferior flutuante: permanece visível mesmo durante a rolagem. */
+.site-footer-nav{position:fixed;left:0;right:0;bottom:0;height:64px;z-index:70}
+.dashboard-page{padding-bottom:64px}
 .dashboard-page .landing{padding-bottom:10px}
-.dashboard-page .site-footer-nav{position:static;height:64px}
-@media(max-width:700px){.dashboard-page{padding-bottom:0}.dashboard-page .landing{padding-bottom:8px}.dashboard-page .site-footer-nav{height:64px}}
+@media(max-width:700px){
+  .dashboard-page{padding-bottom:64px}
+  .dashboard-page .landing{padding-bottom:8px}
+  body:has(.site-footer-nav:not(.hidden)){padding-bottom:64px!important}
+}
 
-/* Acabamento global: nenhuma página cria área vazia rolável depois do último conteúdo. */
+/* Acabamento global: nenhuma página cria área vazia rolável além do espaço reservado ao menu flutuante. */
 html,body{min-height:0}
-body{padding-bottom:0!important}
 .site-shell{min-height:0}
 .landing{padding-bottom:0}
-.home-main{padding-bottom:0}
-.site-footer-nav{position:static}
-@media(max-width:700px){body{padding-bottom:0!important}}
+.home-main{padding-bottom:64px}
+
