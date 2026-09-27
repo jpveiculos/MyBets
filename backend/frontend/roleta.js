@@ -1,5 +1,5 @@
-let TOTAL=96;
-let GROUP_SIZE=6;
+let TOTAL=100;
+let GROUP_SIZE=5;
 let PRIZE_COUNT=TOTAL/GROUP_SIZE;
 let GROUP_ANGLE=360/PRIZE_COUNT;
 // A fatia colorida ocupa metade do grupo; os 3 setores de perda
