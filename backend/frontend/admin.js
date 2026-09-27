@@ -298,7 +298,33 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
  document.querySelectorAll(".approve-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/approve","POST",{}));
  document.querySelectorAll(".reject-withdrawal").forEach(b=>b.onclick=()=>action("/api/admin/withdrawals/"+b.dataset.id+"/reject","POST",{rejectionReason:"Rejeitado pelo administrador"}));
  document.querySelectorAll(".history-user").forEach(b=>b.onclick=()=>openUserHistory(b.dataset.id));
- document.querySelectorAll(".add-bonus-credits").forEach(b=>b.onclick=async()=>{const v=prompt("Quantidade de bônus de crédito a adicionar:");if(v)await action("/api/admin/users/"+b.dataset.id+"/bonus-credits","POST",{amount:Number(v)})});
+ document.querySelectorAll(".add-bonus-credits").forEach(b=>b.onclick=async()=>{
+  const modal=document.createElement("div");
+  modal.className="modal-backdrop";
+  modal.innerHTML=`<section class="finance-modal" role="dialog" aria-modal="true" aria-labelledby="bonusCreditTitle">
+    <button type="button" class="modal-close" aria-label="Fechar">×</button>
+    <h2 id="bonusCreditTitle">Adicionar bônus de crédito</h2>
+    <label>Quantidade de créditos
+      <input id="adminBonusCreditAmount" type="number" min="0.01" step="0.01" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="0,00" autofocus>
+    </label>
+    <div class="row-actions"><button type="button" class="primary-btn" id="adminBonusCreditConfirm">Adicionar</button></div>
+    <p class="form-message" id="adminBonusCreditMessage"></p>
+  </section>`;
+  document.body.appendChild(modal);
+  const field=modal.querySelector("#adminBonusCreditAmount");
+  const close=()=>modal.remove();
+  modal.querySelector(".modal-close").onclick=close;
+  field.addEventListener("input",()=>{field.value=field.value.replace(/[^0-9]/g,"")});
+  field.focus();
+  modal.querySelector("#adminBonusCreditConfirm").onclick=async()=>{
+    const value=Number(field.value);
+    if(!Number.isFinite(value)||value<=0){modal.querySelector("#adminBonusCreditMessage").textContent="Informe uma quantidade válida.";return}
+    const button=modal.querySelector("#adminBonusCreditConfirm");
+    button.disabled=true;
+    try{await action("/api/admin/users/"+b.dataset.id+"/bonus-credits","POST",{amount:value});close()}
+    catch(e){modal.querySelector("#adminBonusCreditMessage").textContent=e.message||"Não foi possível adicionar os créditos.";button.disabled=false}
+  };
+});
  
  document.querySelectorAll(".ban-user").forEach(b=>b.onclick=async()=>{const reason=prompt("Motivo do banimento:","Banimento administrativo");if(reason===null||!reason.trim())return;if(!confirm("Banir este usuário? O acesso será encerrado imediatamente."))return;await action("/api/admin/users/"+b.dataset.id+"/ban","POST",{reason:reason.trim()})});
  document.querySelectorAll(".unban-user").forEach(b=>b.onclick=async()=>{if(!confirm("Desbanir este usuário?"))return;await action("/api/admin/users/"+b.dataset.id+"/unban","POST",{})});
