@@ -27,7 +27,11 @@ async function api(url,options={}){const r=await fetch(url,{credentials:"same-or
 function renderPaytable(){
   const table=$("paytable");
   if(!table||!config?.symbols)return;
-  table.innerHTML=config.symbols.map(symbol=>'<div class="pay"><span class="sym">'+symbol.label+'</span><small>'+symbol.multiplier+'x</small></div>').join("");
+  const symbols=config.symbols;
+  const top=symbols.slice(0,4);
+  const bottom=symbols.slice(4,9);
+  const renderRow=row=>'<div class="pay-row">'+row.map(symbol=>'<div class="pay"><span class="sym">'+symbol.label+'</span><small>'+symbol.multiplier+'x</small></div>').join("")+'</div>';
+  table.innerHTML=renderRow(top)+renderRow(bottom);
 }
 function draw(grid){$("reels").innerHTML=grid.map(s=>'<div class="reel" data-id="'+s.id+'">'+s.label+"</div>").join("")}
 function initial(){const symbols=config.symbols,n=config.rows*config.columns;draw(Array.from({length:n},(_,i)=>symbols[i%symbols.length]))}
