@@ -73,20 +73,13 @@ function drawWheel(){
   const svg=$("wheelSvg");
   svg.innerHTML="";
   const ns="http://www.w3.org/2000/svg";
-  const radius=198;
-
   const defs=document.createElementNS(ns,"defs");
   const gradients={
     black:["#111111","#050505","#000000"],
     2:["#168cff","#0066ff","#003399"],
     3:["#7cff35","#39d353","#138a00"],
     4:["#c000ff","#8a00cc","#4b0075"],
-    5:["#ff9d00","#ff6800","#b83a00"],
-    6:["#39f2ff","#16c9e0","#078ca3"],
-    7:["#ff4fd8","#d000a8","#7a005f"],
-    8:["#0a6b32","#075225","#032d16"],
-    9:["#14c0bc","#078f8b","#045d59"],
-    10:["#ff2525","#e00000","#8f0000"]
+    5:["#ff9d00","#ff6800","#b83a00"]
   };
 
   Object.entries(gradients).forEach(([key,stops])=>{
@@ -104,33 +97,8 @@ function drawWheel(){
       g.appendChild(s);
     });
 
-    const filter=document.createElementNS(ns,"filter");
-    filter.setAttribute("id","wheel-bevel-"+key);
-    filter.setAttribute("x","-20%");
-    filter.setAttribute("y","-20%");
-    filter.setAttribute("width","140%");
-    filter.setAttribute("height","140%");
-    const shadow=document.createElementNS(ns,"feDropShadow");
-    shadow.setAttribute("dx","0"); shadow.setAttribute("dy","5"); shadow.setAttribute("stdDeviation","3.5"); shadow.setAttribute("flood-color","#000"); shadow.setAttribute("flood-opacity",".82");
-    filter.appendChild(shadow);
-    defs.appendChild(filter);
-
     defs.appendChild(g);
   });
-
-  const outerMetallic=document.createElementNS(ns,"linearGradient");
-  outerMetallic.setAttribute("id","outer-metallic-gold");
-  outerMetallic.setAttribute("x1","0%");
-  outerMetallic.setAttribute("y1","0%");
-  outerMetallic.setAttribute("x2","100%");
-  outerMetallic.setAttribute("y2","100%");
-  [["0%","#fff1a3"],["18%","#d99a17"],["38%","#8f5a00"],["50%","#ffe27a"],["66%","#b87408"],["84%","#fff0a0"],["100%","#9a6100"]].forEach(([offset,color])=>{
-    const s=document.createElementNS(ns,"stop");
-    s.setAttribute("offset",offset);
-    s.setAttribute("stop-color",color);
-    outerMetallic.appendChild(s);
-  });
-  defs.appendChild(outerMetallic);
 
   svg.appendChild(defs);
 
@@ -138,12 +106,7 @@ function drawWheel(){
     2:{stroke:"#168cff"},
     3:{stroke:"#00ff66"},
     4:{stroke:"#c000ff"},
-    5:{stroke:"#ff9d00"},
-    6:{stroke:"#39f2ff"},
-    7:{stroke:"#ff4fd8"},
-    8:{stroke:"#247f38"},
-    9:{stroke:"#19d6d0"},
-    10:{stroke:"#ff2525"}
+    5:{stroke:"#ff9d00"}
   };
 
   // Visual: cada grupo mostra uma única fatia colorida e uma única
