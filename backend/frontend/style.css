@@ -735,3 +735,9 @@ button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:
     max-width:100%;
   }
 }
+
+/* Área do jogador: o rodapé acompanha o último item, sem espaço vazio abaixo. */
+.dashboard-page{padding-bottom:0}
+.dashboard-page .landing{padding-bottom:10px}
+.dashboard-page .site-footer-nav{position:static;height:64px}
+@media(max-width:700px){.dashboard-page{padding-bottom:0}.dashboard-page .landing{padding-bottom:8px}.dashboard-page .site-footer-nav{height:64px}}
