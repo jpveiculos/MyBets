@@ -41,7 +41,7 @@ async function getConfig(){
   const prizes=[...DEFAULT_PRIZES];
   const minBet=DEFAULT_MIN_BET;
   const maxRaw=Number(await getSetting("roulette_max_bet",String(DEFAULT_MAX_BET)));
-  const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Number(maxRaw.toFixed(2)):DEFAULT_MAX_BET;
+  const maxBet=Number.isFinite(maxRaw)&&maxRaw>=minBet?Math.min(10,Number(maxRaw.toFixed(2))):DEFAULT_MAX_BET;
   return {prizes,minBet,maxBet};
 }
 
