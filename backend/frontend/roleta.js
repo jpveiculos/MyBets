@@ -342,7 +342,7 @@ async function spin(){
     $("betMinus").disabled=false;
     $("betPlus").disabled=false;
 
-    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.user.cashBalance);
+    $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});$("cashBalance").textContent=money(d.user.cashBalance);$("cashBalance").textContent=money(d.user.cashBalance);
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
   }catch(e){
     spinning=false;
