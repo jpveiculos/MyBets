@@ -208,7 +208,7 @@ function renderRouletteSettings(settings,roulette){
  if(!minField||!maxField)return;
  const map=Object.fromEntries(settings.map(x=>[x.setting_key,x.setting_value]));
  minField.value=map.roulette_min_bet??"0.50";
- maxField.value=map.roulette_max_bet??"100.00";
+ maxField.value=map.roulette_max_bet??"10.00";
  const structure=$("rouletteStructure"),probabilities=$("rouletteProbabilities");
  if(roulette){
   const total=Number(roulette.totalSectors)||0,prizes=Number(roulette.prizeSectors)||0,loss=Number(roulette.lossSectors)||0;
