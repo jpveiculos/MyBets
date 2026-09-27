@@ -37,8 +37,30 @@ async function mpRequest(path, options = {}) {
   });
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const detail = body?.message || body?.error || "Mercado Pago recusou a operação.";
-    throw new Error(`Mercado Pago: ${detail}`);
+    const detail =
+      body?.message ||
+      body?.error ||
+      body?.cause?.[0]?.description ||
+      body?.cause?.[0]?.code ||
+      "Mercado Pago recusou a operação.";
+    const requestId = response.headers.get("x-request-id") || "";
+
+    console.error("Mercado Pago API error", {
+      path,
+      status: response.status,
+      statusText: response.statusText,
+      requestId,
+      detail,
+      body: {
+        message: body?.message,
+        error: body?.error,
+        status: body?.status,
+        status_detail: body?.status_detail,
+        cause: body?.cause
+      }
+    });
+
+    throw new Error(`Mercado Pago (${response.status}): ${detail}`);
   }
   return body;
 }
