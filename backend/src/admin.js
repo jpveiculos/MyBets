@@ -13,16 +13,6 @@ export async function listUsers() {
   return result.rows;
 }
 
-export async function listDeposits() {
-  const result=await pool.query(
-    `SELECT d.*,u.username FROM deposits d
-       JOIN users u ON u.id=d.user_id
-      WHERE COALESCE(d.payment_provider,'manual_pix') <> 'mercadopago'
-      ORDER BY d.created_at DESC`
-  );
-  return result.rows;
-}
-
 export async function listWithdrawals() {
   const result=await pool.query(
     `SELECT w.*,u.username,u.cpf,u.cash_balance,u.play_credits,u.reserved_balance
@@ -31,104 +21,6 @@ export async function listWithdrawals() {
       ORDER BY w.created_at DESC`
   );
   return result.rows;
-}
-
-export async function approveDeposit({id,adminId,approvedAmount,adminNote=null}) {
-  const client=await pool.connect();
-  try {
-    await client.query("BEGIN");
-
-    const r=await client.query(`SELECT * FROM deposits WHERE id=$1 FOR UPDATE`,[id]);
-    const d=r.rows[0];
-    if(!d) throw new Error("Depósito não encontrado.");
-    if(d.status!=="pending") throw new Error("Este depósito já foi processado.");
-
-    const declaredAmount=Number(d.amount);
-    const value=approvedAmount === undefined || approvedAmount === null || approvedAmount === ""
-      ? declaredAmount
-      : Math.round(Number(approvedAmount)*100)/100;
-
-    if(!Number.isFinite(value) || value<=0) throw new Error("O valor confirmado do depósito é inválido.");
-
-    const userResult=await client.query("SELECT id,play_credits FROM users WHERE id=$1 FOR UPDATE",[d.user_id]);
-    if(!userResult.rows[0]) throw new Error("Usuário não encontrado.");
-
-    const creditState=await addDepositCredits({client,userId:d.user_id,amount:value,referenceId:id});
-
-    await client.query(
-      `UPDATE deposits
-          SET status='approved',
-              approved_amount=$1,
-              admin_note=$2,
-              approved_by=$3,
-              approved_at=CURRENT_TIMESTAMP,
-              updated_at=CURRENT_TIMESTAMP
-        WHERE id=$4`,
-      [value,adminNote,adminId,id]
-    );
-
-    await client.query(
-      `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-       VALUES('admin',$1,'deposit_approved','deposit',$2,$3)`,
-      [adminId,id,JSON.stringify({
-        declaredAmount,
-        approvedAmount:value,
-        bonusPercent:creditState.bonusPercent,
-        creditsAdded:creditState.creditsAdded,
-        adminNote
-      })]
-    );
-
-    await client.query("COMMIT");
-    return {
-      id,
-      status:"approved",
-      declaredAmount,
-      approvedAmount:value,
-      bonusPercent:creditState.bonusPercent,
-      creditsAdded:creditState.creditsAdded,
-      totalCredits:creditState.newPlayCredits
-    };
-  } catch(e){
-    await client.query("ROLLBACK");
-    throw e;
-  } finally {
-    client.release();
-  }
-}
-
-
-export async function rejectDeposit({id,adminId,adminNote=null}) {
-  const client=await pool.connect();
-  try {
-    await client.query("BEGIN");
-    const r=await client.query(
-      `UPDATE deposits
-          SET status='rejected',
-              admin_note=$1,
-              rejected_by=$2,
-              rejected_at=CURRENT_TIMESTAMP,
-              updated_at=CURRENT_TIMESTAMP
-        WHERE id=$3 AND status='pending'
-        RETURNING id,user_id,amount`,
-      [adminNote,adminId,id]
-    );
-    if(!r.rows[0]) throw new Error("Depósito não encontrado ou já processado.");
-
-    await client.query(
-      `INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details)
-       VALUES('admin',$1,'deposit_rejected','deposit',$2,$3)`,
-      [adminId,id,JSON.stringify({declaredAmount:Number(r.rows[0].amount),adminNote})]
-    );
-
-    await client.query("COMMIT");
-    return {id,status:"rejected"};
-  } catch(e){
-    await client.query("ROLLBACK");
-    throw e;
-  } finally {
-    client.release();
-  }
 }
 
 export async function approveWithdrawal({id,adminId,adminNote=null}) {
