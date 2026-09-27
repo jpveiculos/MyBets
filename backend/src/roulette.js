@@ -2,13 +2,13 @@ import { randomInt } from "node:crypto";
 import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
-const TOTAL_SECTORS=84;
+const TOTAL_SECTORS=76;
 const GROUP_SIZE=4;
 const PRIZE_SECTORS=TOTAL_SECTORS/GROUP_SIZE;
 const LOSS_SECTORS=TOTAL_SECTORS-PRIZE_SECTORS;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-const DEFAULT_PRIZES=[4,2,5,3,7,2,4,5,2,8,3,5,4,2,9,5,3,4,6,5,3,2,10];
+const DEFAULT_PRIZES=[2,3,2,4,5,2,7,3,2,4,8,2,5,3,2,9,4,2,3,10,5];
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
@@ -46,7 +46,7 @@ async function getConfig(){
 }
 
 function sortearSetor(){
-  // Cada um dos 125 setores tem exatamente a mesma probabilidade: 1/150.
+  // Cada setor lógico tem exatamente a mesma probabilidade.
   return randomInt(DRAW_DENOMINATOR);
 }
 
