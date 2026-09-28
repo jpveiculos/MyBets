@@ -11,6 +11,8 @@ let rotation=0;
 let spinning=false;
 let configLoaded=false;
 let animationId=0;
+let animationRunning=false;
+let queuedSpin=false;
 
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -240,12 +242,18 @@ async function loadConfig(){
 }
 
 async function spin(){
-  if(spinning||!configLoaded)return;
+  if(!configLoaded)return;
+  if(animationRunning){
+    queuedSpin=true;
+    return;
+  }
+  if(spinning)return;
   normalizeBet();
   const bet=getBet();
   if(bet<MIN_BET||bet>MAX_BET)return;
 
   spinning=true;
+  animationRunning=true;
   const currentAnimationId=++animationId;
   $("spinButton").disabled=true;
   $("betMinus").disabled=true;
@@ -283,10 +291,10 @@ async function spin(){
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
 
-        // Libera o botão durante a desaceleração final. Se o jogador iniciar
-        // outro giro, o ciclo anterior é cancelado com segurança pelo ID.
+        // O botão fica disponível antes da parada para aceitar o próximo giro.
+        // O clique é enfileirado enquanto esta animação termina, preservando
+        // a ordem financeira de cada aposta.
         if(p>=0.72 && spinning){
-          spinning=false;
           $("spinButton").disabled=false;
           $("betMinus").disabled=false;
           $("betPlus").disabled=false;
@@ -306,6 +314,7 @@ async function spin(){
     });
     if(!completed)return;
 
+    animationRunning=false;
     spinning=false;
     $("spinButton").disabled=false;
     $("betMinus").disabled=false;
@@ -314,7 +323,14 @@ async function spin(){
     $("balance").textContent=Number(d.user.playCredits||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
     $("cashBalance").textContent=money(d.user.cashBalance);
     if(d.spin.resultType==="prize")showWin(d.spin.prize);
+
+    if(queuedSpin){
+      queuedSpin=false;
+      setTimeout(spin,0);
+    }
   }catch(e){
+    animationRunning=false;
+    queuedSpin=false;
     spinning=false;
     $("spinButton").disabled=false;
     $("betMinus").disabled=false;
