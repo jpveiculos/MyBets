@@ -262,16 +262,16 @@ async function spin(){
     const delta=((target-current)%360+360)%360;
     const from=rotation;
     const destination=rotation+360+delta;
-    // Giro curto: a roleta continua fazendo um giro completo, mas libera
-    // o botão logo após parar, sem a espera extra da animação anterior.
-    const duration=1000;
+    // Giro curto e suave: um giro completo, com desaceleração progressiva
+    // e uma parada firme no setor sorteado, sem prolongar o final.
+    const duration=1050;
     const start=performance.now();
     const wheel=$("wheel");
 
     await new Promise(resolve=>{
       function frame(now){
         const p=Math.min(1,(now-start)/duration);
-        const eased=1-Math.pow(1-p,5);
+        const eased=1-Math.pow(1-p,4);
         const value=from+(destination-from)*eased;
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
