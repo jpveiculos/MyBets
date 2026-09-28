@@ -276,21 +276,17 @@ async function spin(){
           resolve(false);
           return;
         }
+
         const p=Math.min(1,(now-start)/duration);
         const eased=1-Math.pow(1-p,5);
         const value=from+(destination-from)*eased;
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
 
-        // Libera os controles um pouco antes do fim visual, quando a roleta
-        // já está praticamente parada. O próximo giro continua protegido
-        // pelo estado "spinning" até a animação terminar de fato.
+        // Libera o botão durante a desaceleração final. Se o jogador iniciar
+        // outro giro, o ciclo anterior é cancelado com segurança pelo ID.
         if(p>=0.72 && spinning){
           spinning=false;
-          $("spinButton").disabled=false;
-          $("betMinus").disabled=false;
-          $("betPlus").disabled=false;
-        }
           $("spinButton").disabled=false;
           $("betMinus").disabled=false;
           $("betPlus").disabled=false;
@@ -308,7 +304,6 @@ async function spin(){
 
       requestAnimationFrame(frame);
     });
-
     if(!completed)return;
 
     spinning=false;
