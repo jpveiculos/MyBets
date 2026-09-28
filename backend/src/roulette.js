@@ -3,13 +3,13 @@ import { pool } from "./db.js";
 import { consumePlayCredits, addWithdrawableWinnings } from "./finance.js";
 
 const TOTAL_SECTORS=80;
-const GROUP_SIZE=4;
-const PRIZE_SECTORS=20;
-const LOSS_SECTORS=60;
+const GROUP_SIZE=5;
+const PRIZE_SECTORS=16;
+const LOSS_SECTORS=64;
 const PRIZE_INDEXES=Array.from({length:TOTAL_SECTORS},(_,i)=>i).filter(i=>i%GROUP_SIZE===0);
 
-// 20 setores premiados: 5x 2, 5x 3, 5x 4 e 5x 5. Cada prêmio é seguido por 3 setores de perda.
-const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
+// 16 setores premiados: 4x 2, 4x 3, 4x 4 e 4x 5. Cada prêmio é seguido por 4 setores de perda.
+const DEFAULT_PRIZES=[2,3,4,5,2,3,4,5,2,3,4,5,2,3,4,5];
 
 const DEFAULT_MIN_BET=.50;
 const DEFAULT_MAX_BET=100;
