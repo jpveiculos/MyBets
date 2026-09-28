@@ -279,7 +279,7 @@ async function spin(){
         // Libera os controles um pouco antes do fim visual, quando a roleta
         // já está praticamente parada. O próximo giro continua protegido
         // pelo estado "spinning" até a animação terminar de fato.
-        if(p>=0.94){
+        if(p>=0.88){
           $("spinButton").disabled=false;
           $("betMinus").disabled=false;
           $("betPlus").disabled=false;
