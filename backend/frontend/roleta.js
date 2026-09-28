@@ -264,14 +264,14 @@ async function spin(){
     const destination=rotation+360+delta;
     // Giro curto e suave: um giro completo, com desaceleração progressiva
     // e uma parada firme no setor sorteado, sem prolongar o final.
-    const duration=1350;
+    const duration=1900;
     const start=performance.now();
     const wheel=$("wheel");
 
     await new Promise(resolve=>{
       function frame(now){
         const p=Math.min(1,(now-start)/duration);
-        const eased=1-Math.pow(1-p,4.2);
+        const eased=1-Math.pow(1-p,5);
         const value=from+(destination-from)*eased;
         rotation=value;
         wheel.style.transform=`rotate(${rotation}deg)`;
