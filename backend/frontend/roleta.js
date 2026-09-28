@@ -10,6 +10,7 @@ let prizes=[];
 let rotation=0;
 let spinning=false;
 let configLoaded=false;
+let animationId=0;
 
 const $=id=>document.getElementById(id);
 const money=v=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -245,6 +246,7 @@ async function spin(){
   if(bet<MIN_BET||bet>MAX_BET)return;
 
   spinning=true;
+  const currentAnimationId=++animationId;
   $("spinButton").disabled=true;
   $("betMinus").disabled=true;
   $("betPlus").disabled=true;
@@ -268,8 +270,12 @@ async function spin(){
     const start=performance.now();
     const wheel=$("wheel");
 
-    await new Promise(resolve=>{
+    const completed=await new Promise(resolve=>{
       function frame(now){
+        if(currentAnimationId!==animationId){
+          resolve(false);
+          return;
+        }
         const p=Math.min(1,(now-start)/duration);
         const eased=1-Math.pow(1-p,5);
         const value=from+(destination-from)*eased;
@@ -279,7 +285,12 @@ async function spin(){
         // Libera os controles um pouco antes do fim visual, quando a roleta
         // já está praticamente parada. O próximo giro continua protegido
         // pelo estado "spinning" até a animação terminar de fato.
-        if(p>=0.88){
+        if(p>=0.72 && spinning){
+          spinning=false;
+          $("spinButton").disabled=false;
+          $("betMinus").disabled=false;
+          $("betPlus").disabled=false;
+        }
           $("spinButton").disabled=false;
           $("betMinus").disabled=false;
           $("betPlus").disabled=false;
@@ -292,11 +303,13 @@ async function spin(){
 
         rotation=destination;
         wheel.style.transform=`rotate(${rotation}deg)`;
-        resolve();
+        resolve(true);
       }
 
       requestAnimationFrame(frame);
     });
+
+    if(!completed)return;
 
     spinning=false;
     $("spinButton").disabled=false;
