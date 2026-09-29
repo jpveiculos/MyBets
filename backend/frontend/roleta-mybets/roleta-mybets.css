@@ -117,3 +117,11 @@ body{
     margin-bottom:0;
   }
 }
+
+
+/* Espaçamento adicional entre Termos de uso e Sair. */
+@media(max-width:430px){
+  #appShell .roleta-bottom-actions .roleta-logout-btn{
+    margin-top:26px;
+  }
+}
