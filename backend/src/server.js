@@ -233,6 +233,27 @@ app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => 
 
 const frontendPath=path.join(__dirname,"../frontend");
 
+const roletaMybetsPath=path.join(frontendPath,"roleta-mybets");
+
+function sendRoletaMybetsFile(file){
+  return (req,res)=>{
+    res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+    res.sendFile(path.join(roletaMybetsPath,file));
+  };
+}
+
+app.get("/roleta",sendRoletaMybetsFile("index.html"));
+app.get("/roleta/",sendRoletaMybetsFile("index.html"));
+app.get("/roleta-sw.js",(req,res)=>{
+  res.setHeader("Cache-Control","no-store, no-cache, must-revalidate, proxy-revalidate");
+  res.setHeader("Service-Worker-Allowed","/roleta");
+  res.sendFile(path.join(roletaMybetsPath,"sw.js"));
+});
+
+
+
 const frontendNoCache=(req,res,next)=>{
   const ext=path.extname(req.path).toLowerCase();
   if([".html",".js",".css",".json"].includes(ext) || req.path==="/sw.js"){
