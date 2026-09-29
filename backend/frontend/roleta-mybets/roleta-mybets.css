@@ -99,3 +99,21 @@ body{
     margin:24px auto 15px;
   }
 }
+
+
+/* Encosta o final do conteúdo ao fim da tela, evitando espaço vazio abaixo de Sair. */
+#appShell .wrap{
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#appShell .roleta-bottom-actions{
+  margin-bottom:0;
+  padding-bottom:0;
+}
+@media(max-width:430px){
+  #appShell .roleta-bottom-actions{
+    margin-bottom:0;
+  }
+  #appShell .roleta-bottom-actions .roleta-logout-btn{
+    margin-bottom:0;
+  }
+}
