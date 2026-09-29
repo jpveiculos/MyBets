@@ -143,3 +143,24 @@ body{
     margin:14px auto;
   }
 }
+
+
+/* QR Code: limitar explicitamente o tamanho para impedir que regras globais o ampliem. */
+#pixPaymentArea img#pixPaymentQr.pix-payment-qr{
+  display:block !important;
+  width:220px !important;
+  max-width:220px !important;
+  height:220px !important;
+  max-height:220px !important;
+  object-fit:contain !important;
+  margin:16px auto !important;
+}
+@media(max-width:430px){
+  #pixPaymentArea img#pixPaymentQr.pix-payment-qr{
+    width:210px !important;
+    max-width:210px !important;
+    height:210px !important;
+    max-height:210px !important;
+    margin:14px auto !important;
+  }
+}
