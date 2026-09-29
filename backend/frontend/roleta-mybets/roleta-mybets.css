@@ -83,3 +83,19 @@ body{
     margin-top:2px;
   }
 }
+
+
+/* Separação visual entre o jogo e as ações da conta. */
+.roleta-section-divider{
+  width:min(calc(100vw - 40px),520px);
+  height:1px;
+  margin:26px auto 16px;
+  background:linear-gradient(90deg,transparent,rgba(255,216,61,.38),rgba(255,255,255,.12),rgba(255,216,61,.38),transparent);
+  box-shadow:0 1px 8px rgba(255,216,61,.08);
+}
+@media(max-width:430px){
+  .roleta-section-divider{
+    width:calc(100% - 20px);
+    margin:24px auto 15px;
+  }
+}
