@@ -32,7 +32,10 @@ body{
 .roleta-auth-badge{width:max-content;margin:5px auto 22px;padding:6px 10px;border-radius:999px;background:rgba(255,216,61,.1);border:1px solid rgba(255,216,61,.3);color:#ffd83d;font-size:10px;font-weight:900;letter-spacing:.12em}
 .roleta-auth-card h1{margin:14px 0;font-size:26px}
 .roleta-auth-card label,.roleta-finance-modal label{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:12px;font-weight:800;color:#c5ccd6}
-.roleta-auth-card input,.roleta-finance-modal input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#060a0f;color:#fff;outline:none}
+.roleta-auth-card input,.roleta-finance-modal input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#060a0f;color:#fff;outline:none;box-sizing:border-box}
+.pix-copy{display:flex;align-items:stretch;gap:8px}
+.pix-copy input{min-width:0;flex:1;width:auto}
+.pix-copy .small-btn{flex:0 0 auto;white-space:nowrap}
 .roleta-auth-note,.roleta-modal-copy,.roleta-terms-modal p{color:#929cab;font-size:12px;line-height:1.5}
 .header-left{display:flex;align-items:center;gap:8px}.roleta-title{font-size:10px;letter-spacing:.12em;color:#ffd83d;font-weight:900}
 .player-area{display:flex;align-items:center;gap:6px;margin-left:auto}.player-area>span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe4eb;font-size:11px;font-weight:800}
