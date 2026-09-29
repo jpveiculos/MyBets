@@ -1,166 +1,55 @@
-.roleta-auth-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 20%,#1a2531 0,#05080d 65%,#020306 100%)}.roleta-auth-screen.hidden{display:none}.roleta-auth-card{width:min(430px,calc(100vw - 28px));padding:28px 22px;border:1px solid rgba(255,216,61,.28);border-radius:22px;background:linear-gradient(145deg,#101822,#080c12);box-shadow:0 24px 70px rgba(0,0,0,.6)}.roleta-brand{text-align:center;font-size:46px;font-weight:1000;font-style:italic;letter-spacing:-3px}.roleta-brand span{color:#ffd83d}.roleta-auth-badge{width:max-content;margin:5px auto 22px;padding:6px 10px;border-radius:999px;background:rgba(255,216,61,.1);border:1px solid rgba(255,216,61,.3);color:#ffd83d;font-size:10px;font-weight:900;letter-spacing:.12em}.roleta-auth-card h1{margin:14px 0;font-size:26px}.roleta-auth-card label,.roleta-finance-modal label{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:12px;font-weight:800;color:#c5ccd6}.roleta-auth-card input,.roleta-finance-modal input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#060a0f;color:#fff;outline:none}.roleta-auth-note,.roleta-modal-copy,.roleta-terms-modal p{color:#929cab;font-size:12px;line-height:1.5}.header-left{display:flex;align-items:center;gap:8px}.roleta-title{font-size:10px;letter-spacing:.12em;color:#ffd83d;font-weight:900}.player-area{display:flex;align-items:center;gap:6px;margin-left:auto}.player-area>span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe4eb;font-size:11px;font-weight:800}.header-action{min-height:30px;padding:0 8px;border:1px solid rgba(255,216,61,.25);border-radius:8px;background:#111820;color:#ffd83d;font-size:10px;font-weight:900}.roleta-finance-actions{width:min(calc(100vw - 24px),540px);margin:12px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.roleta-finance-actions button{min-height:72px;padding:8px 5px;border:1px solid rgba(255,216,61,.24);border-radius:13px;background:linear-gradient(145deg,#111a24,#080d13);color:#fff}.roleta-finance-actions span{display:block;font-size:20px}.roleta-finance-actions b{display:block;margin-top:3px;font-size:11px}.roleta-finance-actions small{display:block;margin-top:3px;color:#8993a1;font-size:8px}.roleta-bottom-actions{width:min(calc(100vw - 24px),540px);margin:8px auto 26px;display:flex;justify-content:center;gap:8px}.roleta-bottom-actions button{padding:8px 12px;border:1px solid rgba(255,216,61,.2);border-radius:9px;background:#0c131b;color:#d8dde5;font-size:10px;font-weight:800}.roleta-finance-modal{width:min(470px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:22px}.roleta-finance-modal h3{margin:14px 0 8px}.roleta-terms-modal{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:24px}.roleta-terms-modal h2{margin-top:0}.roleta-terms-modal h3{margin:20px 0 6px;color:#ffd83d;font-size:14px}.roleta-terms-note{padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}.hidden{display:none!important}.finance-modal{color:#fff}.withdraw-balance-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid rgba(255,216,61,.2);border-radius:13px;background:#0c131b;margin:12px 0}.withdraw-balance-card span{display:block;color:#8f98a6;font-size:10px}.withdraw-balance-card strong{display:block;margin-top:3px;font-size:22px;color:#ffd83d}.small-btn{min-height:36px;padding:0 10px;border:1px solid rgba(255,216,61,.25);border-radius:9px;background:#151d26;color:#ffd83d;font-weight:900;font-size:10px}.roleta-terms-modal p{color:#b5bdc9}@media(max-width:430px){.header{padding:0 5px}.header-left .roleta-title{display:none}.player-area>span{max-width:62px}.player-area .header-action{padding:0 6px}.roleta-finance-actions{grid-template-columns:1fr;gap:6px}.roleta-finance-actions button{min-height:58px;display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;align-items:center;text-align:left;padding:7px 10px}.roleta-finance-actions span{grid-row:1 / span 2;grid-column:1;font-size:20px}.roleta-finance-actions b{grid-column:2;margin:0;font-size:12px}.roleta-finance-actions small{grid-column:2;margin-top:2px;font-size:8px}.roleta-bottom-actions{margin-bottom:18px}.roleta-auth-card{padding:24px 18px}.account-box{width:78px;flex-basis:78px}.player-area{gap:3px}.player-area>span{display:none}}
+/* Roleta MyBets — estilos exclusivos da aplicação */
+.roleta-auth-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 20%,#1a2531 0,#05080d 65%,#020306 100%)}
+.roleta-auth-screen.hidden{display:none}
+.roleta-auth-card{width:min(430px,calc(100vw - 28px));padding:28px 22px;border:1px solid rgba(255,216,61,.28);border-radius:22px;background:linear-gradient(145deg,#101822,#080c12);box-shadow:0 24px 70px rgba(0,0,0,.6)}
+.roleta-brand{text-align:center;font-size:46px;font-weight:1000;font-style:italic;letter-spacing:-3px}.roleta-brand span{color:#ffd83d}
+.roleta-auth-badge{width:max-content;margin:5px auto 22px;padding:6px 10px;border-radius:999px;background:rgba(255,216,61,.1);border:1px solid rgba(255,216,61,.3);color:#ffd83d;font-size:10px;font-weight:900;letter-spacing:.12em}
+.roleta-auth-card h1{margin:14px 0;font-size:26px}
+.roleta-auth-card label,.roleta-finance-modal label{display:flex;flex-direction:column;gap:7px;margin:12px 0;font-size:12px;font-weight:800;color:#c5ccd6}
+.roleta-auth-card input,.roleta-finance-modal input{width:100%;min-height:44px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:10px;background:#060a0f;color:#fff;outline:none}
+.roleta-auth-note,.roleta-modal-copy,.roleta-terms-modal p{color:#929cab;font-size:12px;line-height:1.5}
+.header-left{display:flex;align-items:center;gap:8px}.roleta-title{font-size:10px;letter-spacing:.12em;color:#ffd83d;font-weight:900}
+.player-area{display:flex;align-items:center;gap:6px;margin-left:auto}.player-area>span{max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#dfe4eb;font-size:11px;font-weight:800}
+.header-action{min-height:30px;padding:0 8px;border:1px solid rgba(255,216,61,.25);border-radius:8px;background:#111820;color:#ffd83d;font-size:10px;font-weight:900}
 
+.roleta-finance-actions{width:min(calc(100vw - 24px),540px);margin:12px auto 0;display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.roleta-finance-actions button{min-height:72px;padding:8px 5px;border:1px solid rgba(255,216,61,.24);border-radius:13px;background:linear-gradient(145deg,#111a24,#080d13);color:#fff}
+.roleta-finance-actions span{display:block;font-size:20px}.roleta-finance-actions b{display:block;margin-top:3px;font-size:11px}.roleta-finance-actions small{display:block;margin-top:3px;color:#8993a1;font-size:8px}
+.roleta-bottom-actions{width:min(calc(100vw - 24px),540px);margin:8px auto 0;padding:0;display:flex;justify-content:center;align-items:center;gap:8px;flex-wrap:wrap}
+.roleta-bottom-actions button{padding:8px 12px;border:1px solid rgba(255,216,61,.2);border-radius:9px;background:#0c131b;color:#d8dde5;font-size:10px;font-weight:800}
+.roleta-bottom-actions .roleta-logout-btn{flex:0 0 auto;min-width:110px;min-height:40px;padding:0 18px;border-color:rgba(255,216,61,.28);border-radius:10px;background:linear-gradient(180deg,#171d25,#0b1016);color:#d8dde5;font-size:12px;font-weight:900}
+.roleta-bottom-actions .roleta-logout-btn:active{transform:scale(.98)}
 
-/* ===== LAYOUT RESPONSIVO DA ROLETA MYBETS ===== */
-/* Esta página precisa acompanhar o conteúdo em telas baixas e permitir rolagem vertical,
-   sem alterar o comportamento da roleta principal do MyBets. */
-html,
-body{
-  height:auto;
-  min-height:100%;
-  overflow-x:hidden;
-  overflow-y:auto;
-  overscroll-behavior-y:auto;
-}
-body{
-  position:static;
-  inset:auto;
-}
-#appShell{
-  min-height:100dvh;
-}
-#appShell .wrap{
-  min-height:100dvh;
-  padding-bottom:max(30px,env(safe-area-inset-bottom));
-}
-#appShell .game{
-  padding-bottom:10px;
-}
+.roleta-finance-modal{width:min(470px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:22px}.roleta-finance-modal h3{margin:14px 0 8px}
+.roleta-terms-modal{width:min(620px,calc(100vw - 24px));max-height:calc(100dvh - 28px);overflow:auto;padding:24px}.roleta-terms-modal h2{margin-top:0}.roleta-terms-modal h3{margin:20px 0 6px;color:#ffd83d;font-size:14px}.roleta-terms-note{padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+.hidden{display:none!important}.finance-modal{color:#fff}
+.withdraw-balance-card{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid rgba(255,216,61,.2);border-radius:13px;background:#0c131b;margin:12px 0}
+.withdraw-balance-card span{display:block;color:#8f98a6;font-size:10px}.withdraw-balance-card strong{display:block;margin-top:3px;font-size:22px;color:#ffd83d}
+.small-btn{min-height:36px;padding:0 10px;border:1px solid rgba(255,216,61,.25);border-radius:9px;background:#151d26;color:#ffd83d;font-weight:900;font-size:10px}
+.roleta-terms-modal p{color:#b5bdc9}
+
+.roleta-section-divider{width:min(calc(100vw - 40px),520px);height:1px;margin:26px auto 16px;background:linear-gradient(90deg,transparent,rgba(255,216,61,.38),rgba(255,255,255,.12),rgba(255,216,61,.38),transparent);box-shadow:0 1px 8px rgba(255,216,61,.08)}
+
+#appShell{min-height:100dvh}#appShell .wrap{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
+#appShell .game{padding-bottom:10px}
+#appShell .roleta-bottom-actions{margin-bottom:0}
+#pixPaymentArea img#pixPaymentQr.pix-payment-qr{display:block!important;width:210px!important;max-width:210px!important;height:210px!important;max-height:210px!important;object-fit:contain!important;margin:14px auto!important}
+
 @media(max-width:700px){
-  #appShell .wrap{
-    padding-left:8px;
-    padding-right:8px;
-  }
-  #appShell .header{
-    position:sticky;
-    top:0;
-  }
-  #appShell .wheel-box{
-    width:min(calc(100vw - 20px),620px);
-  }
+  #appShell .wrap{padding-left:8px;padding-right:8px}
+  #appShell .header{position:sticky;top:0}
+  #appShell .wheel-box{width:min(calc(100vw - 20px),620px)}
 }
 @media(max-width:430px){
-  #appShell .wheel-box{
-    width:calc(100vw - 20px);
-  }
-  #appShell .roleta-finance-actions,
-  #appShell .roleta-bottom-actions{
-    width:100%;
-  }
-  #appShell .controls{
-    width:100%;
-  }
-}
-
-
-/* Botão Sair: abaixo dos Termos de uso, com tamanho proporcional ao restante da página. */
-.roleta-bottom-actions{
-  flex-wrap:wrap;
-}
-.roleta-bottom-actions .roleta-logout-btn{
-  flex:0 0 auto;
-  min-width:110px;
-  min-height:40px;
-  padding:0 18px;
-  border:1px solid rgba(255,216,61,.28);
-  border-radius:10px;
-  background:linear-gradient(180deg,#171d25,#0b1016);
-  color:#d8dde5;
-  font-size:12px;
-  font-weight:900;
-}
-.roleta-bottom-actions .roleta-logout-btn:active{
-  transform:scale(.98);
-}
-@media(max-width:430px){
-  .roleta-bottom-actions{
-    flex-direction:column;
-    align-items:center;
-  }
-  .roleta-bottom-actions .roleta-logout-btn{
-    width:min(180px,70vw);
-    min-height:42px;
-    margin-top:2px;
-  }
-}
-
-
-/* Separação visual entre o jogo e as ações da conta. */
-.roleta-section-divider{
-  width:min(calc(100vw - 40px),520px);
-  height:1px;
-  margin:26px auto 16px;
-  background:linear-gradient(90deg,transparent,rgba(255,216,61,.38),rgba(255,255,255,.12),rgba(255,216,61,.38),transparent);
-  box-shadow:0 1px 8px rgba(255,216,61,.08);
-}
-@media(max-width:430px){
-  .roleta-section-divider{
-    width:calc(100% - 20px);
-    margin:24px auto 15px;
-  }
-}
-
-
-/* Encosta o final do conteúdo ao fim da tela, evitando espaço vazio abaixo de Sair. */
-#appShell .wrap{
-  padding-bottom:env(safe-area-inset-bottom);
-}
-#appShell .roleta-bottom-actions{
-  margin-bottom:0;
-  padding-bottom:0;
-}
-@media(max-width:430px){
-  #appShell .roleta-bottom-actions{
-    margin-bottom:0;
-  }
-  #appShell .roleta-bottom-actions .roleta-logout-btn{
-    margin-bottom:0;
-  }
-}
-
-
-/* Espaçamento adicional entre Termos de uso e Sair. */
-@media(max-width:430px){
-  #appShell .roleta-bottom-actions .roleta-logout-btn{
-    margin-top:26px;
-  }
-}
-
-
-/* QR Code do pagamento: tamanho compacto e confortável no celular. */
-#appShell .pix-payment-qr{
-  display:block;
-  width:min(280px,72vw);
-  height:auto;
-  max-width:280px;
-  margin:16px auto;
-  border-radius:10px;
-}
-@media(max-width:430px){
-  #appShell .pix-payment-qr{
-    width:min(260px,68vw);
-    max-width:260px;
-    margin:14px auto;
-  }
-}
-
-
-/* QR Code: limitar explicitamente o tamanho para impedir que regras globais o ampliem. */
-#pixPaymentArea img#pixPaymentQr.pix-payment-qr{
-  display:block !important;
-  width:220px !important;
-  max-width:220px !important;
-  height:220px !important;
-  max-height:220px !important;
-  object-fit:contain !important;
-  margin:16px auto !important;
-}
-@media(max-width:430px){
-  #pixPaymentArea img#pixPaymentQr.pix-payment-qr{
-    width:210px !important;
-    max-width:210px !important;
-    height:210px !important;
-    max-height:210px !important;
-    margin:14px auto !important;
-  }
+  .header{padding:0 5px}.header-left .roleta-title{display:none}
+  .player-area>span{max-width:62px;display:none}.player-area{gap:3px}
+  .player-area .header-action{padding:0 6px}
+  .roleta-finance-actions{width:100%;grid-template-columns:1fr;gap:6px}
+  .roleta-finance-actions button{min-height:58px;display:grid;grid-template-columns:32px 1fr;grid-template-rows:auto auto;align-items:center;text-align:left;padding:7px 10px}
+  .roleta-finance-actions span{grid-row:1/span 2;grid-column:1;font-size:20px}.roleta-finance-actions b{grid-column:2;margin:0;font-size:12px}.roleta-finance-actions small{grid-column:2;margin-top:2px;font-size:8px}
+  .roleta-bottom-actions{width:100%;flex-direction:column;align-items:center;gap:8px}
+  .roleta-bottom-actions .roleta-logout-btn{width:min(180px,70vw);min-height:42px;margin-top:26px}
+  .roleta-auth-card{padding:24px 18px}.account-box{width:78px;flex-basis:78px}
+  .roleta-section-divider{width:calc(100% - 20px);margin:24px auto 15px}
+  #pixPaymentArea img#pixPaymentQr.pix-payment-qr{width:210px!important;max-width:210px!important;height:210px!important;max-height:210px!important;margin:14px auto!important}
 }
