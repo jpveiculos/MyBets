@@ -1,4 +1,30 @@
 /* Roleta MyBets — estilos exclusivos da aplicação */
+html{
+  min-height:100%;
+  height:auto;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+body{
+  min-width:0;
+  min-height:100dvh;
+  height:auto;
+  margin:0;
+  display:block;
+  overflow-x:hidden;
+  overflow-y:auto;
+  position:static;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+#appShell{
+  min-height:100dvh;
+}
+#appShell .wrap{
+  min-height:100dvh;
+  height:auto;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
 .roleta-auth-screen{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 20%,#1a2531 0,#05080d 65%,#020306 100%)}
 .roleta-auth-screen.hidden{display:none}
 .roleta-auth-card{width:min(430px,calc(100vw - 28px));padding:28px 22px;border:1px solid rgba(255,216,61,.28);border-radius:22px;background:linear-gradient(145deg,#101822,#080c12);box-shadow:0 24px 70px rgba(0,0,0,.6)}
@@ -30,7 +56,6 @@
 
 .roleta-section-divider{width:min(calc(100vw - 40px),520px);height:1px;margin:26px auto 16px;background:linear-gradient(90deg,transparent,rgba(255,216,61,.38),rgba(255,255,255,.12),rgba(255,216,61,.38),transparent);box-shadow:0 1px 8px rgba(255,216,61,.08)}
 
-#appShell{min-height:100dvh}#appShell .wrap{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
 #appShell .game{padding-bottom:10px}
 #appShell .roleta-bottom-actions{margin-bottom:0}
 #pixPaymentArea img#pixPaymentQr.pix-payment-qr{display:block;width:min(280px,80vw);height:auto;margin:18px auto;border-radius:16px;background:#fff;padding:10px}
