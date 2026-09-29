@@ -7,6 +7,9 @@ on:
       - "android/roleta-mybets/**"
       - ".github/workflows/build-roleta-apk.yml"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,6 +20,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -33,7 +38,22 @@ jobs:
       - name: Prepare APK
         run: cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/RoletaMyBets.apk
 
-      - name: Upload APK
+      - name: Publish APK to repository
+        working-directory: .
+        run: |
+          mkdir -p backend/frontend/downloads
+          cp android/roleta-mybets/app/build/outputs/apk/debug/RoletaMyBets.apk backend/frontend/downloads/RoletaMyBets.apk
+          git config user.name "MyBets"
+          git config user.email "jp_veiculos@icloud.com"
+          git add backend/frontend/downloads/RoletaMyBets.apk
+          if git diff --cached --quiet; then
+            echo "APK sem alterações."
+            exit 0
+          fi
+          git commit -m "Android: publicar APK da Roleta MyBets"
+          git push origin HEAD:main
+
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: RoletaMyBets
