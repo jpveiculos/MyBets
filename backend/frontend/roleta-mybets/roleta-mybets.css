@@ -33,7 +33,7 @@
 #appShell{min-height:100dvh}#appShell .wrap{min-height:100dvh;padding-bottom:env(safe-area-inset-bottom)}
 #appShell .game{padding-bottom:10px}
 #appShell .roleta-bottom-actions{margin-bottom:0}
-#pixPaymentArea img#pixPaymentQr.pix-payment-qr{display:block!important;width:210px!important;max-width:210px!important;height:210px!important;max-height:210px!important;object-fit:contain!important;margin:14px auto!important}
+#pixPaymentArea img#pixPaymentQr.pix-payment-qr{display:block;width:min(280px,80vw);height:auto;margin:18px auto;border-radius:16px;background:#fff;padding:10px}
 
 @media(max-width:700px){
   #appShell .wrap{padding-left:8px;padding-right:8px}
@@ -51,5 +51,4 @@
   .roleta-bottom-actions .roleta-logout-btn{width:min(180px,70vw);min-height:42px;margin-top:26px}
   .roleta-auth-card{padding:24px 18px}.account-box{width:78px;flex-basis:78px}
   .roleta-section-divider{width:calc(100% - 20px);margin:24px auto 15px}
-  #pixPaymentArea img#pixPaymentQr.pix-payment-qr{width:210px!important;max-width:210px!important;height:210px!important;max-height:210px!important;margin:14px auto!important}
 }
