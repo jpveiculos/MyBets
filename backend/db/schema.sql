@@ -197,3 +197,39 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_deposits_mercadopago_order
 
 CREATE INDEX IF NOT EXISTS idx_deposits_payment_provider
   ON deposits(payment_provider, mercadopago_status, created_at DESC);
+
+ 
+-- Roleta em grupo: mesas públicas de até 10 vagas.
+CREATE TABLE IF NOT EXISTS group_roulette_tables (
+  id BIGSERIAL PRIMARY KEY,
+  room_code VARCHAR(12) UNIQUE NOT NULL,
+  stake_amount NUMERIC(12,2) NOT NULL CHECK (stake_amount > 0),
+  max_players SMALLINT NOT NULL DEFAULT 10 CHECK (max_players = 10),
+  status VARCHAR(20) NOT NULL DEFAULT 'waiting' CHECK (status IN ('waiting','finished')),
+  winning_seat SMALLINT,
+  winner_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+  winner_username VARCHAR(50),
+  prize_amount NUMERIC(12,2),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  started_at TIMESTAMP,
+  finished_at TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS group_roulette_table_players (
+  id BIGSERIAL PRIMARY KEY,
+  table_id BIGINT NOT NULL REFERENCES group_roulette_tables(id) ON DELETE CASCADE,
+  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  username_snapshot VARCHAR(50) NOT NULL,
+  seat_number SMALLINT NOT NULL CHECK (seat_number BETWEEN 1 AND 10),
+  stake_amount NUMERIC(12,2) NOT NULL CHECK (stake_amount > 0),
+  status VARCHAR(20) NOT NULL DEFAULT 'paid' CHECK (status IN ('paid','winner','lost')),
+  joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE (table_id, seat_number)
+);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_group_roulette_active_user
+  ON group_roulette_table_players(user_id) WHERE status='paid';
+CREATE INDEX IF NOT EXISTS idx_group_roulette_tables_lobby
+  ON group_roulette_tables(status, stake_amount, created_at);
+CREATE INDEX IF NOT EXISTS idx_group_roulette_players_table
+  ON group_roulette_table_players(table_id, status, seat_number);
+CREATE INDEX IF NOT EXISTS idx_group_roulette_players_user
+  ON group_roulette_table_players(user_id, joined_at DESC);
