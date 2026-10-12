@@ -25,7 +25,7 @@ export async function updateGroupRouletteConfig({ config, adminId }) {
     await client.query("BEGIN");
     const settings = [["group_roulette_enabled",String(enabled)],["group_roulette_max_players",String(maxPlayers)],["group_roulette_stakes",JSON.stringify(stakeOptions)],["group_roulette_prize_percent",String(prizePercent)]];
     for (const [key,value] of settings) await client.query("INSERT INTO site_settings(setting_key,setting_value,updated_at) VALUES($1,$2,CURRENT_TIMESTAMP) ON CONFLICT(setting_key) DO UPDATE SET setting_value=EXCLUDED.setting_value,updated_at=CURRENT_TIMESTAMP",[key,value]);
-    await client.query("INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details) VALUES('admin',$1,'group_roulette_config_updated','site','group_roulette',$2)",[adminId,JSON.stringify({enabled,maxPlayers,stakeOptions,prizePercent})]);
+    await client.query("INSERT INTO audit_logs(actor_type,actor_id,action,target_type,target_id,details) VALUES('admin',$1,'group_roulette_config_updated','site',NULL,$2)",[adminId,JSON.stringify({enabled,maxPlayers,stakeOptions,prizePercent})]);
     await client.query("COMMIT"); return {enabled,maxPlayers,stakeOptions,prizePercent};
   } catch(error) { await client.query("ROLLBACK"); throw error; } finally { client.release(); }
 }
