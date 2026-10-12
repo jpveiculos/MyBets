@@ -225,6 +225,13 @@ CREATE TABLE IF NOT EXISTS group_roulette_table_players (
   joined_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE (table_id, seat_number)
 );
+-- Permit the administrator to configure table sizes between 2 and 100.
+-- Drop the original fixed-size constraints so existing production databases migrate too.
+ALTER TABLE group_roulette_tables DROP CONSTRAINT IF EXISTS group_roulette_tables_max_players_check;
+ALTER TABLE group_roulette_tables ADD CONSTRAINT group_roulette_tables_max_players_check CHECK (max_players BETWEEN 2 AND 100);
+ALTER TABLE group_roulette_table_players DROP CONSTRAINT IF EXISTS group_roulette_table_players_seat_number_check;
+ALTER TABLE group_roulette_table_players ADD CONSTRAINT group_roulette_table_players_seat_number_check CHECK (seat_number BETWEEN 1 AND 100);
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_group_roulette_active_user
   ON group_roulette_table_players(user_id) WHERE status='paid';
 CREATE INDEX IF NOT EXISTS idx_group_roulette_tables_lobby
