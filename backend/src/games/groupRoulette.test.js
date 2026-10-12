@@ -77,6 +77,12 @@ test("ten paid seats finish exactly one shared round and credit exactly one cash
   assert.equal(entries.rows[0].count, 10);
   assert.equal(wins.rows[0].count, 1);
   assert.equal(Number(wins.rows[0].amount), 100);
+  const winLedger = await pool.query(
+    "SELECT amount,balance_after FROM transactions WHERE type='group_roulette_win' AND user_id=ANY($1::int[])",
+    [ids]
+  );
+  assert.equal(Number(winLedger.rows[0].amount), 100);
+  assert.equal(Number(winLedger.rows[0].balance_after), 103);
 });
 
 test("leaving a waiting table refunds credits once and removes the empty table", async () => {
