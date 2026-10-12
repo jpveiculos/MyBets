@@ -10,7 +10,7 @@ const newRoomCode = () => randomBytes(5).toString("hex").toUpperCase();
 async function tableById(client, id) {
   const result = await client.query("SELECT t.*, (SELECT COUNT(*)::int FROM group_roulette_table_players p WHERE p.table_id=t.id) AS player_count FROM group_roulette_tables t WHERE t.id=$1", [id]);
   const row = result.rows[0]; if (!row) return null;
-  const p = await client.query("SELECT user_id AS \"userId\", username_snapshot AS username, seat_number AS \"seatNumber\", status FROM group_roulette_table_players WHERE table_id=$1 ORDER BY seat_number", [id]);
+  const p = await client.query("SELECT username_snapshot AS username, seat_number AS \"seatNumber\", status FROM group_roulette_table_players WHERE table_id=$1 ORDER BY seat_number", [id]);
   return { id:Number(row.id), roomCode:row.room_code, stakeAmount:Number(row.stake_amount), maxPlayers:Number(row.max_players), playerCount:Number(row.player_count), status:row.status, players:p.rows.map(x=>({username:x.username,seatNumber:Number(x.seatNumber),status:x.status})), winnerSeat:row.winning_seat == null ? null : Number(row.winning_seat), winnerUsername:row.winner_username || null, prizeAmount:row.prize_amount == null ? null : Number(row.prize_amount), createdAt:row.created_at, startedAt:row.started_at, finishedAt:row.finished_at };
 }
 
