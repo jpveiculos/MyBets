@@ -111,6 +111,30 @@
           </div>
           <p class="form-message" id="rouletteMessage"></p>
         </section>
+        <section class="admin-panel-block" style="margin-top:18px">
+          <div class="admin-block-head"><div><span class="eyebrow">JOGO MULTIJOGADOR</span><h2>Configurações da Roleta em Grupo</h2></div></div>
+          <p class="muted">As alterações valem para as próximas mesas. Mesas que já estão em andamento mantêm as regras com que foram criadas.</p>
+          <div class="admin-two-col">
+            <label>Roleta em Grupo
+              <select id="groupRouletteEnabled"><option value="true">Ativada</option><option value="false">Desativada</option></select>
+            </label>
+            <label>Participantes por mesa
+              <input id="groupRouletteMaxPlayers" type="number" min="2" max="100" step="1" inputmode="numeric">
+            </label>
+            <label>Percentual da arrecadação destinado ao prêmio (%)
+              <input id="groupRoulettePrizePercent" type="number" min="1" max="100" step="0.01" inputmode="decimal">
+            </label>
+            <label>Valores de participação (R$), separados por ponto e vírgula
+              <input id="groupRouletteStakes" type="text" inputmode="decimal" placeholder="1; 2; 5; 10; 20">
+            </label>
+          </div>
+          <div class="admin-bonus-rule" style="margin-top:12px">
+            <strong>Como o prêmio é calculado</strong>
+            <span>O prêmio é calculado sobre o total das entradas da mesa multiplicado pelo percentual definido. Exemplo: 10 participantes pagando R$ 5,00 com 90% para o prêmio = R$ 45,00 para o vencedor.</span>
+          </div>
+          <div class="row-actions" style="margin-top:14px"><button class="primary-btn" id="groupRouletteSave" type="button">Salvar configurações da Roleta em Grupo</button></div>
+          <p class="form-message" id="groupRouletteMessage"></p>
+        </section>
       </section>
 
       <section class="admin-view hidden" id="view-settings" data-view-panel="settings">

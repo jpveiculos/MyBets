@@ -1,7 +1,7 @@
 import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { pool, initDatabase } from "../db.js";
-import { getGroupRouletteTableByCode, joinGroupRoulette, leaveGroupRoulette } from "./groupRoulette.js";
+import { getGroupRouletteTableByCode, joinGroupRoulette, leaveGroupRoulette, updateGroupRouletteConfig } from "./groupRoulette.js";
 import { requestWithdrawal } from "../finance.js";
 import { approveWithdrawal } from "../admin.js";
 
@@ -162,4 +162,26 @@ test("cash withdrawal remains available while non-withdrawable play credits exis
   assert.equal(Number(balance.rows[0].cash_balance), 80);
   assert.equal(Number(balance.rows[0].play_credits), 5);
   assert.equal(Number(balance.rows[0].reserved_balance), 0);
+});
+
+test("administrator configuration controls table size, entry values, and prize percentage", async () => {
+  const adminName = `grtest_admin_config_${Date.now()}`;
+  const admin = await pool.query(
+    "INSERT INTO admins(username,password_hash) VALUES($1,'test-hash') RETURNING id",
+    [adminName]
+  );
+  await updateGroupRouletteConfig({
+    adminId: admin.rows[0].id,
+    config: { enabled: true, maxPlayers: 3, stakeOptions: [3], prizePercent: 80 }
+  });
+  const users = [];
+  for (let i = 0; i < 3; i += 1) users.push(await createUser({ credits: 10, cash: 0, reserved: 0 }));
+  const first = await joinGroupRoulette({ userId: users[0].id, stakeAmount: 3 });
+  assert.equal(first.table.maxPlayers, 3);
+  await assert.rejects(() => joinGroupRoulette({ userId: users[1].id, stakeAmount: 5 }), /valores de participação/i);
+  await joinGroupRoulette({ userId: users[1].id, stakeAmount: 3 });
+  const final = await joinGroupRoulette({ userId: users[2].id, stakeAmount: 3 });
+  assert.equal(final.table.status, "finished");
+  assert.equal(final.table.playerCount, 3);
+  assert.equal(final.table.prizeAmount, 7.2);
 });

@@ -12,7 +12,7 @@ import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } fro
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
 import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
-import { getGroupRouletteLobby, getGroupRouletteTableByCode, getMyGroupRouletteTable, joinGroupRoulette, leaveGroupRoulette } from "./games/groupRoulette.js";
+import { getGroupRouletteLobby, getGroupRouletteTableByCode, getMyGroupRouletteTable, joinGroupRoulette, leaveGroupRoulette, getGroupRouletteConfig, updateGroupRouletteConfig } from "./games/groupRoulette.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -227,6 +227,12 @@ app.get("/api/admin/settings", requireAdmin, asyncRoute(async (_req,res) => {
 }));
 app.get("/api/admin/roulette/config", requireAdmin, asyncRoute(async (_req,res) => {
   res.json({ok:true,roulette:await rouletteConfig()});
+}));
+app.get("/api/admin/group-roulette/config", requireAdmin, asyncRoute(async (_req,res) => {
+  res.json({ok:true,config:await getGroupRouletteConfig()});
+}));
+app.put("/api/admin/group-roulette/config", requireAdmin, asyncRoute(async (req,res) => {
+  res.json({ok:true,config:await updateGroupRouletteConfig({config:req.body,adminId:req.admin.id})});
 }));
 app.put("/api/admin/settings/:key", requireAdmin, asyncRoute(async (req,res) => {
   const editableSettings=new Set([
