@@ -21,6 +21,7 @@
       <a class="admin-nav-link" href="#transacoes" data-view="transactions">▤ <span>Transações</span></a>
       <a class="admin-nav-link" href="#configuracoes" data-view="settings">⚙ <span>Configurações</span></a>
       <a class="admin-nav-link" href="#roleta" data-view="roulette">◉ <span>Roleta</span></a>
+      <a class="admin-nav-link" href="#roleta-em-grupo" data-view="group-roulette">◎ <span>Roleta em Grupo</span></a>
       <button class="admin-nav-notify" id="enableNotifications" type="button"><span>♟</span><span>Notificações</span><i id="notifyDot"></i><strong id="notifyCount" class="notify-count">0</strong></button>
       <small class="admin-notify-status" id="notifyStatus">Ativar neste dispositivo</small>
     </nav>
@@ -111,7 +112,12 @@
           </div>
           <p class="form-message" id="rouletteMessage"></p>
         </section>
-        <section class="admin-panel-block" style="margin-top:18px">
+
+      </section>
+
+      <section class="admin-view hidden" id="view-group-roulette" data-view-panel="group-roulette">
+        <div class="admin-view-head"><div><span class="eyebrow">JOGO MULTIJOGADOR</span><h1>Roleta em Grupo</h1></div></div>
+        <section class="admin-panel-block" >
           <div class="admin-block-head"><div><span class="eyebrow">JOGO MULTIJOGADOR</span><h2>Configurações da Roleta em Grupo</h2></div></div>
           <p class="muted">As alterações valem para as próximas mesas. Mesas que já estão em andamento mantêm as regras com que foram criadas.</p>
           <div class="admin-two-col">
