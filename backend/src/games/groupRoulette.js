@@ -58,7 +58,7 @@ export async function getMyGroupRouletteTable(userId) {
 export async function joinGroupRoulette({userId,stakeAmount,roomCode=null}) {
   const config = await getGroupRouletteConfig();
   if (!config.enabled) throw new Error("A Roleta em Grupo está temporariamente desativada.");
-  const stake=money(stakeAmount); if(!config.stakeOptions.includes(stake)) throw new Error("Escolha um dos valores de participação disponíveis.");
+  const stake=money(stakeAmount); if(!config.stakeOptions.includes(stake) && !roomCode) throw new Error("Escolha um dos valores de participação disponíveis.");
   const client=await pool.connect();
   try {
     await client.query("BEGIN");
@@ -70,26 +70,28 @@ export async function joinGroupRoulette({userId,stakeAmount,roomCode=null}) {
     const credits=money(user.play_credits||0); if(credits<stake) throw new Error("Créditos insuficientes. Adicione créditos na sua conta antes de entrar na mesa.");
     let tableId=null;
     if(roomCode) {
-      const requested=await client.query("SELECT id,stake_amount,status FROM group_roulette_tables WHERE room_code=$1 FOR UPDATE",[String(roomCode).trim().toUpperCase()]);
+      const requested=await client.query("SELECT id,stake_amount,status,max_players FROM group_roulette_tables WHERE room_code=$1 FOR UPDATE",[String(roomCode).trim().toUpperCase()]);
       if(!requested.rows[0]) throw new Error("Esta mesa não foi encontrada.");
       if(requested.rows[0].status!=="waiting") throw new Error("Esta rodada já terminou. Entre na fila para a próxima rodada.");
       if(money(requested.rows[0].stake_amount)!==stake) throw new Error("O valor de entrada não corresponde ao valor desta mesa.");
       const occupied=await client.query("SELECT COUNT(*)::int AS count FROM group_roulette_table_players WHERE table_id=$1 AND status='paid'",[requested.rows[0].id]);
-      if(Number(occupied.rows[0].count)>=config.maxPlayers) throw new Error("Esta mesa está cheia. Entre na fila para a próxima mesa."); tableId=requested.rows[0].id;
+      if(Number(occupied.rows[0].count)>=Number(requested.rows[0].max_players)) throw new Error("Esta mesa está cheia. Entre na fila para a próxima mesa."); tableId=requested.rows[0].id;
     } else {
       const available=await client.query("SELECT t.id FROM group_roulette_tables t WHERE t.status='waiting' AND t.stake_amount=$1 AND (SELECT COUNT(*) FROM group_roulette_table_players p WHERE p.table_id=t.id AND p.status='paid') < t.max_players ORDER BY t.created_at ASC LIMIT 1 FOR UPDATE SKIP LOCKED",[stake]);
       if(available.rows[0]) tableId=available.rows[0].id;
       else { const created=await client.query("INSERT INTO group_roulette_tables(room_code,stake_amount,max_players,status) VALUES($1,$2,$3,'waiting') RETURNING id",[newRoomCode(),stake,config.maxPlayers]); tableId=created.rows[0].id; }
     }
-    const seat=await client.query("SELECT s.n AS seat_number FROM generate_series(1,$2) AS s(n) WHERE NOT EXISTS (SELECT 1 FROM group_roulette_table_players p WHERE p.table_id=$1 AND p.seat_number=s.n) ORDER BY s.n LIMIT 1",[tableId,config.maxPlayers]);
+    const tableConfig=await client.query("SELECT max_players FROM group_roulette_tables WHERE id=$1",[tableId]);
+    const tableMaxPlayers=Number(tableConfig.rows[0]?.max_players||config.maxPlayers);
+    const seat=await client.query("SELECT s.n AS seat_number FROM generate_series(1,$2) AS s(n) WHERE NOT EXISTS (SELECT 1 FROM group_roulette_table_players p WHERE p.table_id=$1 AND p.seat_number=s.n) ORDER BY s.n LIMIT 1",[tableId,tableMaxPlayers]);
     if(!seat.rows[0]) throw new Error("Não há vaga disponível nesta mesa.");
     const remaining=await consumePlayCredits({client,userId,betAmount:stake});
     await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,note) VALUES($1,'group_roulette_entry',$2,$3,$4)",[userId,-stake,remaining,"Entrada paga na roleta em grupo."]);
     await client.query("INSERT INTO group_roulette_table_players(table_id,user_id,username_snapshot,seat_number,stake_amount,status) VALUES($1,$2,$3,$4,$5,'paid')",[tableId,userId,user.username,Number(seat.rows[0].seat_number),stake]);
     const count=await client.query("SELECT COUNT(*)::int AS count FROM group_roulette_table_players WHERE table_id=$1 AND status='paid'",[tableId]);
-    if(Number(count.rows[0].count)===config.maxPlayers) {
+    if(Number(count.rows[0].count)===tableMaxPlayers) {
       const pr=await client.query("SELECT user_id,username_snapshot,seat_number FROM group_roulette_table_players WHERE table_id=$1 AND status='paid' ORDER BY seat_number FOR UPDATE",[tableId]);
-      const players=pr.rows, winner=players[randomInt(players.length)], prize=money(stake*config.maxPlayers*config.prizePercent/100);
+      const players=pr.rows, winner=players[randomInt(players.length)], prize=money(stake*tableMaxPlayers*config.prizePercent/100);
       const cashAfter=await addWithdrawableWinnings({client,userId:winner.user_id,amount:prize});
       const winnerUser=await client.query("SELECT reserved_balance FROM users WHERE id=$1",[winner.user_id]);
       const withdrawableAfter=money(cashAfter-Number(winnerUser.rows[0]?.reserved_balance||0));
