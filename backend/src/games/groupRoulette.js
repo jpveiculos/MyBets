@@ -1,5 +1,6 @@
 import { randomBytes, randomInt } from "node:crypto";
 import { pool } from "../db.js";
+import { consumePlayCredits, addWithdrawableWinnings } from "../finance.js";
 
 const MAX_PLAYERS = 10;
 const ALLOWED_STAKES = new Set([1, 2, 5, 10, 20]);
@@ -34,7 +35,7 @@ export async function joinGroupRoulette({userId,stakeAmount,roomCode=null}) {
   try {
     await client.query("BEGIN");
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",["group-roulette:"+stake.toFixed(2)]);
-    const ur=await client.query("SELECT id,username,play_credits FROM users WHERE id=$1 AND is_banned=FALSE AND is_deleted=FALSE FOR UPDATE",[userId]);
+    const ur=await client.query("SELECT id,username,play_credits,cash_balance,reserved_balance FROM users WHERE id=$1 AND is_banned=FALSE AND is_deleted=FALSE FOR UPDATE",[userId]);
     const user=ur.rows[0]; if(!user) throw new Error("Usuário não encontrado ou indisponível.");
     const active=await client.query("SELECT t.id FROM group_roulette_table_players p JOIN group_roulette_tables t ON t.id=p.table_id WHERE p.user_id=$1 AND p.status='paid' AND t.status='waiting' LIMIT 1",[userId]);
     if(active.rows[0]) { const table=await tableById(client,active.rows[0].id); await client.query("COMMIT"); return {table,alreadyJoined:true}; }
@@ -54,18 +55,19 @@ export async function joinGroupRoulette({userId,stakeAmount,roomCode=null}) {
     }
     const seat=await client.query("SELECT s.n AS seat_number FROM generate_series(1,10) AS s(n) WHERE NOT EXISTS (SELECT 1 FROM group_roulette_table_players p WHERE p.table_id=$1 AND p.seat_number=s.n) ORDER BY s.n LIMIT 1",[tableId]);
     if(!seat.rows[0]) throw new Error("Não há vaga disponível nesta mesa.");
-    const remaining=money(credits-stake);
-    await client.query("UPDATE users SET play_credits=$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2",[remaining,userId]);
+    const remaining=await consumePlayCredits({client,userId,betAmount:stake});
     await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,note) VALUES($1,'group_roulette_entry',$2,$3,$4)",[userId,-stake,remaining,"Entrada paga na roleta em grupo."]);
     await client.query("INSERT INTO group_roulette_table_players(table_id,user_id,username_snapshot,seat_number,stake_amount,status) VALUES($1,$2,$3,$4,$5,'paid')",[tableId,userId,user.username,Number(seat.rows[0].seat_number),stake]);
     const count=await client.query("SELECT COUNT(*)::int AS count FROM group_roulette_table_players WHERE table_id=$1 AND status='paid'",[tableId]);
     if(Number(count.rows[0].count)===MAX_PLAYERS) {
       const pr=await client.query("SELECT user_id,username_snapshot,seat_number FROM group_roulette_table_players WHERE table_id=$1 AND status='paid' ORDER BY seat_number FOR UPDATE",[tableId]);
       const players=pr.rows, winner=players[randomInt(players.length)], prize=money(stake*MAX_PLAYERS);
-      const payout=await client.query("UPDATE users SET cash_balance=cash_balance+$1,updated_at=CURRENT_TIMESTAMP WHERE id=$2 RETURNING cash_balance",[prize,winner.user_id]);
+      const cashAfter=await addWithdrawableWinnings({client,userId:winner.user_id,amount:prize});
+      const winnerUser=await client.query("SELECT reserved_balance FROM users WHERE id=$1",[winner.user_id]);
+      const withdrawableAfter=money(cashAfter-Number(winnerUser.rows[0]?.reserved_balance||0));
       await client.query("UPDATE group_roulette_table_players SET status=CASE WHEN user_id=$2 THEN 'winner' ELSE 'lost' END WHERE table_id=$1 AND status='paid'",[tableId,winner.user_id]);
       await client.query("UPDATE group_roulette_tables SET status='finished',winning_seat=$2,winner_user_id=$3,winner_username=$4,prize_amount=$5,started_at=CURRENT_TIMESTAMP,finished_at=CURRENT_TIMESTAMP WHERE id=$1 AND status='waiting'",[tableId,winner.seat_number,winner.user_id,winner.username_snapshot,prize]);
-      await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,note) VALUES($1,'group_roulette_win',$2,$3,$4)",[winner.user_id,prize,Number(payout.rows[0].cash_balance),"Prêmio da roleta em grupo: mesa completa de 10 participantes."]);
+      await client.query("INSERT INTO transactions(user_id,type,amount,balance_after,note) VALUES($1,'group_roulette_win',$2,$3,$4)",[winner.user_id,prize,withdrawableAfter,"Prêmio da roleta em grupo: mesa completa de 10 participantes."]);
     }
     const table=await tableById(client,tableId); await client.query("COMMIT"); return {table,alreadyJoined:false};
   } catch(error) { try { await client.query("ROLLBACK"); } catch {} throw error; } finally { client.release(); }
