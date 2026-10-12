@@ -217,6 +217,13 @@ function renderRouletteSettings(settings,roulette){
   }
  }
 }
+function renderGroupRouletteSettings(config){
+ if(!config)return;
+ $("groupRouletteEnabled").value=String(config.enabled);
+ $("groupRouletteMaxPlayers").value=String(config.maxPlayers);
+ $("groupRoulettePrizePercent").value=String(config.prizePercent);
+ $("groupRouletteStakes").value=(config.stakeOptions||[]).join(", ");
+}
 function settingLabel(key){
  const labels={
   signup_bonus_amount:"Créditos de cadastro",
@@ -271,10 +278,10 @@ $("adminLogin")?.addEventListener("submit",adminLogin);
 async function load(){
  if(!adminAuthenticated)return false;
  try{
-  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,w,s,t,rq]=await Promise.all([api("/api/admin/users"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString()),api("/api/admin/roulette/config")]);
-  const withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[],roulette=rq.roulette||null; cachedUsers=users;
+  const transactionUrl=new URL("/api/admin/transactions",location.origin); Object.entries(transactionFilters).forEach(([key,value])=>{if(value)transactionUrl.searchParams.set(key,value)}); const [u,w,s,t,rq,gq]=await Promise.all([api("/api/admin/users"),api("/api/admin/withdrawals"),api("/api/admin/settings"),api(transactionUrl.toString()),api("/api/admin/roulette/config"),api("/api/admin/group-roulette/config")]);
+  const withdrawals=Array.isArray(w.withdrawals)?w.withdrawals:[],users=Array.isArray(u.users)?u.users:[],settings=Array.isArray(s.settings)?s.settings:[],transactions=Array.isArray(t.transactions)?t.transactions:[],roulette=rq.roulette||null,groupRoulette=gq.config||null; cachedUsers=users;
   const pendingWithdrawals=withdrawals.filter(x=>x.status==="pending"),pendingCount=pendingWithdrawals.length;
-  renderPendingEvents(withdrawals);renderUsers(users);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings,roulette);
+  renderPendingEvents(withdrawals);renderUsers(users);renderWithdrawals(withdrawals);renderTransactions(transactions);renderSettings(settings);renderRouletteSettings(settings,roulette);renderGroupRouletteSettings(groupRoulette);
   if(previousPendingCount!==null&&pendingCount>previousPendingCount){
    const n=pendingCount-previousPendingCount;$("adminMessage").style.color="#35c58a";$("adminMessage").textContent=`🔔 ${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`;
    if(notifyReady&&"Notification"in window&&Notification.permission==="granted"){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification("MyBets • Novo evento",{body:`${n} novo${n>1?"s":""} evento${n>1?"s":""} aguardando atendimento.`,tag:"new-admin-event",data:{url:"/admin.html"},renotify:true})}catch(error){console.warn("Notificação local:",error)}}
@@ -328,6 +335,22 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
  document.querySelectorAll(".ban-user").forEach(b=>b.onclick=async()=>{const reason=prompt("Motivo do banimento:","Banimento administrativo");if(reason===null||!reason.trim())return;if(!confirm("Banir este usuário? O acesso será encerrado imediatamente."))return;await action("/api/admin/users/"+b.dataset.id+"/ban","POST",{reason:reason.trim()})});
  document.querySelectorAll(".unban-user").forEach(b=>b.onclick=async()=>{if(!confirm("Desbanir este usuário?"))return;await action("/api/admin/users/"+b.dataset.id+"/unban","POST",{})});
  document.querySelectorAll(".delete-user").forEach(b=>b.onclick=async()=>{if(!confirm("Excluir este usuário? O histórico financeiro será preservado e a conta ficará permanentemente inacessível."))return;await action("/api/admin/users/"+b.dataset.id+"/delete","POST",{})});
+ $("groupRouletteSave")?.addEventListener("click",async()=>{
+  const enabled=$("groupRouletteEnabled").value==="true";
+  const maxPlayers=Number($("groupRouletteMaxPlayers").value);
+  const prizePercent=Number(String($("groupRoulettePrizePercent").value).replace(",","."));
+  const stakeOptions=$("groupRouletteStakes").value.split(",").map(v=>Number(v.trim().replace(",", "."))).filter(v=>Number.isFinite(v));
+  const msg=$("groupRouletteMessage");
+  if(!Number.isInteger(maxPlayers)||maxPlayers<2||maxPlayers>100){msg.textContent="A quantidade deve ficar entre 2 e 100 participantes.";return}
+  if(!Number.isFinite(prizePercent)||prizePercent<1||prizePercent>100){msg.textContent="O percentual do prêmio deve ficar entre 1% e 100%.";return}
+  if(!stakeOptions.length||stakeOptions.length>10||stakeOptions.some(v=>!Number.isFinite(v)||v<0.01||v>10000)){msg.textContent="Informe de 1 a 10 valores válidos separados por vírgula.";return}
+  const button=$("groupRouletteSave");button.disabled=true;msg.textContent="Salvando configurações...";
+  try{
+   const d=await api("/api/admin/group-roulette/config",{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({enabled,maxPlayers,prizePercent,stakeOptions})});
+   renderGroupRouletteSettings(d.config);msg.textContent="Configurações da Roleta em Grupo salvas. As novas regras valem para as próximas mesas.";await load();
+  }catch(e){msg.textContent=e.message||"Não foi possível salvar as configurações."}
+  finally{button.disabled=false}
+ });
  $("rouletteSave")?.addEventListener("click",async()=>{
   const min=Number(String($("rouletteMinBet").value).replace(",","."));
   const max=Number(String($("rouletteMaxBet").value).replace(",","."));
