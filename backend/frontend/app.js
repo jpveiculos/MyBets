@@ -51,6 +51,18 @@ function showAuth(mode="login"){
   $("authMessage").textContent="";
 }
 
+function getPostAuthReturn(){
+  const requested=new URLSearchParams(location.search).get("return");
+  if(!requested || !requested.startsWith("/") || requested.startsWith("//")) return "/dashboard.html";
+  try{
+    const target=new URL(requested,location.origin);
+    if(target.origin!==location.origin) return "/dashboard.html";
+    return target.pathname+target.search+target.hash;
+  }catch{
+    return "/dashboard.html";
+  }
+}
+
 function closeAuth(){
   $("authModal")?.classList.add("hidden");
 }
@@ -78,7 +90,7 @@ $("authForm")?.addEventListener("submit",async e=>{
     });
     const d=await r.json().catch(()=>({}));
     if(!r.ok)throw new Error(d.message||"Não foi possível concluir.");
-    location.href="/dashboard.html";
+    location.href=getPostAuthReturn();
   }catch(err){
     message.textContent=err.message||"Erro ao conectar ao servidor.";
   }finally{

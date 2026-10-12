@@ -12,6 +12,7 @@ import { getVapidPublicKey, saveAdminSubscription, removeAdminSubscription } fro
 import { getUserHistory, searchTransactionHistory, pruneOldAuditLogs } from "./history.js";
 import { rouletteConfig, spinRoulette } from "./roulette.js";
 import { myTigerConfig, spinMyTiger } from "./games/myTiger.js";
+import { getGroupRouletteLobby, getGroupRouletteTableByCode, getMyGroupRouletteTable, joinGroupRoulette, leaveGroupRoulette } from "./games/groupRoulette.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -111,6 +112,12 @@ app.post("/api/roulette/spin", requireUser, asyncRoute(async (req,res) => {
   const account=await getAccount(req.user.id);
   res.json({ok:true,spin,user:{id:account.id,username:account.username,playCredits:Number(account.play_credits||0),availableBalance:Number(account.play_credits||0),withdrawableBalance:Number(account.withdrawable_balance||0),cashBalance:Number(account.withdrawable_balance||0)}});
 }));
+
+app.get("/api/group-roulette/lobby", asyncRoute(async (_req,res) => { res.json({ok:true,lobby:await getGroupRouletteLobby()}); }));
+app.get("/api/group-roulette/table/:roomCode", asyncRoute(async (req,res) => { const table=await getGroupRouletteTableByCode(req.params.roomCode); if(!table) return res.status(404).json({message:"Mesa não encontrada."}); res.json({ok:true,table}); }));
+app.get("/api/group-roulette/me", requireUser, asyncRoute(async (req,res) => { res.json({ok:true,table:await getMyGroupRouletteTable(req.user.id)}); }));
+app.post("/api/group-roulette/join", requireUser, asyncRoute(async (req,res) => { res.status(201).json({ok:true,...await joinGroupRoulette({userId:req.user.id,stakeAmount:req.body?.stakeAmount,roomCode:req.body?.roomCode||null})}); }));
+app.post("/api/group-roulette/leave", requireUser, asyncRoute(async (req,res) => { res.json({ok:true,...await leaveGroupRoulette({userId:req.user.id})}); }));
 
 app.get("/api/account", requireUser, asyncRoute(async (req,res) => {
   const account=await getAccount(req.user.id);
@@ -243,6 +250,9 @@ function sendRoletaMybetsFile(file){
     res.sendFile(path.join(roletaMybetsPath,file));
   };
 }
+
+app.get("/mesas",(_req,res)=>res.sendFile(path.join(frontendPath,"group-roulette.html")));
+app.get("/mesas/",(_req,res)=>res.sendFile(path.join(frontendPath,"group-roulette.html")));
 
 app.get("/roleta",sendRoletaMybetsFile("index.html"));
 app.get("/roleta/",sendRoletaMybetsFile("index.html"));

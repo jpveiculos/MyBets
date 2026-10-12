@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08090d"><title>Roleta em Grupo • MyBets</title>
+<link rel="stylesheet" href="/group-roulette.css">
+</head>
+<body>
+<header class="gr-top"><a class="gr-brand" href="/">My<span>Bets</span></a><div id="accountStatus" class="gr-account">Modo visitante</div></header>
+<main class="gr-wrap">
+<section class="gr-hero"><span class="gr-eyebrow">NOVA MODALIDADE</span><h1>Roleta em grupo</h1><p>Entre em uma mesa pública, acompanhe os participantes e concorra em uma rodada com até 10 vagas.</p><div class="gr-rules"><span>10 vagas por mesa</span><span>Resultado compartilhado</span><span>Rodadas simultâneas</span></div></section>
+<section id="targetRoom" class="gr-target hidden"></section>
+<section id="walletPanel" class="gr-wallet-panel"><div class="gr-wallet-balance"><span>Créditos para jogar</span><strong id="walletCredits">—</strong><small>Usados apenas nas entradas</small></div><div class="gr-wallet-balance gr-wallet-cash"><span>Saldo sacável</span><strong id="walletCash">—</strong><small>Prêmios e saldo disponível</small></div><div class="gr-wallet-actions"><a href="/dashboard.html?finance=deposit">Adicionar créditos via Pix</a><a href="/dashboard.html?finance=credits">Converter saldo em créditos</a></div><p id="walletNote" class="gr-wallet-note">Créditos e saldo em dinheiro são separados. Para gerenciar depósitos, conversões e saques, use sua conta MyBets.</p></section>
+<section class="gr-join-panel">
+ <div><h2>Entrar em uma mesa</h2><p>Escolha o valor por vaga. A entrada é descontada dos seus créditos MyBets.</p></div>
+ <label class="gr-stake-label">Valor por participação
+  <select id="stakeAmount"><option value="10" selected>R$ 10,00</option><option value="1">R$ 1,00</option><option value="2">R$ 2,00</option><option value="5">R$ 5,00</option><option value="20">R$ 20,00</option></select>
+ </label>
+ <button id="joinButton" class="gr-primary">ENTRAR NA FILA · R$ 10,00</button>
+ <button id="leaveButton" class="gr-secondary hidden">Sair da mesa e devolver créditos</button>
+ <p id="joinMessage" class="gr-message" role="status"></p>
+ <p class="gr-small">Cada conta ocupa uma vaga. Contas diferentes podem participar separadamente; cada uma precisa ter créditos suficientes para sua própria entrada.</p>
+</section>
+<section class="gr-section"><div class="gr-section-head"><div><h2>Mesas em formação</h2><p>As mesas iniciam automaticamente quando as 10 vagas estiverem pagas.</p></div><span id="waitingCount" class="gr-count">0 mesas</span></div><div id="waitingTables" class="gr-table-grid"><div class="gr-empty">Carregando mesas…</div></div></section>
+<section class="gr-section"><div class="gr-section-head"><div><h2>Últimos resultados</h2><p>Resultados recentes das mesas concluídas.</p></div></div><div id="recentResults" class="gr-results"><div class="gr-empty">Carregando resultados…</div></div></section>
+<section class="gr-footer-links"><a href="/dashboard.html">Minha conta e créditos</a><a href="/">Início do MyBets</a></section>
+</main>
+<script src="/group-roulette.js"></script>
+</body></html>
