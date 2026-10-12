@@ -2,6 +2,8 @@ import test, { before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { pool, initDatabase } from "../db.js";
 import { getGroupRouletteTableByCode, joinGroupRoulette, leaveGroupRoulette } from "./groupRoulette.js";
+import { requestWithdrawal } from "../finance.js";
+import { approveWithdrawal } from "../admin.js";
 
 let sequence = 0;
 
@@ -23,6 +25,7 @@ before(async () => {
 beforeEach(async () => {
   await pool.query("TRUNCATE group_roulette_tables RESTART IDENTITY CASCADE");
   await pool.query("DELETE FROM users WHERE username LIKE 'grtest_%'");
+  await pool.query("DELETE FROM admins WHERE username LIKE 'grtest_admin_%'");
 });
 
 after(async () => {
@@ -123,4 +126,33 @@ test("insufficient credits do not create a table or charge the player", async ()
   assert.equal(Number(balance.rows[0].play_credits), 2);
   assert.equal(tables.rows[0].count, 0);
   assert.equal(entries.rows[0].count, 0);
+});
+
+test("cash withdrawal remains available while non-withdrawable play credits exist", async () => {
+  const user = await createUser({ credits: 5, cash: 100, reserved: 0 });
+  const adminName = `grtest_admin_${Date.now()}`;
+  const adminResult = await pool.query(
+    "INSERT INTO admins(username,password_hash) VALUES($1,'test-hash') RETURNING id",
+    [adminName]
+  );
+
+  const withdrawal = await requestWithdrawal({
+    userId: user.id,
+    amount: 20,
+    pixKey: "test-pix-key"
+  });
+  const approved = await approveWithdrawal({
+    id: withdrawal.id,
+    adminId: adminResult.rows[0].id,
+    adminNote: "Automated integration test"
+  });
+
+  assert.equal(approved.status, "approved");
+  const balance = await pool.query(
+    "SELECT cash_balance,play_credits,reserved_balance FROM users WHERE id=$1",
+    [user.id]
+  );
+  assert.equal(Number(balance.rows[0].cash_balance), 80);
+  assert.equal(Number(balance.rows[0].play_credits), 5);
+  assert.equal(Number(balance.rows[0].reserved_balance), 0);
 });
