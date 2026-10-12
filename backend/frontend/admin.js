@@ -339,7 +339,7 @@ $("signupBonusSave")?.addEventListener("click",async()=>{
   const enabled=$("groupRouletteEnabled").value==="true";
   const maxPlayers=Number($("groupRouletteMaxPlayers").value);
   const prizePercent=Number(String($("groupRoulettePrizePercent").value).replace(",","."));
-  const stakeOptions=$("groupRouletteStakes").value.split(",").map(v=>Number(v.trim().replace(",", "."))).filter(v=>Number.isFinite(v));
+  const stakeOptions=$("groupRouletteStakes").value.split(";").map(v=>Number(v.trim().replace(",", "."))).filter(v=>Number.isFinite(v));
   const msg=$("groupRouletteMessage");
   if(!Number.isInteger(maxPlayers)||maxPlayers<2||maxPlayers>100){msg.textContent="A quantidade deve ficar entre 2 e 100 participantes.";return}
   if(!Number.isFinite(prizePercent)||prizePercent<1||prizePercent>100){msg.textContent="O percentual do prêmio deve ficar entre 1% e 100%.";return}
