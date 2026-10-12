@@ -54,6 +54,13 @@ test("ten paid seats finish exactly one shared round and credit exactly one cash
   assert.equal(finalTable.players.length, 10);
   assert.ok(finalTable.winnerUsername);
   assert.equal(finalTable.prizeAmount, 100);
+  assert.equal(finalTable.players.some(player => Object.hasOwn(player, "userId")), false);
+
+  const eleventhUser = await createUser();
+  const nextTable = await joinGroupRoulette({ userId: eleventhUser.id, stakeAmount: 10 });
+  assert.equal(nextTable.table.status, "waiting");
+  assert.equal(nextTable.table.playerCount, 1);
+  assert.notEqual(nextTable.table.roomCode, finalTable.roomCode);
 
   const ids = users.map(user => user.id);
   const balances = await pool.query(
