@@ -73,6 +73,14 @@ async function load(){
       }
       history.replaceState({},document.title,location.pathname);
     }
+    const financeAction=params.get("finance");
+    if(financeAction==="deposit"){
+      history.replaceState({},document.title,location.pathname);
+      await openDeposit();
+    }else if(financeAction==="credits"){
+      history.replaceState({},document.title,location.pathname);
+      await openBuyCredits();
+    }
   }catch(e){location.href="/"}
 }
 
