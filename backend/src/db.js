@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+  ssl: process.env.DATABASE_SSL === "false" ? false : process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
 export async function query(text, params = []) {
