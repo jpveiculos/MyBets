@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: ["feature/group-roulette"]
+    branches: ["feature/group-roulette", "feature/group-roulette-admin-config"]
 
 jobs:
   syntax-and-integration:
